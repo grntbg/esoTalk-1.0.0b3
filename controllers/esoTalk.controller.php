@@ -294,6 +294,7 @@ function addToFooter($html, $position = false)
 // Add a script to the array
 function addScript($script, $position = false)
 {
+	if (in_array($script, $this->scripts)) return false;
 	addToArray($this->scripts, $script, $position);
 }
 
@@ -364,6 +365,7 @@ var esoTalk=" . json($esoTalkJS) . ",isIE6,isIE7// ]]></script>\n";
 // Add a style sheet to the array
 function addCSS($styleSheet, $media = false) 
 {
+	if (in_array(array("href" => $styleSheet, "media" => $media), $this->styleSheets)) return false;
 	addToArray($this->styleSheets, array("href" => $styleSheet, "media" => $media));
 }
 
