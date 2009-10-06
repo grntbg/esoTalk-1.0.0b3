@@ -90,6 +90,7 @@ function lastInsertId()
 // Return the number of rows in the result.
 function numRows($input)
 {
+	if (!$input) return false;
 	if (is_resource($input)) return mysql_num_rows($input);
 	$result = $this->query($input);
 	return $this->numRows($result);

@@ -12,7 +12,7 @@ if (!defined("IN_ESOTALK")) exit;
 </thead>
 <tbody id='conversations'>
 
-<?php foreach ($this->conversations as $conversation): ?>
+<?php foreach ($this->results as $conversation): ?>
 <tr id='c<?php echo $conversation["id"]; ?>'<?php if ($conversation["starred"]): ?> class='starred'<?php endif; ?>>
 <td class='star'><?php echo $this->esoTalk->htmlStar($conversation["id"], $conversation["starred"]); ?></td>
 <td>

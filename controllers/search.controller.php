@@ -10,26 +10,23 @@ class search extends Controller {
 
 var $view = "search.view.php";
 var $tagCloud = array();
+var $searchString = "";
 
-// Initiate SQL query components
-var $searchString;
-var $search;
+// Fields to select, conditions, orders, and more.
 var $select = array();
-var $where = array();
-var $groupBy = array();
+var $from = array();
+var $conditions = array();
 var $orderBy = array();
-var $from;
 var $limit;
-var $reverse;
-var $order;
+var $reverse = false;
 
-// Gambit arrays
+// Gambit arrays.
 var $gambitCloud = array();
 var $aliases = array();
 var $gambits = array();
 
-// Results
-var $conversations = array();
+// Results.
+var $results = array();
 var $numberOfConversations = 0;
 
 function Search()
@@ -39,28 +36,32 @@ function Search()
 
 function init()
 {
-	global $language;
+	global $config, $language;
 	
-	// Define the gambits
+	// Add the default gambits to the collection.
+	// Each gambit is made up of a function and an eval() condition that is used to determine
+	// if a search "term" matches the gambit.
 	$this->gambits = array_merge($this->gambits, array(
-		array(array($this, "gambitUnread"), 'return $v == strtolower($language["gambits"]["unread"]);'),
-		array(array($this, "gambitPrivate"), 'return $v == strtolower($language["gambits"]["private"]);'),
-		array(array($this, "gambitStarred"), 'return $v == strtolower($language["gambits"]["starred"]);'),
-		array(array($this, "gambitTag"), 'return strpos($v, strtolower($language["gambits"]["tag:"])) === 0;'),
-		array(array($this, "gambitActive"), 'return preg_match($language["gambits"]["gambitActive"], $v, $this->matches);'),
-		array(array($this, "gambitAuthor"), 'return strpos($v, strtolower($language["gambits"]["author:"])) === 0;'),
-		array(array($this, "gambitContributor"), 'return strpos($v, strtolower($language["gambits"]["contributor:"])) === 0;'),
-		array(array($this, "gambitMoreResults"), 'return $v == strtolower($language["gambits"]["more results"]);'),
-		array(array($this, "gambitDraft"), 'return $v == strtolower($language["gambits"]["draft"]);'),
-		array(array($this, "gambitHasNPosts"), 'return preg_match($language["gambits"]["gambitHasNPosts"], $v, $this->matches);'),
-		array(array($this, "gambitOrderByPosts"), 'return $v == strtolower($language["gambits"]["order by posts"]);'),
-		array(array($this, "gambitOrderByNewest"), 'return $v == strtolower($language["gambits"]["order by newest"]);'),
-		array(array($this, "gambitSticky"), 'return $v == strtolower($language["gambits"]["sticky"]);'),
-		array(array($this, "gambitRandom"), 'return $v == strtolower($language["gambits"]["random"]);'),
-		array(array($this, "gambitReverse"), 'return $v == strtolower($language["gambits"]["reverse"]);'),
-		array(array($this, "gambitLocked"), 'return $v == strtolower($language["gambits"]["locked"]);'),
-		array(array($this, "fulltext"), 'return $v;')
+		array(array($this, "gambitStarred"), 'return $term == strtolower($language["gambits"]["starred"]);'),
+		array(array($this, "gambitDraft"), 'return $term == strtolower($language["gambits"]["draft"]);'),
+		array(array($this, "gambitTag"), 'return strpos($term, strtolower($language["gambits"]["tag:"])) === 0;'),
+		array(array($this, "gambitPrivate"), 'return $term == strtolower($language["gambits"]["private"]);'),
+		array(array($this, "gambitSticky"), 'return $term == strtolower($language["gambits"]["sticky"]);'),
+		array(array($this, "gambitLocked"), 'return $term == strtolower($language["gambits"]["locked"]);'),
+		array(array($this, "gambitAuthor"), 'return strpos($term, strtolower($language["gambits"]["author:"])) === 0;'),
+		array(array($this, "gambitContributor"), 'return strpos($term, strtolower($language["gambits"]["contributor:"])) === 0;'),
+		array(array($this, "gambitActive"), 'return preg_match($language["gambits"]["gambitActive"], $term, $this->matches);'),
+		array(array($this, "gambitHasNPosts"), 'return preg_match($language["gambits"]["gambitHasNPosts"], $term, $this->matches);'),
+		array(array($this, "gambitOrderByPosts"), 'return $term == strtolower($language["gambits"]["order by posts"]);'),
+		array(array($this, "gambitOrderByNewest"), 'return $term == strtolower($language["gambits"]["order by newest"]);'),
+		array(array($this, "gambitUnread"), 'return $term == strtolower($language["gambits"]["unread"]);'),
+		array(array($this, "gambitRandom"), 'return $term == strtolower($language["gambits"]["random"]);'),
+		array(array($this, "gambitReverse"), 'return $term == strtolower($language["gambits"]["reverse"]);'),
+		array(array($this, "gambitMoreResults"), 'return $term == strtolower($language["gambits"]["more results"]);'),
+		array(array($this, "fulltext"), 'return $term;'),
 	));
+	
+	// Add the default gambits to the gambit cloud: gambit text => css class to apply
 	$this->gambitCloud += array(
 		$language["gambits"]["active last ? hours"] => "s4",
 		$language["gambits"]["active last ? days"] => "s5",
@@ -82,12 +83,15 @@ function init()
 		$language["gambits"]["sticky"] => "s2 stickyText",
 		$language["gambits"]["unread"] => "s1"
 	);
+	// Only show the contributor:myself and author:myself gambits if there is a user logged in.
 	if ($this->esoTalk->user) {
 		$this->gambitCloud += array(
 			$language["gambits"]["contributor:"] . $language["gambits"]["myself"] => "s4",
 			$language["gambits"]["author:"] . $language["gambits"]["myself"] => "s2"
 		);
 	}
+	
+	// Add default aliases. An alias is a string of text which is just shorthand for a more complex gambit.
 	$this->aliases += array(
 		$language["gambits"]["active today"] => $language["gambits"]["active 1 day"],
 		$language["gambits"]["has replies"] => $language["gambits"]["has &gt; 1 post"],
@@ -95,77 +99,13 @@ function init()
 		$language["gambits"]["dead"] => $language["gambits"]["active &gt; 30 day"]
 	);
 	
-	if (!$this->esoTalk->ajax and isset($_GET["markAsRead"]) and $this->esoTalk->user) $this->markAllConversationsAsRead();
+	// Mark all conversations as read if requested.
+	if (isset($_GET["markAsRead"]) and $this->esoTalk->user and !$this->esoTalk->ajax) $this->markAllConversationsAsRead();
 	
+	// Construct part of the final query that gets the result details.
 	$markedAsRead = !empty($this->esoTalk->user["markedAsRead"]) ? $this->esoTalk->user["markedAsRead"] : "0";
-	$this->select += array("c.conversationId AS id", "c.title AS title", "c.slug AS slug", "c.sticky AS sticky", "c.private AS private", "c.locked AS locked", "c.posts AS posts", "sm.name AS startMember", "c.startMember AS startMemberId", "sm.avatarFormat AS avatarFormat", "c.startTime AS startTime", "lpm.name AS lastPostMember", "c.lastPostMember AS lastPostMemberId", "c.lastPostTime AS lastPostTime", "GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR ', ') AS tags", "(IF(c.lastPostTime IS NOT NULL,c.lastPostTime,c.startTime)>$markedAsRead AND (s.lastRead IS NULL OR s.lastRead<c.posts)) AS unread",
-	"s.starred AS starred");
-	
-	if (!$this->esoTalk->ajax) {
-	
-		// Assign the latest search to session
-		if (isset($_GET["q"])) $_GET["q2"] = $_GET["q"];
-		$this->searchString = $_SESSION["search"] = @$_GET["q2"];
-		
-		global $config, $language;
-
-		$this->esoTalk->addLanguageToJS("Starred", "Unstarred", array("gambits", "member"), array("gambits", "tag:"), array("gambits", "more results"));
-		$this->esoTalk->addVarToJS("updateCurrentResultsInterval", $config["updateCurrentResultsInterval"]);
-		$this->esoTalk->addVarToJS("checkForNewResultsInterval", $config["checkForNewResultsInterval"]);
-		
-		$this->esoTalk->addToBar("right", "<a href='" . makeLink("feed") . "' id='rss'><span>{$language["RSS"]}</span></a>", 500);
-		
-		// Get the most common tags from the tags table and assign them a text-size class based upon their count
-		$r = $this->esoTalk->db->query("SELECT tag, COUNT(tag) AS count FROM {$config["tablePrefix"]}tags GROUP BY tag ORDER BY count DESC LIMIT {$config["numberOfTagsInTagCloud"]}");
-		$tags = array();
-		if ($this->esoTalk->db->numRows($r)) {
-			$step = 5 / $this->esoTalk->db->numRows($r);
-			for ($i = 1; list($tag) = $this->esoTalk->db->fetchRow($r); $i++) {
-				$this->tagCloud[$tag] = "s" . ceil($i * $step);
-				if ($i < 10) $tags[] = $tag;
-			}
-		}
-		
-		$this->esoTalk->updateLastAction("");
-		
-		$this->esoTalk->addToHead("<meta name='keywords' content='" . implode(",", $tags) . "'/>");
-		$this->esoTalk->addToHead("<meta name='description' content='" . sprintf($language["forumDescription"], $config["forumTitle"], implode(", ", $tags)) . "'/>");
-		
-		if (@$_GET["q1"] == "search") $this->esoTalk->addToHead("<meta name='robots' content='noindex, noarchive'/>");
-		
-		$this->doSearch();
-		
-		if ($this->esoTalk->user) $this->esoTalk->addToFooter("<a href='" . makeLink("?markAsRead") . "'>{$language["Mark all conversations as read"]}</a>");
-	}
-	
-	$this->callHook("init");
-}
-
-function markAllConversationsAsRead()
-{
-	global $config;
-	$this->esoTalk->db->query("UPDATE {$config["tablePrefix"]}members SET markedAsRead=" . time() . " WHERE memberId={$this->esoTalk->user["memberId"]}");
-	$this->esoTalk->user["markedAsRead"] = $_SESSION["user"]["markedAsRead"] = time();
-}
-
-// Register a custom gambit:
-// - $text is the text that will appear in the gambit cloud.
-// - $class is the CSS className that will be applied to the text.
-// - $function is the function to be called if the gambit is detected (called with call_user_func($function, $gambit, $negate))
-// - $condition is the eval() code to be run to see if the gambit is in the search string. ex. 'return $v == "sticky";'
-function registerGambit($text, $class, $function, $condition)
-{
-	$this->gambitCloud[$text] = $class;
-	$this->gambits[] = array($function, $condition);
-}
-
-// Construct the search query and perform it
-function getSearchQuery()
-{
-	global $config;
-	
-	// Initialize the 'from' part of the query
 	$memberId = $this->esoTalk->user ? $this->esoTalk->user["memberId"] : 0;
+	$this->select = array("c.conversationId AS id", "c.title AS title", "c.slug AS slug", "c.sticky AS sticky", "c.private AS private", "c.locked AS locked", "c.posts AS posts", "sm.name AS startMember", "c.startMember AS startMemberId", "sm.avatarFormat AS avatarFormat", "c.startTime AS startTime", "lpm.name AS lastPostMember", "c.lastPostMember AS lastPostMemberId", "c.lastPostTime AS lastPostTime", "GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR ', ') AS tags", "(IF(c.lastPostTime IS NOT NULL,c.lastPostTime,c.startTime)>$markedAsRead AND (s.lastRead IS NULL OR s.lastRead<c.posts)) AS unread", "s.starred AS starred", "CONCAT(" . implode(",',',", $this->esoTalk->labels) . ") AS labels");
 	$this->from = array(
 		"{$config["tablePrefix"]}conversations c",
 		"LEFT JOIN {$config["tablePrefix"]}tags t USING (conversationId)",
@@ -174,70 +114,217 @@ function getSearchQuery()
 		"LEFT JOIN {$config["tablePrefix"]}members lpm ON (c.lastPostMember=lpm.memberId)"
 	);
 	
-	// Add labels to the 'select' part of the query
-	$labels = "CONCAT(";
-	// Loop through the labels to check if they apply for this conversation
-	foreach ($this->esoTalk->labels as $k => $v) $labels .= "$v,',',";
-	$labels = substr($labels, 0, -5) . ") AS labels";
-	$this->select[] = $labels;
-
-	// Process the search string into gambits
-	$search = $this->searchString ? explode("+", strtolower(str_replace("-", "+!", trim($this->searchString, " +-")))) : array();
-
-	// Take each search term and attempt to execute it
-	foreach ($search as $v) {
-
-		// Are we dealing with a negative search term, ie. prefixed with a "!"?
-		$v = trim($v);
-		if ($negate = ($v[0] == "!")) $v = trim($v, "! ");
-
-		// If the term is an alias, translate it into the appropriate gambit
-		foreach ($this->aliases as $aliasK => $aliasV) {
-			if ($v == $aliasK) {
-				$v = $aliasV;
-				break;
+	if (!$this->esoTalk->ajax) {
+	
+		// Assign the latest search to a session variable.
+		if (isset($_GET["q"])) $_GET["q2"] = $_GET["q"];
+		$this->searchString = $_SESSION["search"] = @$_GET["q2"];
+		
+		// Add JavaScript language definitions and variables.
+		$this->esoTalk->addLanguageToJS("Starred", "Unstarred", array("gambits", "member"), array("gambits", "tag:"), array("gambits", "more results"));
+		$this->esoTalk->addVarToJS("updateCurrentResultsInterval", $config["updateCurrentResultsInterval"]);
+		$this->esoTalk->addVarToJS("checkForNewResultsInterval", $config["checkForNewResultsInterval"]);
+		
+		// Add a link to the RSS feed in the bar.
+		$this->esoTalk->addToBar("right", "<a href='" . makeLink("feed") . "' id='rss'><span>{$language["RSS"]}</span></a>", 500);
+		
+		// Update the user's last action.
+		$this->esoTalk->updateLastAction("");
+		
+		// Get the most common tags from the tags table and assign them a text-size class based upon their frequency.
+		$result = $this->esoTalk->db->query("SELECT tag, COUNT(tag) AS count FROM {$config["tablePrefix"]}tags GROUP BY tag ORDER BY count DESC LIMIT {$config["numberOfTagsInTagCloud"]}");
+		$tags = array();
+		if ($rows = $this->esoTalk->db->numRows($result)) {
+			for ($i = 1; list($tag) = $this->esoTalk->db->fetchRow($result); $i++) {
+				$this->tagCloud[$tag] = "s" . ceil($i * (5 / $rows));
+				if ($i < 10) $tags[] = $tag;
 			}
 		}
+		
+		// Add meta tags to the header and the "Mark all conversations as read" link to the footer.
+		$this->esoTalk->addToHead("<meta name='keywords' content='" . implode(",", $tags) . "'/>");
+		$this->esoTalk->addToHead("<meta name='description' content='" . sprintf($language["forumDescription"], $config["forumTitle"], implode(", ", $tags)) . "'/>");
+		if ($this->esoTalk->user) $this->esoTalk->addToFooter("<a href='" . makeLink("?markAsRead") . "'>{$language["Mark all conversations as read"]}</a>");
+		
+		// If this is not technically the homepage (if it's a search page) the we don't want it to be indexed.
+		if (@$_GET["q1"] == "search") $this->esoTalk->addToHead("<meta name='robots' content='noindex, noarchive'/>");
+		
+	}
+	
+	$this->callHook("init");
+	
+	// Last, but definitely not least... perform the search!
+	if (!$this->esoTalk->ajax) $this->doSearch($this->searchString);
+}
 
-		// Execute gambits or fulltext search terms
+// Update the "markedAsRead" field in the user's database row to the current time.
+// Any conversations with last activity before this time will be regarded as "read".
+function markAllConversationsAsRead()
+{
+	global $config;
+	$this->esoTalk->db->query("UPDATE {$config["tablePrefix"]}members SET markedAsRead=" . time() . " WHERE memberId={$this->esoTalk->user["memberId"]}");
+	$this->esoTalk->user["markedAsRead"] = $_SESSION["user"]["markedAsRead"] = time();
+}
+
+// Register a custom gambit:
+// $text is the text that will appear in the gambit cloud.
+// $class is the CSS className that will be applied to the text.
+// $function is the function to be called if the gambit is detected (called with call_user_func($function, $gambit, $negate))
+// $condition is the eval() code to be run to see if the gambit is in the search string. ex. 'return $v == "sticky";'
+function registerGambit($text, $class, $function, $condition)
+{
+	$this->gambitCloud[$text] = $class;
+	$this->gambits[] = array($function, $condition);
+}
+
+// Apply a condition to the search results.
+// This takes effect when collecting conversation IDs through the following query:
+// SELECT DISTINCT conversationId FROM $table WHERE $condition
+function condition($table, $condition, $negate = false)
+{
+	$condition = "($condition)";
+	if (in_array(array($table, $condition, $negate), $this->conditions)) return;
+	$this->conditions[] = array($table, $condition, $negate);
+}
+
+// Apply an order to the search results.
+function orderBy($order)
+{
+	$this->orderBy[] = $order;
+}
+
+// Apply a limit to the search results.
+function limit($limit)
+{
+	$this->limit = $limit;
+}
+
+// Add an expression to the "select" part of the query which gets conversation details.
+function select($expression)
+{
+	$this->select[] = $expression;
+}
+
+// Add a table or a JOIN clause to the "from" part of the query which gets conversation details.
+function addTable($table)
+{
+	$this->from[] = $table;
+}
+
+// Deconstruct a search query and construct a list of conversation IDs that fulfill it.
+function getConversationIDs($search = "")
+{
+	global $config, $language;
+	
+	// Add some preliminary conditions to the search results.
+	// These make sure conversations that the user isn't allowed to see are filtered out.
+	if (!$this->esoTalk->user) $this->condition("conversations", "c.posts!=0 AND c.private=0");
+	else $this->condition("conversations", "c.startMember={$this->esoTalk->user["memberId"]} OR (c.posts>0 AND (c.private=0 OR (SELECT allowed FROM {$config["tablePrefix"]}status WHERE conversationId=c.conversationId AND memberId IN ('{$this->esoTalk->user["account"]}',{$this->esoTalk->user["memberId"]}))))");
+	
+	// Process the search string into individial terms, but only keep the first 10 terms!
+	$terms = !empty($search) ? explode("+", strtolower(str_replace("-", "+!", trim($search, " +-")))) : array();
+	$terms = array_slice($terms, 0, 10);
+	
+	// Take each term, match it with a gambit, and execute the gambit's function.
+	foreach ($terms as $term) {
+
+		// Are we dealing with a negated search term, ie. prefixed with a "!"?
+		$term = trim($term);
+		if ($negate = ($term[0] == "!")) $term = trim($term, "! ");
+
+		// If the term is an alias, translate it into the appropriate gambit.
+		if (array_key_exists($term, $this->aliases)) $term = $this->aliases[$term];
+
+		// Find a matching gambit by evaluating each gambit's condition.
 		foreach ($this->gambits as $gambit) {
 			list($function, $condition) = $gambit;
-			global $language;
 			if (eval($condition)) {
-				call_user_func_array($function, array(&$this, $v, $negate));
+				call_user_func_array($function, array(&$this, $term, $negate));
 				break;
 			}
 		}
 	}
-
-	if (!$this->esoTalk->user) $this->where[] = "c.posts>0 AND c.private=0";
-	else $this->where[] = "c.startMember={$this->esoTalk->user["memberId"]} OR (c.posts>0 AND (c.private=0 OR s.allowed OR (SELECT allowed FROM {$config["tablePrefix"]}status WHERE conversationId=c.conversationId AND memberId='{$this->esoTalk->user["account"]}')))";
-
-	// Append the default order by conditions
-	$this->orderBy[] = "IF(s.lastRead IS NULL OR c.posts>s.lastRead, c.sticky, 0) DESC";
-	$this->orderBy[] = "IF(c.lastPostTime IS NULL, c.startTime, c.lastPostTime) DESC";
-	$this->groupBy[] = "c.conversationId";
 	
-	// Switch ASC and DESC if the reverse gambit was used!
-	if ($this->reverse) $this->orderBy = str_replace(array("DESC", "ASC", "__D__"), array("__D__", "DESC", "ASC"), $this->orderBy);
-
-	// Set the default limit (RESULTS + 1 is so that we can determine if there are more results to display)
+	// If an order for the search results has not been specified, apply a default.
+	// For guests, order by sticky and then last post time.
+	// For members, order by sticky+unread and then last post time.
+	if (!count($this->orderBy)) {
+		if (!$this->esoTalk->user) {
+			$this->orderBy("c.sticky DESC");
+			$this->orderBy("c.lastPostTime DESC");
+		} else {
+			$this->orderBy("IF(c.sticky AND ((SELECT lastRead FROM {$config["tablePrefix"]}status s WHERE conversationId=c.conversationId AND s.memberId={$this->esoTalk->user["memberId"]}) IS NULL OR (SELECT lastRead FROM {$config["tablePrefix"]}status s WHERE conversationId=c.conversationId AND s.memberId={$this->esoTalk->user["memberId"]})<c.posts),1,0) DESC");
+			$this->orderBy("c.lastPostTime DESC");
+		}
+	}
+	
+	// Now we need to loop through the conditions and run them as queries one-by-one. When a query returns a selection of
+	// conversation IDs, subsequent queries are restricted to filtering those conversation IDs.
+	$goodConversationIds = $badConversationIds = array();
+	$conversationConditions = array();
+	$idCondition = "";
+	foreach ($this->conditions as $v) {
+		list($table, $condition, $negate) = $v;
+		
+		// If the condition is based on the conversations table, we'll save it for inclusion in the final query.
+		if ($table == "conversations") {
+			$conversationConditions[] = $condition;
+			continue;
+		}
+		
+		// Construct a query that will find conversation IDs that meet the condition.
+		$prefix = strpos($table, "conversations c") !== false ? "c." : "";
+		$query = "SELECT DISTINCT {$prefix}conversationId FROM {$config["tablePrefix"]}{$v[0]} WHERE $condition $idCondition";
+	
+		// Get the list of conversation IDs so that the next condition can use it in its query.
+		$result = $this->esoTalk->db->query($query);
+		$ids = array();
+		while (list($conversationId) = $this->esoTalk->db->fetchRow($result)) $ids[] = $conversationId;
+		
+		// If this condition is negated, then add the IDs to the list of bad conversations.
+		// If the condition is not negated, set the list of good conversations to the IDs, provided there are some.
+		if ($negate) $badConversationIds = array_merge($badConversationIds, $ids);
+		elseif (count($ids)) $goodConversationIds = $ids;
+		else return false;
+		
+		// Strip bad conversation IDs from the list of good conversation IDs.
+		if (count($goodConversationIds)) {
+			$goodConversationIds = array_diff($goodConversationIds, $badConversationIds);
+			if (!count($goodConversationIds)) return false;
+		}
+		
+		// This will be the condition for the next query that restricts or eliminates conversation IDs.
+		if (count($goodConversationIds)) $idCondition = " AND conversationId IN (" . implode(",", $goodConversationIds) . ")";
+		elseif (count($badConversationIds)) $idCondition = " AND conversationId NOT IN (" . implode(",", $badConversationIds) . ")";
+	}
+	
+	// Reverse the order if necessary - swap DESC and ASC.
+	$orderBy = implode(", ", $this->orderBy);
+	if ($this->reverse) $orderBy = strtr($orderBy, array("DESC" => "ASC", "ASC" => "DESC"));
+	
+	// Set a default limit if none has previously been set.
 	if (!$this->limit) $this->limit = $config["results"] + 1;
-
-	// Build the query
-	$components = array("select" => $this->select, "from" => $this->from, "where" => $this->where, "groupBy" => $this->groupBy, "orderBy" => $this->orderBy, "limit" => $this->limit);
 	
-	$this->callHook("beforeSearch", array(&$components));
+	// Put the query together!
+	$query = "SELECT c.conversationId
+		FROM {$config["tablePrefix"]}conversations c
+		WHERE " . implode(" AND ", $conversationConditions) . " $idCondition";
+	if ($orderBy) $query .= " ORDER BY $orderBy";
+	$query .= " LIMIT $this->limit";
+	$result = $this->esoTalk->db->query($query);
 	
-	return $components;
+	// Collect the final set of conversation IDs and return it.
+	$conversationIds = array();
+	while (list($conversationId) = $this->esoTalk->db->fetchRow($result)) $conversationIds[] = $conversationId;
+	return count($conversationIds) ? $conversationIds : false;
 }
 
-function doSearch()
+function doSearch($search = "")
 {
 	global $config;
 	
 	// If they are searching for something, take some flood control measures.
-	if ($this->searchString) {
+	if ($search and $config["searchesPerMinute"] > 0) {
 	
 		// If we have a record of their searches in the session, check how many searches they've performed in the last minute.
 		if (!empty($_SESSION["searches"])) {
@@ -273,17 +360,28 @@ function doSearch()
 		
 	}
 	
-	// Construct the search query.
-	$components = $this->getSearchQuery();
-	$query = $this->esoTalk->db->constructSelectQuery($components);
+	// Get the conversation IDs that match the search terms.
+	if (!$conversationIds = $this->getConversationIDs($search)) return;
+	$conversationIds = implode(",", $conversationIds);
 	
-	// And execute it! Finished!
-	$this->conversations = array();
+	// Construct a query to get details for all of the specified conversations.
+	$components = array(
+		"select" => $this->select,
+		"from" => $this->from,
+		"where" => "c.conversationId IN ($conversationIds)",
+		"groupBy" => "c.conversationId",
+		"orderBy" => "FIELD(c.conversationId,$conversationIds)"
+	);	
+	$query = $this->esoTalk->db->constructSelectQuery($components);
 	$result = $this->esoTalk->db->query($query);
-	$this->numberOfConversations = $this->esoTalk->db->numRows($result);
+	
+	// Put the details of the conversations into an array to be displayed in the view.
+	$this->results = array();
 	$conversationsToDisplay = $this->limit == ($config["results"] + 1) ? $config["results"] : $config["moreResults"];
-	for ($i = 0; $i < $conversationsToDisplay and $conversation = $this->esoTalk->db->fetchAssoc($result); $i++)
-		$this->conversations[] = $conversation;
+	if ($this->numberOfConversations = $this->esoTalk->db->numRows($result)) {
+		for ($i = 0; $i < $conversationsToDisplay and ($conversation = $this->esoTalk->db->fetchAssoc($result)); $i++)
+			$this->results[] = $conversation;
+	}
 }
 
 // AJAX functions
@@ -297,7 +395,7 @@ function ajax()
 		case "search":
 			$this->view = "searchResults.inc.php";
 			$this->searchString = $_SESSION["search"] = $_POST["query"];
-			$this->doSearch();
+			$this->doSearch($this->searchString);
 			ob_start();
 			$this->render();
 			return ob_get_clean();
@@ -344,38 +442,30 @@ function ajax()
 			$this->searchString = $_POST["query"];
 			
 			// If the "random" gambit is in the search string, then don't go any further (because the results will obviously differ!)
-			$this->search = $this->searchString ? explode("+", strtolower(str_replace("-", "+!", trim($this->searchString, " +-")))) : array();
-			foreach ($this->search as $v) {
+			$terms = $this->searchString ? explode("+", strtolower(str_replace("-", "+!", trim($this->searchString, " +-")))) : array();
+			foreach ($terms as $v) {
 				if (trim($v) == $language["gambits"]["random"]) return array("newActivity" => false);
 			}
 			
 			// Search flood control - if the user has performed >= $config["searchesPerMinute"] searches in the last minute, don't bother checking for new results.
-			// Check the session record of searches if it exists.
-			if (!empty($_SESSION["searches"])) {
-				foreach ($_SESSION["searches"] as $k => $v) {
-					if ($v < time() - 60) unset($_SESSION["searches"][$k]);
+			if ($this->searchString and $config["searchesPerMinute"] > 0) {
+				// Check the session record of searches if it exists.
+				if (!empty($_SESSION["searches"])) {
+					foreach ($_SESSION["searches"] as $k => $v) {
+						if ($v < time() - 60) unset($_SESSION["searches"][$k]);
+					}
+					if (count($_SESSION["searches"]) >= $config["searchesPerMinute"]) return array("newActivity" => false);
+				// Otherwise, check the database.
+				} else {
+					$ip = (int)ip2long($_SESSION["ip"]);
+					if ($this->esoTalk->db->result("SELECT COUNT(*) FROM {$config["tablePrefix"]}searches WHERE ip=$ip AND searchTime>UNIX_TIMESTAMP()-60", 0) >= $config["searchesPerMinute"]) return array("newActivity" => false);
 				}
-				if (count($_SESSION["searches"]) >= $config["searchesPerMinute"]) return;
-			// Otherwise, check the database.
-			} else {
-				$ip = (int)ip2long($_SESSION["ip"]);
-				if ($this->esoTalk->db->result("SELECT COUNT(*) FROM {$config["tablePrefix"]}searches WHERE ip=$ip AND searchTime>UNIX_TIMESTAMP()-60", 0) >= $config["searchesPerMinute"]) return;
 			}
 			
-			// Get the search query components and simplify them a bit.
-			$components = $this->getSearchQuery();
-			$components["select"] = "c.conversationId AS id";
-			$memberId = $this->esoTalk->user ? $this->esoTalk->user["memberId"] : 0;
-			$components["from"] = array("{$config["tablePrefix"]}conversations c", "LEFT JOIN {$config["tablePrefix"]}status s ON (s.conversationId=c.conversationId AND s.memberId=$memberId)");
-			unset($components["groupBy"]);
-			if ($this->limit == $config["results"] + 1) $components["limit"] = $config["results"];
+			// Get a list of conversation IDs that match the search string.
+			$this->limit($config["results"]);
+			$newConversationIds = $this->getConversationIDs($this->searchString);
 			
-			// Perform a search using the query components and make an array of conversationId's.
-			$query = $this->esoTalk->db->constructSelectQuery($components);
-			$result = $this->esoTalk->db->query($query);
-			$newConversationIds = array();
-			while (list($conversationId) = $this->esoTalk->db->fetchRow($result)) $newConversationIds[] = $conversationId;			
-
 			// Get an array of conversationId's are in the current resultset.
 			$conversationIds = explode(",", $_POST["conversationIds"]);
 			foreach ($conversationIds as $k => $v) if (!($conversationIds[$k] = (int)$v)) unset($conversationIds[$k]);
@@ -389,24 +479,35 @@ function ajax()
 }
 
 // Gambit functions
-function gambitUnread(&$search, $v, $negate) {
+function gambitUnread(&$search, $term, $negate)
+{
+	global $config;
+	if (!$this->esoTalk->user) return false;
 	$markedAsRead = !empty($this->esoTalk->user["markedAsRead"]) ? $this->esoTalk->user["markedAsRead"] : "NULL";
-	$search->where[] = $negate
-		? "IF(c.lastPostTime,c.lastPostTime,c.startTime)<=$markedAsRead OR (s.lastRead IS NOT NULL AND s.lastRead>=c.posts)"
-		: "IF(c.lastPostTime,c.lastPostTime,c.startTime)>$markedAsRead AND (s.lastRead IS NULL OR s.lastRead<c.posts)";
+	$lastRead = "(SELECT lastRead FROM {$config["tablePrefix"]}status s WHERE conversationId=c.conversationId AND s.memberId={$this->esoTalk->user["memberId"]})";
+	$this->condition("conversations", ($negate ? "NOT " : "") . "(IF(c.lastPostTime IS NOT NULL,c.lastPostTime,c.startTime)>$markedAsRead AND ($lastRead IS NULL OR $lastRead<c.posts))");
 }
 
-function gambitPrivate(&$search, $v, $negate) {$search->where[] = $negate ? "c.private=0" : "c.private=1";}
-
-function gambitStarred(&$search, $v, $negate) {$search->where[] = $negate ? "s.starred=0" : "s.starred=1";}
-
-function gambitTag(&$search, $v, $negate) {
-	global $language, $config;
-	$v = str_replace(array("&#39;", "&quot;"), null, trim(substr($v, strlen($language["gambits"]["tag:"]))));
-	$search->where[] = ($negate ? "NOT " : "") . "EXISTS (SELECT 1 FROM {$config["tablePrefix"]}tags WHERE tag='$v' and conversationId=c.conversationId)";
+function gambitPrivate(&$search, $term, $negate)
+{
+	$this->condition("conversations", "c.private=" . ($negate ? "0" : "1"));
 }
 
-function gambitActive(&$search, $v, $negate) {
+function gambitStarred(&$search, $term, $negate)
+{
+	$id = $this->esoTalk->user ? $this->esoTalk->user["memberId"] : "0";
+	$this->condition("status", "memberId=$id AND starred=1", $negate);
+}
+
+function gambitTag(&$search, $term, $negate)
+{
+	global $language;
+	$term = trim(substr($term, strlen($language["gambits"]["tag:"])));
+	$this->condition("tags", "tag='$term'", $negate);
+}
+
+function gambitActive(&$search, $term, $negate)
+{
 	global $language;
 	switch ($search->matches["c"]) {
 		case $language["gambits"]["minute"]: $search->matches["b"] *= 60; break;
@@ -416,7 +517,7 @@ function gambitActive(&$search, $v, $negate) {
 		case $language["gambits"]["month"]: $search->matches["b"] *= 2626560; break;
 		case $language["gambits"]["year"]: $search->matches["b"] *= 31536000;
 	}
-	$search->matches["a"] = (!$search->matches["a"] or $search->matches["a"] == $language["gambits"]["last"]) ? "<=" : htmlspecialchars_decode($search->matches["a"]);
+	$search->matches["a"] = (!$search->matches["a"] or $search->matches["a"] == $language["gambits"]["last"]) ? "<=" : str_replace(array("&gt;", "&lt;"), array(">", "<"), $search->matches["a"]);
 	if ($negate) {
 		switch ($search->matches["a"]) {
 			case "<": $search->matches["a"] = ">="; break;
@@ -425,36 +526,39 @@ function gambitActive(&$search, $v, $negate) {
 			case ">=": $search->matches["a"] = "<";
 		}
 	}
-	$search->where[] = "UNIX_TIMESTAMP() - {$search->matches["b"]} {$search->matches["a"]} c.lastPostTime";
+	$search->condition("conversations", "UNIX_TIMESTAMP() - {$search->matches["b"]} {$search->matches["a"]} c.lastPostTime");
 }
 
-function gambitAuthor(&$search, $v, $negate) {
-	global $language, $config;
-	$v = str_replace(array("&#39;", "&quot;"), null, trim(substr($v, strlen($language["gambits"]["author:"]))));
-	if ($v == $language["gambits"]["myself"]) $v = $search->esoTalk->user["name"];
-	$search->where[] = "c.startMember" . ($negate ? "!" : "") . "=(SELECT memberId FROM {$config["tablePrefix"]}members WHERE name='$v')";
+function gambitAuthor(&$search, $term, $negate)
+{
+	global $config, $language;
+	$term = trim(substr($term, strlen($language["gambits"]["author:"])));
+	if ($term == $language["gambits"]["myself"]) $term = $search->esoTalk->user["name"];
+	$search->condition("conversations", "c.startMember" . ($negate ? "!" : "") . "=(SELECT memberId FROM {$config["tablePrefix"]}members WHERE name='$term')");
 }
 
-function gambitContributor(&$search, $v, $negate) {
-	global $language;
-	$v = str_replace(array("&#39;", "&quot;"), null, trim(substr($v, strlen($language["gambits"]["contributor:"]))));
-	if ($v == $language["gambits"]["myself"]) $v = $search->esoTalk->user["name"];
-	global $config;
-	$search->where[] = ($negate ? "NOT " : "") . "EXISTS (SELECT 1 FROM {$config["tablePrefix"]}posts INNER JOIN {$config["tablePrefix"]}members USING (memberId) WHERE name='$v' AND conversationId=c.conversationId)";
+function gambitContributor(&$search, $term, $negate)
+{
+	global $config, $language;
+	$term = trim(substr($term, strlen($language["gambits"]["contributor:"])));
+	if ($term == $language["gambits"]["myself"]) $term = $search->esoTalk->user["name"];
+	$search->condition("posts", "memberId=(SELECT memberId FROM {$config["tablePrefix"]}members WHERE name='$term')", $negate);
 }
 
-function gambitMoreResults(&$search, $v, $negate)
+function gambitMoreResults(&$search, $term, $negate)
 {
 	global $config;
 	if (!$negate) $search->limit = $config["moreResults"];
 }
 
-function gambitDraft(&$search, $v, $negate) {
-	global $config;
-	$search->where[] = "s.draft IS NOT NULL";
+function gambitDraft(&$search, $term, $negate)
+{
+	$id = $this->esoTalk->user ? $this->esoTalk->user["memberId"] : "0";
+	$search->condition("status", "memberId=$id AND draft IS NOT NULL", $negate);
 }
 
-function gambitHasNPosts(&$search, $v, $negate) {
+function gambitHasNPosts(&$search, $term, $negate)
+{
 	$search->matches["a"] = (!$search->matches["a"]) ? "=" : htmlspecialchars_decode($this->matches["a"]);
 	if ($negate) {
 		switch ($search->matches["a"]) {
@@ -465,25 +569,43 @@ function gambitHasNPosts(&$search, $v, $negate) {
 			case "=": $search->matches["a"] = "!=";
 		}
 	}
-	$search->where[] = "posts {$this->matches["a"]} {$this->matches["b"]}";
+	$search->condition("conversations", "posts {$this->matches["a"]} {$this->matches["b"]}");
 }
 
-function gambitOrderByPosts(&$search, $v, $negate) {$search->orderBy[] = "c.posts " . ($negate ? "ASC" : "DESC");}
+function gambitOrderByPosts(&$search, $term, $negate)
+{
+	$search->orderBy("c.posts " . ($negate ? "ASC" : "DESC"));
+}
 
-function gambitOrderByNewest(&$search, $v, $negate) {$search->orderBy[] = "c.startTime " . ($negate ? "ASC" : "DESC");}
+function gambitOrderByNewest(&$search, $term, $negate)
+{
+	$search->orderBy("c.startTime " . ($negate ? "ASC" : "DESC"));
+}
 
-function gambitSticky(&$search, $v, $negate) {$search->where[] = "c.sticky=" . ($negate ? "0" : "1");}
+function gambitSticky(&$search, $term, $negate)
+{
+	$search->condition("conversations", "sticky=" . ($negate ? "0" : "1"));
+}
 
-function gambitRandom(&$search, $v, $negate) {if (!$negate) $search->orderBy[] = "RAND()";}
+function gambitRandom(&$search, $term, $negate)
+{
+	if (!$negate) $search->orderBy("RAND()");
+}
 
-function gambitReverse(&$search, $v, $negate) {if (!$negate) $search->reverse = true;}
+function gambitReverse(&$search, $term, $negate)
+{
+	if (!$negate) $search->reverse = true;
+}
 
-function gambitLocked(&$search, $v, $negate) {$search->where[] = "c.locked=" . ($negate ? "0" : "1");}
+function gambitLocked(&$search, $term, $negate)
+{
+	$search->condition("conversations", "locked=" . ($negate ? "0" : "1"));
+}
 
-function fulltext(&$search, $v, $negate) {
-	global $config;
-	$v = str_replace("&quot;", '"', $v);
-	$search->where[] = ($negate ? "NOT " : "") . "EXISTS (SELECT 1 FROM {$config["tablePrefix"]}posts WHERE MATCH (title, content) AGAINST ('$v' IN BOOLEAN MODE) AND conversationId=c.conversationId)";
+function fulltext(&$search, $term, $negate)
+{
+	$term = str_replace("&quot;", '"', $term);
+	$search->condition("posts", "MATCH (title, content) AGAINST ('$term' IN BOOLEAN MODE)", $negate);
 }
 
 }

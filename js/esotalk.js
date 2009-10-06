@@ -73,6 +73,20 @@ Animation.prototype.finalize = function() {
 	this.callback(this.end, true);
 };
 
+// Wrap a new div around an element with overflow=hidden, so we can change the height of the element for animations.
+function createOverflowDiv(element) {
+	if (!element) return false;
+	// If there's already an overflow div, use that.
+	if (element.parentNode.className.indexOf("overflowDiv") != -1) return element.parentNode;
+	// Otherwise, create one, insert it before the post, and move the post inside it.
+	overflowDiv = document.createElement("div");
+	overflowDiv.style.overflow = "hidden";
+	overflowDiv.className = "overflowDiv";
+	element.parentNode.insertBefore(overflowDiv, element);
+	overflowDiv.appendChild(element);
+	return overflowDiv;
+};
+
 // Show/hide an element.
 function toggle(element) {element.style.display == "none" ? show(element) : hide(element);};
 function show(element) {element.style.display = "";};
@@ -225,7 +239,7 @@ hideMessage: function(key) {
 animateMessage: function(key, type) {
 	if (this.messages[key].animation) this.messages[key].animation.stop();
 	var inside = this.messages[key].div;
-	var outside = Conversation.createOverflowDiv(inside);
+	var outside = createOverflowDiv(inside);
 	var container = this.container;
 	inside.style.position = "relative";
 	switch (type) {
@@ -1120,24 +1134,9 @@ addReply: function() {
 	});
 },
 
-// Wrap a new div around a post with overflow=hidden, so we can change the height of the post for animations.
-// Using overflow=hidden on the actual post div does not work because the avatar uses a negative margin.
-createOverflowDiv: function(post) {
-	if (!post) return false;
-	// If there's already an overflow div, use that.
-	if (post.parentNode.className.indexOf("overflowDiv") != -1) return post.parentNode;
-	// Otherwise, create one, insert it before the post, and move the post inside it.
-	overflowDiv = document.createElement("div");
-	overflowDiv.style.overflow = "hidden";
-	overflowDiv.className = "overflowDiv";
-	post.parentNode.insertBefore(overflowDiv, post);
-	overflowDiv.appendChild(post);
-	return overflowDiv;
-},
-
 // Animate a new post (e.g. reply), fading it in and expanding its height from 0.
 animateNewPost: function(post) {
-	var overflowDiv = this.createOverflowDiv(post);
+	var overflowDiv = createOverflowDiv(post);
 	(overflowDiv.animation = new Animation(function(values, final) {
 		overflowDiv.style.height = final ? "" : values[0] + "px";
 		overflowDiv.style.opacity = final ? "" : values[1];
@@ -1146,7 +1145,7 @@ animateNewPost: function(post) {
 
 // Animate a post expanding/shrinking to the correct height when being edited.
 animateEditPost: function(post, startHeight) {
-	var overflowDiv = this.createOverflowDiv(post);
+	var overflowDiv = createOverflowDiv(post);
 	(overflowDiv.animation = new Animation(function(height, final) {
 		overflowDiv.style.height = final ? "" : height + "px";
 	}, {begin: startHeight, end: overflowDiv.offsetHeight})).start();
@@ -1728,6 +1727,16 @@ checkForNewResults: function() {
 		"success": function() {
 			if (!this.result.newActivity) return;
 			$("newResults").style.display = "table-row";
+			var inside = $("newResults").getElementsByTagName("div")[0];
+			var outside = createOverflowDiv(inside);
+			inside.style.position = "relative";
+			inside.style.top = -inside.offsetHeight + "px";
+			(new Animation(function(values, final) {
+				inside.style.opacity = values[1];
+				inside.style.top = values[0] + "px";
+				outside.style.height = inside.offsetHeight + values[0] + "px";
+				if (final) outside.style.height = inside.style.top = "";
+			}, {begin: [parseFloat(inside.style.top), 0], end: [0, 1]})).start();
 			clearInterval(Search.checkForNewResultsTimeout);
 		}
 	});

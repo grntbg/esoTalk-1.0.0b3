@@ -144,8 +144,10 @@ function upgrade_100b1()
 	
 	// Add an index to the sticky column.
 	if (!$this->numRows("SHOW INDEX FROM {$config["tablePrefix"]}conversations WHERE Key_name='conversations_sticky'"))		
-		$this->query("CREATE INDEX conversations_sticky ON {$config["tablePrefix"]}conversations (sticky)");
-			
+		$this->query("CREATE INDEX conversations_sticky ON {$config["tablePrefix"]}conversations (sticky, lastPostTime)");
+	if (!$this->numRows("SHOW INDEX FROM {$config["tablePrefix"]}conversations WHERE Key_name='conversations_startTime'"))		
+		$this->query("CREATE INDEX conversations_startTime ON {$config["tablePrefix"]}conversations (startTime)");
+					
 	// Delete init.php, classes.php, database.php, formatter.php, and functions.php from the root directory.
 	$filesToDelete = array("init.php", "classes.php", "database.php", "formatter.php", "functions.php");
 	foreach ($filesToDelete as $file) {

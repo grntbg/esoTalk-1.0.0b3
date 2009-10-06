@@ -24,9 +24,10 @@ $queries[] = "CREATE TABLE {$config["tablePrefix"]}conversations (
 	lastActionTime int unsigned default NULL,
 	PRIMARY KEY  (conversationId),
 	KEY conversations_startMember (startMember),
+	KEY conversations_startTime (startTime),
 	KEY conversations_lastPostTime (lastPostTime),
 	KEY conversations_posts (posts),
-	KEY conversations_sticky (sticky)
+	KEY conversations_sticky (sticky, lastPostTime)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8";
 
 $queries[] = "DROP TABLE IF EXISTS {$config["tablePrefix"]}posts";
