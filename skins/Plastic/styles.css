@@ -173,8 +173,8 @@ a.star0:active, a.star1:active {color:#e4b600}
 .pg .viewing div {background:#d7eef4; border:1px solid #879ec4; overflow:hidden; padding:0 2px}
 .pg .viewing:hover div {background:#e9f3f2}
 .pg .viewing:active div {background:#abcbe3}
-.pg .unread {background:#ffc; color:#f71; display:block; margin-top:-1.8em; overflow:hidden}
-.pg li.left a, .pg li.right a {cursor:pointer; display:block; float:left; overflow:hidden; text-align:center; width:6em}
+.pg .unread {background:#ffc; color:#f71; display:block; margin-top:-1.8em; overflow:hidden; white-space:nowrap}
+.pg li.left a, .pg li.right a {cursor:pointer; display:block; float:left; overflow:hidden; text-align:center; width:6em; white-space:nowrap}
 .pg li.left a.first, .pg li.right a.last {width:4em}
 
 /* Conversation post */
