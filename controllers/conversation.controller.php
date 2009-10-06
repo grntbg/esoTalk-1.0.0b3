@@ -645,7 +645,7 @@ function getPosts($criteria = array())
 			"id" => $post["id"],
 			"memberId" => $post["memberId"],
 			"name" => $post["name"],
-			"date" => date("j F Y, g:i a T", $post["time"]),
+			"date" => date($language["dateFormat"], $post["time"]),
 			"relativeTime" => relativeTime($post["time"]),
 			"editTime" => $post["editTime"] ? relativeTime($post["editTime"]) : null,
 			"canEdit" => $this->canEditPost($post["id"], $post["memberId"], $post["account"], $post["deleteMember"]) === true,

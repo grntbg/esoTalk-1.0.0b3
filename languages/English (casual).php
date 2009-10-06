@@ -24,6 +24,7 @@ $language = array(
 // "newSearchResults" => array("class" => "info", "message" => "There has been new activity that has affected your search results. <a href='javascript:Search.showNewActivity()'>Show new activity</a>"),
 // "waitToSearch" => array("class" => "warning", "message" => "Woah! Looks like you're trying to perform a few too many searches. Just wait a few seconds and try again."),
 // "Username" => "Username",
+// "dateFormat" => "j F Y, g:i a T", // see http://au.php.net/manual/en/function.date.php for details
 // "day ago" => "Yesterday",
 // "days ago" => "%d days ago",
 // "hour ago" => "1 hour ago",
@@ -84,6 +85,7 @@ $language = array(
 // Changed: "notWritable" => array("class" => "warning", "message" => "'%s' is not writeable. Please make sure it exists and chmod it to 777.")
 
 "*" => "*",
+"dateFormat" => "j F Y, g:i a T", // see http://au.php.net/manual/en/function.date.php for details
 "day ago" => "Yesterday",
 "days ago" => "%d days ago",
 "hour ago" => "1 hour ago",
