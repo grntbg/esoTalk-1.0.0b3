@@ -282,9 +282,14 @@ function ajax()
 
 	switch (@$_POST["action"]) {
 		
-		// Get the posts between $_POST["start"] and $_POST["end"].
+		// Get the posts between $_POST["start"] and $_POST["end"], and/or update the user's lastRead.
 		case "getPosts":
+		case "updateLastRead":
 			if (!$this->conversation = $this->getConversation((int)@$_POST["id"])) return;
+			// Update the user's lastRead if specified.
+			if (isset($_POST["updateLastRead"])) $this->updateLastRead($_POST["updateLastRead"]);
+			// Work out the range of the posts that we are getting, and get them.
+			if (!isset($_POST["start"]) and !isset($_POST["end"])) return;
 			$start = min((int)@$_POST["start"], (int)@$_POST["end"]);
 			$end = max((int)@$_POST["start"], (int)@$_POST["end"]);
 			$posts = $this->getPosts(array("startFrom" => $start, "limit" => $end - $start + 1));
@@ -292,15 +297,24 @@ function ajax()
 			if (count($posts)) $this->updateLastAction();
 			return $posts;
 			break;
-			
+						
 		// Check for posts which have been created or edited after the specified action time.
 		case "getNewPosts":
 			if (!$this->conversation = $this->getConversation((int)@$_POST["id"])) return;
 			if ($this->conversation["lastActionTime"] > @$_POST["lastActionTime"]) {
 				$this->updateLastAction();
+				$posts = $this->getPosts(array("lastActionTime" => @$_POST["lastActionTime"]));
+				// If the user's browser will automatically show the new posts (as opposed to showing the "unread" part
+				// of the pagination bar), work out how many new posts there are an update the user's lastRead to the last
+				// visible post.
+				if (isset($_POST["oldPostCount"])) {
+					if ($this->conversation["postCount"] - @$_POST["oldPostCount"] > $config["postsPerPage"])
+						$this->updateLastRead($_POST["oldPostCount"] + $config["postsPerPage"]);
+					else $this->updateLastRead($this->conversation["postCount"]);
+				}
 				return array(
 					"postCount" => $this->conversation["postCount"],
-					"newPosts" => $this->getPosts(array("lastActionTime" => @$_POST["lastActionTime"])),
+					"newPosts" => $posts,
 					"lastActionTime" => $this->conversation["lastActionTime"]
 				);
 			}
@@ -672,24 +686,26 @@ function getPosts($criteria = array())
 		$i++;
 	}
 
-	// Update the member's last read status in the db.
-	if ($this->esoTalk->user) {
-		//if (isset($criteria["lastActionTime"])) $lastRead = end(array_keys($posts)) + 1;
-		//else
-		$lastRead = min($startFrom + $config["postsPerPage"], $this->conversation["postCount"]);
-		//$this->esoTalk->fatalError($lastRead);
-		// Only update it if they've just read further than they've ever read before.
-		if ($lastRead > $this->conversation["lastRead"]) {
-			$this->esoTalk->db->query("INSERT INTO {$config["tablePrefix"]}status (conversationId, memberId, lastRead)
-				VALUES ({$this->conversation["id"]}, {$this->esoTalk->user["memberId"]}, $lastRead)
-				ON DUPLICATE KEY UPDATE lastRead=$lastRead");
-			$this->conversation["lastRead"] = $lastRead;
-		}
-	}
-	
 	$this->callHook("afterGetPosts", array(&$posts));
 
 	return $posts;
+}
+
+// Update the member's last read status in the db.
+function updateLastRead($lastRead)
+{
+	if (!$this->esoTalk->user) return;
+	
+	global $config;
+	$lastRead = min($lastRead, $this->conversation["postCount"]);
+	
+	// Only update it if they've just read further than they've ever read before.
+	if ($lastRead > $this->conversation["lastRead"]) {
+		$this->esoTalk->db->query("INSERT INTO {$config["tablePrefix"]}status (conversationId, memberId, lastRead)
+			VALUES ({$this->conversation["id"]}, {$this->esoTalk->user["memberId"]}, $lastRead)
+			ON DUPLICATE KEY UPDATE lastRead=$lastRead");
+		$this->conversation["lastRead"] = $lastRead;
+	}
 }
 
 // Add a reply to this conversation.
@@ -700,7 +716,7 @@ function addReply($content, $newConversation = false)
 	// Does the user have permission? Is the post content valid? Flood control?
 	$hookError = $this->callHook("validateAddReply", array(&$content), true);
 	if (($error = $this->canReply()) !== true or ($error = $this->validatePost($content))
-		or ($error = $this->esoTalk->db->result("SELECT 1 FROM {$config["tablePrefix"]}posts WHERE memberId={$this->esoTalk->user["memberId"]} AND time>" . (time() - $config["timeBetweenPosts"]), 0) ? "waitToReply" : false)
+		or (!$newConversation and ($error = $this->esoTalk->db->result("SELECT 1 FROM {$config["tablePrefix"]}posts WHERE memberId={$this->esoTalk->user["memberId"]} AND time>" . (time() - $config["timeBetweenPosts"]), 0) ? "waitToReply" : false))
 		or ($error = $hookError)) {
 		$this->esoTalk->message($error);
 		return false;
@@ -963,14 +979,17 @@ function restorePost($postId)
 // Start a conversation.
 function startConversation($conversation)
 {
+	global $config, $language;
+	
 	// Does the user have permission?
-	if (($error = $this->canStartConversation()) !== true) {
+	// Impose some flood control measures.
+	$time = time() - $config["timeBetweenPosts"];
+	if (($error = $this->canStartConversation()) !== true
+		or ($error = $this->esoTalk->db->result("SELECT MAX(startTime)>$time OR MAX(time)>$time FROM {$config["tablePrefix"]}conversations, {$config["tablePrefix"]}posts WHERE startMember={$this->esoTalk->user["memberId"]} AND memberId={$this->esoTalk->user["memberId"]}", 0) ? "waitToReply" : false)) {
 		$this->esoTalk->message($error);
 		return false;
 	}
 	
-	global $config, $language;
-
 	// If the title is blank but the user is only saving a draft, call it "Untitled conversation."
 	if ($conversation["draft"] and !$conversation["title"]) $conversation["title"] = $language["Untitled conversation"];
 	

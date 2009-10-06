@@ -69,6 +69,7 @@ $language = array(
 // Changed: "downloadSkins" => array("class" => "info", "message" => "You can download more skins from the <a href='%s'>esoTalk website</a>."),
 // Changed: "Fatal error" => "Uh oh! It's a fatal error...",
 // Changed: "notWritable" => array("class" => "warning", "message" => "<code>%s</code> is not writeable. Try <code>chmod</code>ing it to <code>777</code>, or if it doesn't exist, <code>chmod</code> the folder it is contained within."),
+// Changed: "waitToReply" => array("class" => "warning", "message" => "You must wait at least {$config["timeBetweenPosts"]} seconds between starting or replying to conversations. Take a deep breath and try again."),
 // Changed key: "accountInformation" -> "Account information"
 // Changed key: "settingsOther" -> "Other settings"
 // Changed key: "settingsPasswordEmail" -> "Account information"
@@ -379,7 +380,7 @@ Enter the password for <strong>%s</strong>: %s"),
 "verifyEmail" => array("class" => "success", "message" => "Before you can start using your newly-created account, you'll need to verify your email address. Within the next minute or two you should receive an email from us containing a link to activate your account. <strong>Check your spam folder</strong> if you don't receive this email shortly!"),
 "loginRequired" => array("class" => "warning", "message" => "You need to <a href='" . curLink() . "#' onclick='showLogin();return false'>log in</a> or <a href='" . makeLink("join") . "'>create an account</a> to do anything on this forum."),
 "postTooLong" => array("class" => "warning", "message" => "Your post is really, really long! Too long! The maximum number of characters allowed is " . number_format($config["maxCharsPerPost"]) . ". That's really long!"),
-"waitToReply" => array("class" => "warning", "message" => "You must wait at least {$config["timeBetweenPosts"]} seconds between replying to conversations. Take a deep breath and try again."),
+"waitToReply" => array("class" => "warning", "message" => "You must wait at least {$config["timeBetweenPosts"]} seconds between starting or replying to conversations. Take a deep breath and try again."),
 "waitToSearch" => array("class" => "warning", "message" => "Woah! Looks like you're trying to perform a few too many searches. Wait %s seconds and try again."),
 "suspended" => array("class" => "warning", "message" => "Ouch! A forum moderator has <strong>suspended</strong> your account. It sucks, but until the suspension is lifted you won't be able to do much around here. Hey, screw them!"),
 "locked" => array("class" => "warning", "message" => "Hm, looks like this conversation is <strong>locked</strong>, so you can't reply to it."),

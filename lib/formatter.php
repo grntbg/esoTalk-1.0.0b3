@@ -596,7 +596,7 @@ function postLink($match, $state)
 	switch ($state) {
 		case LEXER_ENTER:
 			$postId = rtrim(substr($match, 6));
-			$this->formatter->output .= "<a href='" . makeLink("post", (int)$postId) . "'>";
+			$this->formatter->output .= "<a href='" . makeLink("post", (int)$postId) . "' class='postLink'>";
 			break;
 		case LEXER_EXIT:
 			$this->formatter->output .= "</a>";
@@ -613,7 +613,7 @@ function conversationLink($match, $state)
 	switch ($state) {
 		case LEXER_ENTER:
 			$conversationId = rtrim(substr($match, 14));
-			$this->formatter->output .= "<a href='" . makeLink((int)$conversationId) . "'>";
+			$this->formatter->output .= "<a href='" . makeLink((int)$conversationId) . "' class='conversationLink'>";
 			break;
 		case LEXER_EXIT:
 			$this->formatter->output .= "</a>";

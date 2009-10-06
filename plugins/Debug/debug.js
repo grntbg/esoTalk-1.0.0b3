@@ -5,8 +5,8 @@ Ajax.request = function(request) {
 	if (!request.success) request.success = function() {};
 	if (!request._success) request._success = request.success;
 	request.success = function() {
-		if (!Ajax.debugUpdateBackground && this.background) return;
 		this._success();
+		if (!Ajax.debugUpdateBackground && this.background) return;
 		if (!this.json.queries) return;
 		$("debugQueries").innerHTML = this.json.queries;
 		$("debugQueriesCount").innerHTML = this.json.queriesCount;
@@ -16,6 +16,7 @@ Ajax.request = function(request) {
 		$("debugFiles").innerHTML = this.json.debugFiles;
 		$("debugSession").innerHTML = this.json.debugSession;
 		$("debugCookie").innerHTML = this.json.debugCookie;
+		if (this.json.log) Messages.showMessage("debugLog", "info", "<div style='overflow:auto;max-height:400px'>" + this.json.log + "</div>", false);
 	};
 	this.queue.push(request);
 	this.doNextRequest();

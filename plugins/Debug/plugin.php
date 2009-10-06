@@ -19,6 +19,7 @@ var $defaultConfig = array(
 
 var $start;
 var $queryTimer;
+var $log = "";
 
 function Debug()
 {
@@ -108,6 +109,7 @@ function addInformationToAjaxResult($esoTalk, &$result)
 	$result["debugFiles"] = sanitize(print_r($_FILES, true));
 	$result["debugSession"] = sanitize(print_r($_SESSION, true));
 	$result["debugCookie"] = sanitize(print_r($_COOKIE, true));
+	$result["log"] = sanitize($this->log);
 	$_SESSION["queries"] = array();
 }
 
@@ -127,6 +129,17 @@ function startQueryTimer($esoTalk, $query)
 function addQuery($esoTalk, $query)
 {
 	$_SESSION["queries"][] = array($query, round($this->microtimeFloat() - $this->queryTimer, 4));
+}
+
+// Add something to the AJAX log.
+function log()
+{
+	$args = func_get_args();
+	foreach ($args as $arg) {
+		if (is_array($arg)) $log = print_r($arg, true);
+		else $log = (string)$arg;
+		$this->log .= "$log\n";
+	}
 }
 
 // Render the debug box at the bottom of the page.

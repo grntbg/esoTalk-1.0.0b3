@@ -345,7 +345,7 @@ doRequest: function(request) {
 			
 			// First, check the status code to see if the request went OK (200). If we had problems, alert the user.
 			if (request.http.status == 0) return;
-			if (request.http.status != 0 && request.http.status != 200) {
+			if (request.http.status != 200) {
 				Ajax.disconnect(request);
 				return false;
 			} else if (Ajax.disconnected && !request.background) {
@@ -500,6 +500,7 @@ postCount: 0, // The total number of posts in the conversation
 lastActionTime: null, // The conversation's last action time
 postsPerPage: 0, // The numbers of posts displaying per page
 lastRead: 0, // The last post in the conversation the user has read (start of the unread bar)
+updateLastRead: false, // A flag for whether or not to make an AJAX request to update the last read when fetching posts.
 
 autoReloadInterval: 4, // The number of seconds in which to check for new posts.
 timeout: null, // A timeout to periodically check for new posts
@@ -687,18 +688,26 @@ reloadPosts: function(startFrom, scrollTo, dontDisplay) {
 		Ajax.request({
 			"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 			"success": function() {
-				posts = this.result;
 				// Update our post cache with this new data.
-				for (var i in posts) Conversation.posts[i] = posts[i];
+				if (posts = this.result) for (var i in posts) Conversation.posts[i] = posts[i];
 				// Only update the post display if the first/last post numbers of these ajax results are consistent with where we should be viewing.
 				// (Prevents blank display when a user clicks 'Next' or 'Previous' multiple times in a row.)
 				if (min >= Conversation.startFrom && max <= Conversation.startFrom + Conversation.postsPerPage && !dontDisplay) Conversation.displayPosts(scrollTo);
 			},
-			"post": "action=getPosts&id=" + Conversation.id + "&start=" + min + "&end=" + max
+			"post": "action=getPosts&id=" + Conversation.id + "&start=" + min + "&end=" + max + (Conversation.updateLastRead ? "&updateLastRead=" + maxPost : "")
 		});
 	
 	// If we don't need to get any more data, just display the data we already have.
-	} else if (!dontDisplay) Conversation.displayPosts(scrollTo);
+	} else {
+		if (!dontDisplay) Conversation.displayPosts(scrollTo);
+		if (Conversation.updateLastRead) {
+			Ajax.request({
+				"url": esoTalk.baseURL + "ajax.php?controller=conversation",
+				"post": "action=updateLastRead&id=" + Conversation.id + "&updateLastRead=" + maxPost
+			});
+		}
+	}
+	Conversation.updateLastRead = false;
 },
 
 // Return a timeout to check for new posts.
@@ -723,7 +732,7 @@ checkForNewPosts: function() {
 	if (Conversation.editingPosts > 0) return;
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
-		"post": "action=getNewPosts&id=" + Conversation.id + "&lastActionTime=" + Conversation.lastActionTime,
+		"post": "action=getNewPosts&id=" + Conversation.id + "&lastActionTime=" + Conversation.lastActionTime + (Conversation.startFrom + Conversation.postsPerPage >= Conversation.postCount ? "&oldPostCount=" + Conversation.postCount : ""),
 		"background": true,
 		"success": function() {
 			if (!this.result) {
@@ -743,8 +752,8 @@ checkForNewPosts: function() {
 			Conversation.unreadWidth += newPosts * (100 / Conversation.postCount);
 			// Mark the new posts for animation.
 			for (var i = oldPostCount; i < Conversation.postCount; i++) Conversation.posts[i].animateNew = true;
-			// If we were viewing the last post (the bottom pagination bar must be in the viewing window!), move to the _new_ last post.
-			if (Conversation.startFrom + Conversation.postsPerPage >= oldPostCount && getOffsetTop(Conversation.paginations[1].bar) <= getScrollTop() + getClientDimensions()[1]) {
+			// If we were viewing the last post, move to the _new_ last post.
+			if (Conversation.startFrom + Conversation.postsPerPage >= oldPostCount) {
 				// If the amount of new posts is greater than the posts per page, go to the first new post.
 				if (newPosts > Conversation.postsPerPage) Conversation.moveTo(oldPostCount, "top");
 				// If we're _just_ on the edge of the conversation, move forward the amount of new posts
@@ -871,7 +880,7 @@ displayPosts: function(scrollTo) {
 	}
 	
 	// Animate new posts
-	for (var i in Conversation.posts) {
+	for (var i = Conversation.startFrom; i < max; i++) {
 		if (Conversation.posts[i].animateNew) {
 			Conversation.animateNewPost($("p" + Conversation.posts[i].id));
 			Conversation.posts[i].animateNew = false;
@@ -1061,13 +1070,14 @@ moveTo: function(startFrom, scrollTo) {
 	
 	// Are we overlapping the unread section?
 	if (startFrom + Conversation.postsPerPage > Conversation.lastRead) {
-		Conversation.lastRead = startFrom + Conversation.postsPerPage;
-		Conversation.unreadWidth = 100 - Conversation.lastRead * (100 / Conversation["postCount"]);
+		Conversation.lastRead = Math.min(startFrom + Conversation.postsPerPage, Conversation.postCount);
+		Conversation.unreadWidth = Math.max(100 - Conversation.lastRead * (100 / Conversation.postCount), 0);
+		Conversation.updateLastRead = true;
 	}
 	// Animate the handle - let it slide!
 	Conversation.animatePagination();
 	// Update the posts that are displaying.
-	if (Conversation.editingPosts == 0) Conversation.reloadPosts(startFrom, scrollTo);
+	Conversation.reloadPosts(startFrom, scrollTo);
 },
 
 // Move to a specific post, but work out what post from a position (percent) in the bar.
