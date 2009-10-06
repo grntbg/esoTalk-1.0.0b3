@@ -1316,6 +1316,11 @@ hideDeletedPost: function(postId) {
 
 // Edit a post - make the post area into a textarea.
 editPost: function(postId) {
+	
+	// If we're already editing this post, don't do anything.
+	if ($("p" + postId).editing) return;
+	$("p" + postId).editing = true;
+	
 	// Get the editing controls and textarea templates with an ajax request
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
@@ -1363,6 +1368,13 @@ saveEditPost: function(postId, content) {
 				// Success! Revert back to normal
 				getElementsByClassName($("p" + postId), "body")[0].old = this.result.content;
 				Conversation.cancelEdit(postId);
+				// Find the post we just edited and change its content to the new content.
+				for (var i in Conversation.posts) {
+					if (Conversation.posts[i].id == postId) {
+						Conversation.posts[i].body = this.result.content;
+						break;
+					}
+				}
 			}
 			// Enable the buttons
 			else for (var i in buttons) enable(buttons[i]);
@@ -1373,6 +1385,7 @@ saveEditPost: function(postId, content) {
 // Cancel editing a post
 cancelEdit: function(postId) {
 	Conversation.editingPosts--;
+	$("p" + postId).editing = false;
 	var controls = getElementsByClassName($("p" + postId), "controls")[0];
 	var body = getElementsByClassName($("p" + postId), "body")[0];
 	body.className = body.className.replace(" edit", "");
