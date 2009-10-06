@@ -1,12 +1,16 @@
+Ajax.debugUpdateBackground = true;
+
 Ajax.request = function(request) {
 	if (!request || this.beenLoggedOut) return false;
 	if (!request.success) request.success = function() {};
 	if (!request._success) request._success = request.success;
 	request.success = function() {
+		if (!Ajax.debugUpdateBackground && this.background) return;
 		this._success();
 		if (!this.json.queries) return;
-		$("queries").innerHTML = this.json.queries;
-		$("loadTime").innerHTML = this.json.loadTime;
+		$("debugQueries").innerHTML = this.json.queries;
+		$("debugQueriesCount").innerHTML = this.json.queriesCount;
+		$("debugLoadTime").innerHTML = this.json.loadTime;
 		$("debugPost").innerHTML = this.json.debugPost;
 		$("debugGet").innerHTML = this.json.debugGet;
 		$("debugFiles").innerHTML = this.json.debugFiles;

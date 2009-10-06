@@ -7,7 +7,7 @@
 if (!defined("IN_ESOTALK")) exit;
 ?>
 <?php if (count($this->plugins)) : ?>
-<fieldset id='installed'>
+<fieldset id='plugins'>
 <legend><?php echo $language["Installed plugins"]; ?></legend>
 
 <script type='text/javascript'>
@@ -28,7 +28,7 @@ function animateToggle(settings, showing)
 {
 	settings.showing = showing;
 	settings.style.display = "block";
-	var overflowDiv = Conversation.createOverflowDiv(settings);
+	var overflowDiv = createOverflowDiv(settings);
 	if (!overflowDiv.style.display) overflowDiv.style.display = "none";
 	var initHeight = overflowDiv.offsetHeight;
 	if (!overflowDiv.style.opacity) overflowDiv.style.opacity = 0;
