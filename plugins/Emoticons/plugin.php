@@ -55,8 +55,6 @@ function Formatter_Emoticons(&$formatter)
 	$this->emoticons["=/"] = "<img src='js/x.gif' style='background-position:0 -160px' alt='=/' class='emoticon'/>";
 	$this->emoticons[":\\"] = "<img src='js/x.gif' style='background-position:0 -160px' alt=':&#92;' class='emoticon'/>";
 	$this->emoticons["=\\"] = "<img src='js/x.gif' style='background-position:0 -160px' alt='=&#92;' class='emoticon'/>";
-	$this->emoticons[":S"] = "<img src='js/x.gif' style='background-position:0 -160px' alt=':S' class='emoticon'/>";
-	$this->emoticons["=S"] = "<img src='js/x.gif' style='background-position:0 -160px' alt='=S' class='emoticon'/>";
 	$this->emoticons[":x"] = "<img src='js/x.gif' style='background-position:0 -180px' alt=':x' class='emoticon'/>";
 	$this->emoticons["=x"] = "<img src='js/x.gif' style='background-position:0 -180px' alt='=x' class='emoticon'/>";
 	$this->emoticons[":|"] = "<img src='js/x.gif' style='background-position:0 -180px' alt=':|' class='emoticon'/>";
@@ -89,14 +87,18 @@ function Formatter_Emoticons(&$formatter)
 	$this->emoticons["-_-;"] = "<img src='js/x.gif' style='background-position:0 -420px; width:18px' alt='-_-;' class='emoticon'/>";
 	$this->emoticons["(o^_^o)"] = "<img src='js/x.gif' style='background-position:0 -440px' alt='(o^_^o)' class='emoticon'/>";
 	$this->emoticons["(^_^)/"] = "<img src='js/x.gif' style='background-position:0 -460px; width:19px' alt='(^_^)/' class='emoticon'/>";
-	$this->emoticons[">:("] = "<img src='js/x.gif' style='background-position:0 -480px' alt='>:(' class='emoticon'/>";
-	$this->emoticons[">:["] = "<img src='js/x.gif' style='background-position:0 -480px' alt='>:[' class='emoticon'/>";
+	$this->emoticons[">:("] = "<img src='js/x.gif' style='background-position:0 -480px' alt='&gt;:(' class='emoticon'/>";
+	$this->emoticons[">:["] = "<img src='js/x.gif' style='background-position:0 -480px' alt='&gt;:[' class='emoticon'/>";
 	$this->emoticons["._."] = "<img src='js/x.gif' style='background-position:0 -500px' alt='._.' class='emoticon'/>";
 	$this->emoticons["T_T"] = "<img src='js/x.gif' style='background-position:0 -520px' alt='T_T' class='emoticon'/>";
 	$this->emoticons["XD"] = "<img src='js/x.gif' style='background-position:0 -540px' alt='XD' class='emoticon'/>";
 	$this->emoticons["('<"] = "<img src='js/x.gif' style='background-position:0 -560px' alt='(&#39;&lt;' class='emoticon'/>";
 	$this->emoticons["B)"] = "<img src='js/x.gif' style='background-position:0 -580px' alt='B)' class='emoticon'/>";
 	$this->emoticons["XP"] = "<img src='js/x.gif' style='background-position:0 -600px' alt='XP' class='emoticon'/>";
+	$this->emoticons[":S"] = "<img src='js/x.gif' style='background-position:0 -620px' alt=':S' class='emoticon'/>";
+	$this->emoticons["=S"] = "<img src='js/x.gif' style='background-position:0 -620px' alt='=S' class='emoticon'/>";
+	$this->emoticons[">:)"] = "<img src='js/x.gif' style='background-position:0 -640px' alt='&gt;:)' class='emoticon'/>";
+	$this->emoticons[">:D"] = "<img src='js/x.gif' style='background-position:0 -640px' alt='&gt;:D' class='emoticon'/>";
 }
 
 function emoticon($match, $state)
