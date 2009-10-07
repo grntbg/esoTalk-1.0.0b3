@@ -28,7 +28,6 @@ var $gambits = array();
 // Results.
 var $results = array();
 var $numberOfConversations = 0;
-var $highlightWords = array();
 
 function Search()
 {
@@ -114,7 +113,7 @@ function init()
 		"INNER JOIN {$config["tablePrefix"]}members sm ON (c.startMember=sm.memberId)",
 		"LEFT JOIN {$config["tablePrefix"]}members lpm ON (c.lastPostMember=lpm.memberId)"
 	);
-	
+		
 	if (!$this->esoTalk->ajax) {
 	
 		// Assign the latest search to a session variable.
@@ -216,8 +215,8 @@ function addTable($table)
 function highlight($wordList)
 {
 	foreach ($wordList as $k => $v) {
-		if (!$v or in_array($v, $this->highlightWords)) continue;
-		$this->highlightWords[] = $v;
+		if (!$v or in_array($v, $_SESSION["highlight"])) continue;
+		$_SESSION["highlight"][] = $v;
 	}
 }
 
@@ -332,6 +331,9 @@ function getConversationIDs($search = "")
 function doSearch($search = "")
 {
 	global $config;
+	
+	// Reset highlighted keywords.
+	$_SESSION["highlight"] = array();
 	
 	// If they are searching for something, take some flood control measures.
 	if ($search and $config["searchesPerMinute"] > 0) {
