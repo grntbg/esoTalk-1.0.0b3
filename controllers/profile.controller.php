@@ -49,7 +49,7 @@ function getMember($memberId)
 	global $config;
 
 	// Construct the query components
-	$select = array("m.memberId AS memberId", "m.name AS name", "IF(m.color>{$this->esoTalk->skin->numberOfColors},{$this->esoTalk->skin->numberOfColors},m.color) AS color", "m.account AS account", "m.lastSeen AS lastSeen", "m.lastAction AS lastAction", "m.avatarFormat AS avatarFormat",
+	$select = array("m.memberId AS memberId", "m.name AS name", "IF(m.color>{$this->esoTalk->skin->numberOfColors},{$this->esoTalk->skin->numberOfColors},m.color) AS color", "m.account AS account", "m.lastSeen AS lastSeen", "IF(" . (time() - $config["userOnlineExpire"]) . " < m.lastSeen,m.lastAction,'') AS lastAction", "m.avatarFormat AS avatarFormat",
 		"(SELECT MIN(time) FROM {$config["tablePrefix"]}posts p WHERE p.memberId=m.memberId) AS firstPosted",
 		"(SELECT COUNT(*) FROM {$config["tablePrefix"]}conversations c WHERE c.startMember=m.memberId) AS conversationsStarted",
 		"(SELECT COUNT(DISTINCT conversationId) FROM {$config["tablePrefix"]}posts p WHERE p.memberId=m.memberId) AS conversationsParticipated",

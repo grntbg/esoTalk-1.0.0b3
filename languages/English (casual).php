@@ -74,6 +74,8 @@ $language = array(
 // Changed key: "settingsOther" -> "Other settings"
 // Changed key: "settingsPasswordEmail" -> "Account information"
 // Changed key: "accountInformation" -> "Account information"
+// Changed key: "check them out" -> "show conversations started"
+// Changed key: "let's see" -> "show conversations participated in"
 
 // Added in 1.0.0a5
 // "Never" => "Never",
@@ -116,7 +118,6 @@ $language = array(
 "Change avatar" => "Change avatar",
 "Change password" => "Change password",
 "Check for updates" => "Check for updates",
-"check them out" => "check them out!",
 "Confirm password" => "Confirm password",
 "Conversation" => "Conversation",
 "conversations" => "conversations",
@@ -177,7 +178,6 @@ $language = array(
 "Last" => "Last",
 "Last active" => "Last active",
 "Last reply" => "Last reply",
-"let's see" => "let's see!",
 "Link" => "Link",
 "Loading" => "Loading...",
 "Lock" => "Lock",
@@ -231,6 +231,8 @@ $language = array(
 "settings" => "settings",
 "Change your password or email" => "Change your password or email",
 "show" => "show",
+"show conversations participated in" => "let's see!",
+"show conversations started" => "check them out!",
 "Skin" => "Skin",
 "Skins" => "Skins",
 "Starred" => "Starred",

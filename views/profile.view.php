@@ -18,7 +18,7 @@ if (!defined("IN_ESOTALK")) exit;
 </div>
 <div class='body'>
 <ul class='form stats'>
-<li><label><?php echo $language["Last active"]; ?></label> <div><?php echo relativeTime($this->member["lastSeen"]); ?></div></li>
+<li><label><?php echo $language["Last active"]; ?></label> <div><?php echo relativeTime($this->member["lastSeen"]), (!empty($this->member["lastAction"]) ? " <small>({$this->member["lastAction"]})</small>" : ""); ?></div></li>
 <li><label><?php echo $language["First posted"]; ?></label> <div><?php echo relativeTime($this->member["firstPosted"]); ?></div></li>
 
 <li><label><?php echo $language["Post count"]; ?></label> <div><?php echo number_format($this->member["postCount"]); ?>
@@ -29,10 +29,10 @@ else printf($language["posts per day"], $postsPerDay);
 ?>)</small><?php endif; ?></div></li>
 
 <li><label><?php echo $language["Conversations started"]; ?></label> <div><?php echo number_format($this->member["conversationsStarted"]); ?>
-<?php if ($this->member["conversationsStarted"] > 0): ?> <small>(<a href='<?php echo makeLink("search", "?q2=author:" . urlencode(desanitize($this->member["name"]))); ?>'><?php echo $language["check them out"]; ?></a>)</small><?php endif; ?></div></li>
+<?php if ($this->member["conversationsStarted"] > 0): ?> <small>(<a href='<?php echo makeLink("search", "?q2=author:" . urlencode(desanitize($this->member["name"]))); ?>'><?php echo $language["show conversations started"]; ?></a>)</small><?php endif; ?></div></li>
 
 <li><label><?php echo $language["Conversations participated in"]; ?></label> <div><?php echo $this->member["conversationsParticipated"]; ?>
-<?php if ($this->member["conversationsParticipated"] > 0): ?> <small>(<a href='<?php echo makeLink("search", "?q2=contributor:" . urlencode(desanitize($this->member["name"]))); ?>'><?php echo $language["let's see"]; ?></a>)</small><?php endif; ?></div></li>
+<?php if ($this->member["conversationsParticipated"] > 0): ?> <small>(<a href='<?php echo makeLink("search", "?q2=contributor:" . urlencode(desanitize($this->member["name"]))); ?>'><?php echo $language["show conversations participated in"]; ?></a>)</small><?php endif; ?></div></li>
 
 <?php if ($this->esoTalk->user and $this->member["memberId"] != $this->esoTalk->user["memberId"]): ?>
 <li><label><?php echo $this->member["name"]; ?> &amp; <?php echo $this->esoTalk->user["name"]; ?><br/><span class='label private'><?php echo $language["labels"]["private"]; ?></span></label> <div><a href='<?php echo makeLink("search", "?q2=private+%2B+contributor:" . urlencode(desanitize($this->member["name"]))); ?>'><?php printf($language["See the private conversations I've had"], $this->member["name"]); ?></a><br/>
