@@ -1108,6 +1108,7 @@ addReply: function() {
 			if (!this.messages) {
 				
 				Messages.hideMessage("waitToReply");
+				Messages.hideMessage("emptyPost");
 				
 				// Everything went just as planned; initialize the reply area again
 				hide(getElementsByClassName($("cLabels"), "draft")[0]);
@@ -1210,6 +1211,7 @@ saveDraft: function() {
 		"post": "action=saveDraft&id=" + Conversation.id + "&content=" + encodeURIComponent($("reply-textarea").value),
 		"success": function() {
 			if (!this.messages) {
+				Messages.hideMessage("emptyPost");
 				// Show the draft label, disable the save draft button, and enable the discard draft button.
 				show(getElementsByClassName($("cLabels"), "draft")[0]);
 				disable($("saveDraft")); enable($("discardDraft"));

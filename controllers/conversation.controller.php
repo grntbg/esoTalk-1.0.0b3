@@ -780,7 +780,7 @@ function saveDraft($content)
 	global $language, $config;
 
 	// Does the user have permission?
-	if (($error = $this->canReply()) !== true) {
+	if (($error = $this->canReply()) !== true or ($error = $this->validatePost($content))) {
 		$this->esoTalk->message($error);
 		return false;
 	}
@@ -900,7 +900,7 @@ function formatForDisplay($string)
 	return $this->esoTalk->formatter->format($string);
 }
 
-// Validate a post - make sure it's not too long, has at least one character, and check for flooding.
+// Validate a post - make sure it's not too long but has at least one character.
 function validatePost($post)
 {
 	global $config;
