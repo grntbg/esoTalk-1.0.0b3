@@ -1127,7 +1127,7 @@ function addMember($name)
 			// Otherwise, search for it in the database as an actual member name.
 			default:
 				$name = addslashes($name);
-				if (!(list($memberId, $memberName) = @$this->esoTalk->db->fetchRow("SELECT memberId, name FROM {$config["tablePrefix"]}members WHERE name='$name' OR name LIKE '$name%' ORDER BY name='$name' DESC LIMIT 1"))) {
+				if (!(list($memberId, $memberName) = @$this->esoTalk->db->fetchRow("SELECT memberId, name FROM {$config["tablePrefix"]}members WHERE (name='$name' OR name LIKE '$name%') AND name NOT IN ('" . implode("','", $this->conversation["membersAllowed"]) . "') ORDER BY name='$name' DESC LIMIT 1"))) {
 					$this->esoTalk->message("memberDoesntExist");
 					return false;
 				}
@@ -1210,6 +1210,8 @@ function emailPrivateAdd($memberIds, $emailAll = false)
 	if (!count($memberIds)) return false;
 	// Take the accounts mentioned in the list of members so we can use them separately in the query.
 	$accounts = array_intersect(array("Member", "Moderator", "Administrator"), $memberIds);
+	$memberIds = array_diff($memberIds, array("Member", "Moderator", "Administrator"));
+	if (!count($memberIds)) $memberIds[] = 0;
 	
 	// Work out which members need to be emailed. Conditions: the member isn't themselves, the member name/account is in our array, they've checked the 'email me' box in My settings, and the member musn't have a record in the status table for this conversation if we're emailing ALL members in the conversation.
 	$query = "SELECT DISTINCT name, email
