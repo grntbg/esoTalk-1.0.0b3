@@ -43,7 +43,7 @@ $defaultConfig = array(
 "showAvatarThumbnails" => true, // Whether or not to show avatar thumbnails next to each conversation.
 "updateCurrentResultsInterval" => 30, // Number of seconds at which to automatically update the unread status, post count, and last post information for currently listed conversations in a search.
 "checkForNewResultsInterval" => 60, // Number of seconds at which to automatically check for new conversations in a search and notify the user so they can reperform their search.
-"searchesPerMinute" => 6, // Users are limited to this many searches every minute. 
+"searchesPerMinute" => 10, // Users are limited to this many searches every minute. 
 
 "postsPerPage" => 20, // The maximum number of posts to display on each page of a conversation.
 "timeBetweenPosts" => 10, // Posting flood control, in seconds.

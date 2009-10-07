@@ -29,6 +29,7 @@ echo max(4, min(pow(2, round(log(sqrt(time() - $this->conversation["lastActionTi
 ?>;
 <?php endif; ?>
 Conversation.postsPerPage = <?php echo $config["postsPerPage"]; ?>;
+Conversation.highlight = "<?php echo $_GET["highlight"]; ?>";
 // ]]>
 </script>
 

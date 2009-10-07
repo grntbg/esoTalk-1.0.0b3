@@ -55,6 +55,16 @@ function slug($string)
 	return substr($slug, 0, 63);
 }
 
+// Finds $words in $text and puts a span with class='highlight' around them.
+function highlight($text, $words)
+{
+	foreach ($words as $word) {
+		if (!$word = trim($word)) continue;
+		$text = preg_replace("/\b(" . preg_quote($word, "/") . ")\b/i", "<span class='highlight'>$1</span>", $text);
+	}
+	return $text; 
+}
+
 // Returns an array of the parameters in a mod_rewrite or index.php/... request.
 // ex. passing /esoTalk/forum/index.php/conversation/123 returns [conversation, 123]
 //     passing /base/path/to/forum/search/test?query=string returns [search, test]

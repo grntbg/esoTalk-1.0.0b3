@@ -28,6 +28,7 @@ var $gambits = array();
 // Results.
 var $results = array();
 var $numberOfConversations = 0;
+var $highlightWords = array();
 
 function Search()
 {
@@ -209,6 +210,15 @@ function select($expression)
 function addTable($table)
 {
 	$this->from[] = $table;
+}
+
+// Add an array of words to be highlighted in the search results and also after clicking through to a conversations.
+function highlight($wordList)
+{
+	foreach ($wordList as $k => $v) {
+		if (!$v or in_array($v, $this->highlightWords)) continue;
+		$this->highlightWords[] = $v;
+	}
 }
 
 // Deconstruct a search query and construct a list of conversation IDs that fulfill it.
@@ -485,25 +495,25 @@ function gambitUnread(&$search, $term, $negate)
 	if (!$this->esoTalk->user) return false;
 	$markedAsRead = !empty($this->esoTalk->user["markedAsRead"]) ? $this->esoTalk->user["markedAsRead"] : "NULL";
 	$lastRead = "(SELECT lastRead FROM {$config["tablePrefix"]}status s WHERE conversationId=c.conversationId AND s.memberId={$this->esoTalk->user["memberId"]})";
-	$this->condition("conversations", ($negate ? "NOT " : "") . "(IF(c.lastPostTime IS NOT NULL,c.lastPostTime,c.startTime)>$markedAsRead AND ($lastRead IS NULL OR $lastRead<c.posts))");
+	$search->condition("conversations", ($negate ? "NOT " : "") . "(IF(c.lastPostTime IS NOT NULL,c.lastPostTime,c.startTime)>$markedAsRead AND ($lastRead IS NULL OR $lastRead<c.posts))");
 }
 
 function gambitPrivate(&$search, $term, $negate)
 {
-	$this->condition("conversations", "c.private=" . ($negate ? "0" : "1"));
+	$search->condition("conversations", "c.private=" . ($negate ? "0" : "1"));
 }
 
 function gambitStarred(&$search, $term, $negate)
 {
 	$id = $this->esoTalk->user ? $this->esoTalk->user["memberId"] : "0";
-	$this->condition("status", "memberId=$id AND starred=1", $negate);
+	$search->condition("status", "memberId=$id AND starred=1", $negate);
 }
 
 function gambitTag(&$search, $term, $negate)
 {
 	global $language;
 	$term = trim(substr($term, strlen($language["gambits"]["tag:"])));
-	$this->condition("tags", "tag='$term'", $negate);
+	$search->condition("tags", "tag='$term'", $negate);
 }
 
 function gambitActive(&$search, $term, $negate)
@@ -548,7 +558,7 @@ function gambitContributor(&$search, $term, $negate)
 function gambitMoreResults(&$search, $term, $negate)
 {
 	global $config;
-	if (!$negate) $search->limit = $config["moreResults"];
+	if (!$negate) $search->limit($config["moreResults"]);
 }
 
 function gambitDraft(&$search, $term, $negate)
@@ -606,6 +616,14 @@ function fulltext(&$search, $term, $negate)
 {
 	$term = str_replace("&quot;", '"', $term);
 	$search->condition("posts", "MATCH (title, content) AGAINST ('$term' IN BOOLEAN MODE)", $negate);
+	// Add each word to be highlighted. Make sure we keep ones "in quotes" together.
+	$words = array();
+	if (preg_match_all('/"(.+?)"/', $term, $matches)) {
+		$words += $matches[1];
+		$term = preg_replace('/".+?"/', '', $term);
+	}
+	$words = array_unique(array_merge($words, explode(" ", $term)));
+	$search->highlight($words);
 }
 
 }

@@ -26,6 +26,7 @@ img.avatar, div.avatar img {vertical-align:bottom}
 .disabled:hover {color:#888; text-decoration:none}
 h2 {font-size:160%; font-weight:normal}
 h3 {font-size:120%; font-weight:bold}
+.highlight {background:yellow}
 
 /* Header */
 #hdr {background:#e4e5ea url(bg.png) repeat-x 0 0; overflow:hidden; padding:0 25px}

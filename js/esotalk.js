@@ -501,6 +501,7 @@ lastActionTime: null, // The conversation's last action time
 postsPerPage: 0, // The numbers of posts displaying per page
 lastRead: 0, // The last post in the conversation the user has read (start of the unread bar)
 updateLastRead: false, // A flag for whether or not to make an AJAX request to update the last read when fetching posts.
+highlight: null, // Words to highlight.
 
 autoReloadInterval: 4, // The number of seconds in which to check for new posts.
 timeout: null, // A timeout to periodically check for new posts
@@ -686,7 +687,7 @@ reloadPosts: function(startFrom, scrollTo, dontDisplay) {
 			
 		// Make the ajax request.
 		Ajax.request({
-			"url": esoTalk.baseURL + "ajax.php?controller=conversation",
+			"url": esoTalk.baseURL + "ajax.php?controller=conversation" + (Conversation.highlight ? "&highlight=" + encodeURIComponent(Conversation.highlight) : ""),
 			"success": function() {
 				// Update our post cache with this new data.
 				if (posts = this.result) for (var i in posts) Conversation.posts[i] = posts[i];
@@ -731,7 +732,7 @@ changeAvatarAlignment: function(alignment) {
 checkForNewPosts: function() {
 	if (Conversation.editingPosts > 0) return;
 	Ajax.request({
-		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
+		"url": esoTalk.baseURL + "ajax.php?controller=conversation" + (Conversation.highlight ? "&highlight=" + encodeURIComponent(Conversation.highlight) : ""),
 		"post": "action=getNewPosts&id=" + Conversation.id + "&lastActionTime=" + Conversation.lastActionTime + (Conversation.startFrom + Conversation.postsPerPage >= Conversation.postCount ? "&oldPostCount=" + Conversation.postCount : ""),
 		"background": true,
 		"success": function() {
@@ -1101,7 +1102,7 @@ addReply: function() {
 	
 	// Make the ajax request.
 	Ajax.request({
-		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
+		"url": esoTalk.baseURL + "ajax.php?controller=conversation" + (Conversation.highlight ? "&highlight=" + encodeURIComponent(Conversation.highlight) : ""),
 		"post": "action=addReply&id=" + Conversation.id + "&content=" + encodeURIComponent(content) + "&postCount=" + Conversation.postCount + "&haveDataUpTo=" + max,
 		"success": function() {			
 			// Only do all this if we didn't get any messages...
