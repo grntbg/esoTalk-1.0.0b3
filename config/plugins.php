@@ -1,7 +1,6 @@
 <?php
 $config["loadedPlugins"] = array(
-"Shouts",
-"Debug",
+"Captcha",
 "Emoticons",
 );
 ?>

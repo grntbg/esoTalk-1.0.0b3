@@ -292,10 +292,10 @@ blockquote p {margin-bottom:.75em}
 #membersOnline .avatar {margin:-10px 10px -10px 0; vertical-align:middle}
 
 /* Footer */
-#ftr {font-size:90%; margin:5px 25px; overflow:hidden}
+#ftr {font-size:90%; margin:5px 25px 0; overflow:hidden}
 #ftr ul {float:left; margin:0; padding:0}
 #ftr li {display:block; float:left; margin-right:15px; list-style-type:none}
-#ftr #copyright {float:right}
+#ftr #copyright {float:right; margin:0}
 
 /* Inputs, buttons, and other form elements */
 form {margin:0}

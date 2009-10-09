@@ -51,10 +51,11 @@ function init()
 	
 	// Add language definitions, scripts, and stylesheets.
 	$this->esoTalk->addLanguage("Debug information", "Debug information");
-	$this->esoTalk->addLanguage("Page loaded in", "Page loaded in just over");
+	$this->esoTalk->addLanguage("Page loaded in", "Page loaded in just over <strong><span id='debugLoadTime'>%s</span> seconds</strong>");
 	$this->esoTalk->addLanguage("MySQL queries", "MySQL queries");
 	$this->esoTalk->addLanguage("POST + GET + FILES information", "POST + GET + FILES information");
 	$this->esoTalk->addLanguage("SESSION + COOKIE information", "SESSION + COOKIE information");
+	$this->esoTalk->addLanguage("Update debug information for background AJAX requests", "Update debug information for background AJAX requests");
 	$this->esoTalk->addScript("plugins/Debug/debug.js", 1000);
 	$this->esoTalk->addCSS("plugins/Debug/debug.css");
 	
@@ -155,7 +156,7 @@ function renderDebug($esoTalk)
 	$time = round($end - $this->start, 4);
 		
 	echo "<div id='debug'>
-<h2>{$language["Debug information"]} <small>{$language["Page loaded in"]} <strong><span id='debugLoadTime'>$time</span> {$language["seconds"]}</strong></small> <small style='float:right'><input type='checkbox' class='checkbox' id='debugUpdateBackground' value='1' checked='checked' onchange='Ajax.debugUpdateBackground=this.checked'/> <label for='debugUpdateBackground' class='checkbox'>Update debug information for background AJAX requests</label></small></h2>";
+<h2>{$language["Debug information"]} <small>" . sprintf($language["Page loaded in"], $time) . "</small> <small style='float:right'><input type='checkbox' class='checkbox' id='debugUpdateBackground' value='1' checked='checked' onchange='Ajax.debugUpdateBackground=this.checked'/> <label for='debugUpdateBackground' class='checkbox'>{$language["Update debug information for background AJAX requests"]}</label></small></h2>";
 	
 	// MySQL queries.
 	echo "<h3><a href='#' onclick='toggle($(\"debugQueries\"));return false'>{$language["MySQL queries"]} (<span id='debugQueriesCount'>" . count($_SESSION["queries"]) . "</span>)</a></h3>
