@@ -28,11 +28,23 @@ function init()
 			break;
 			
 		case "info":
+			// Prepare a list of language packs in the ../languages folder.
+			$this->languages = array();
+			if ($handle = opendir("../languages")) {
+			    while (false !== ($v = readdir($handle))) {
+					if (!in_array($v, array(".", "..")) and substr($v, -4) == ".php" and $v[0] != ".") {
+						$v = substr($v, 0, strrpos($v, "."));
+						$this->languages[] = $v;
+					}
+				}
+			}
+		
 			if (isset($_POST["forumTitle"])) {
 				if ($this->errors = $this->validateInfo()) return;
 				// Put all the POST data into the session and proceed to the install step
 				$_SESSION["install"] = array(
 					"forumTitle" => $_POST["forumTitle"],
+					"language" => $_POST["language"],
 					"mysqlHost" => $_POST["mysqlHost"],
 					"mysqlUser" => $_POST["mysqlUser"],
 					"mysqlPass" => $_POST["mysqlPass"],
@@ -53,24 +65,7 @@ function init()
 			if (isset($_POST["back"]) or empty($_SESSION["install"])) $this->step("info");
 			if ($this->errors = $this->doInstall()) return;
 			$_SESSION["queries"] = $this->queries;
-			$this->step("register");
-			break;
-			
-		case "register":
-			if (empty($_SESSION["install"])) $this->step("info");
-			// Connect to the database so we can get the MySQL version.
-			include "../config/config.php";
-			$this->connect($config["mysqlHost"], $config["mysqlUser"], $config["mysqlPass"], $config["mysqlDB"]);
-			$this->phpVersion = phpversion();
-			$this->serverSoftware = $_SERVER["SERVER_SOFTWARE"];
-			$this->mysqlVersion = mysql_get_server_info($this->link);
-			if (isset($_POST["register"])) {
-				if (!empty($_POST["register"])) {
-					@ini_set("default_socket_timeout", 15);
-					if ($handle = @fopen("http://esotalk.com/register.php?url=" . urlencode($_SESSION["install"]["baseURL"]) . "&php=" . urlencode($this->phpVersion) . "&server=" . urlencode($this->serverSoftware) . "&mysql=" . urlencode($this->mysqlVersion), "r")) fclose($handle);
-				}
-				$this->step("finish");
-			}
+			$this->step("finish");
 			break;
 			
 		case "finish":
@@ -129,6 +124,7 @@ function doInstall()
 		"mysqlDB" => desanitize($_SESSION["install"]["mysqlDB"]),
 		"tablePrefix" => desanitize($_SESSION["install"]["tablePrefix"]),
 		"forumTitle" => $_SESSION["install"]["forumTitle"],
+		"language" => $_SESSION["install"]["language"],
 		"baseURL" => $_SESSION["install"]["baseURL"],
 		"salt" => generateRandomString(rand(32, 64)),
 		"emailFrom" => "do_not_reply@{$_SERVER["HTTP_HOST"]}",
@@ -147,6 +143,22 @@ function doInstall()
 	
 	// Write the config file
 	writeConfigFile("../config/config.php", '$config', $config);
+	// Write the plugins file
+	if (!file_exists("../config/plugins.php")) writeConfigFile("../config/plugins.php", '$config["loadedPlugins"]', array("Captcha", "Emoticons"));
+	// Write the skins file
+	if (!file_exists("../config/skin.php")) writeConfigFile("../config/skin.php", '$config["skin"]', "Plastic");
+	if (!file_exists("../config/custom.php")) writeFile("../config/custom.php", '<?php
+if (!defined("IN_ESOTALK")) exit;
+
+// Any language declarations, messages, or anything else custom to this forum goes in this file.
+// Examples:
+// $language["My settings"] = "Preferences";
+// $messages["incorrectLogin"]["message"] = "Oops! The login details you entered are incorrect. Did you make a typo?";
+
+?>');
+	if (!file_exists("../config/custom.css")) writeFile("../config/custom.css", "");
+	if (!file_exists("../config/index.html")) writeFile("../config/index.html", "");
+	
 	
 	// Write the versions.php file
 	include "../config.default.php";
@@ -221,7 +233,7 @@ function validateInfo()
 		$result = $this->query("SHOW TABLES");
 		$theirTables = array();
 		while (list($table) = $this->fetchRow($result)) $theirTables[] = $table;
-		$ourTables = array("{$_POST["tablePrefix"]}conversations", "{$_POST["tablePrefix"]}posts", "{$_POST["tablePrefix"]}status", "{$_POST["tablePrefix"]}members", "{$_POST["tablePrefix"]}tags", "{$_POST["tablePrefix"]}attachments");
+		$ourTables = array("{$_POST["tablePrefix"]}conversations", "{$_POST["tablePrefix"]}posts", "{$_POST["tablePrefix"]}status", "{$_POST["tablePrefix"]}members", "{$_POST["tablePrefix"]}tags");
 		$conflictingTables = array_intersect($ourTables, $theirTables);
 		if (count($conflictingTables)) {
 			$_POST["showAdvanced"] = true;
@@ -233,7 +245,11 @@ function validateInfo()
 }
 
 // Redirect to a specific step
-function step($step) {header("Location: index.php?step=$step"); exit;}
+function step($step)
+{
+	header("Location: index.php?step=$step");
+	exit;
+}
 
 // Check for fatal errors
 function fatalChecks()
@@ -253,7 +269,7 @@ function fatalChecks()
 	$fileErrors = array();
 	$filesToCheck = array("", "avatars/", "plugins/", "skins/", "config/", "install/", "upgrade/");
 	foreach ($filesToCheck as $file) {
-		if (!is_writable("../$file") and !@chmod("../$file", 0777)) {
+		if ((!file_exists("../$file") and !mkdir("../$file")) or (!is_writable("../$file") and !@chmod("../$file", 0777))) {
 			$realPath = realpath("../$file");
 			$fileErrors[] = $file ? $file : substr($realPath, strrpos($realPath, "/") + 1) . "/";
 		}

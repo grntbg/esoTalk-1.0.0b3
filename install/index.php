@@ -61,14 +61,16 @@ $install->init();
 body {background:#fff; font-size:75%}
 body, input, select, textarea, table {font-family:arial, helvetica, sans-serif; margin:0}
 input, select, textarea {font-size:100%}
-#container {margin:50px auto 0 auto; width:55em; background:#f5f5ff; padding:20px; font-size:120%}
+#container {margin:50px auto 0 auto; width:55em; background:#f5f5ff; padding:20px; font-size:120%; line-height:1.4}
 #container h1 {margin:0 0 20px 0; font-size:160%; font-weight:normal}
 #container h1 img {vertical-align:middle; margin-right:15px}
 a {text-decoration:none; color:#00f}
 a:hover {text-decoration:underline; color:#000}
-hr {color:#bbf; border:solid #bbf; border-width:1px 0 0 0; height:1px}
+hr {color:#bbf; border:solid #bbf; border-width:1px 0 0 0; height:1px; margin:15px 0}
 #footer {text-align:right; font-size:90%}
 pre {overflow:auto; padding-bottom:5px}
+.form small {color:#888; font-size:75%}
+.form small a {color:#55f}
 
 /* Inputs, buttons, and other form elements */
 form {margin:0}
@@ -84,20 +86,20 @@ fieldset {border:1px solid #ccc; margin:10px 0 20px 0; padding:0 15px 15px}
 legend {font-size:140%; padding:5px 10px 10px; font-weight:bold; color:#000}
 
 /* Structured forms */
-.form label {width:12em; float:left; text-align:right; margin:2px 1em 0 0}
+.form label {width:16em; float:left; text-align:right; margin:2px 1em 0 0}
 .form div label {float:none; width:auto; text-align:left; margin:0}
 .form label.long {width:100%; text-align:left}
 .form label.radio {text-align:left; cursor:pointer}
-.form input.text, .form select {width:20em; margin:0; float:left}
+.form input.text, .form select {width:17em; margin:0; float:left; font-size:130%}
 .form div {float:left}
 .form div input.text, .form div select {float:none}
 .form {margin:0; padding:0}
 .form li {margin-bottom:4px; overflow:hidden; list-style:none; display:block; zoom:1}
-.form .msg {font-size:80%; padding:3px 5px; margin:0 0 0 5px; float:left; width:25em}
+.form .msg {font-size:75%; padding:3px 5px; margin:0 0 0 5px; float:left; width:19em}
 
 #footer .button {margin-left:5px}
 
-.big {font-size:140%}
+.big {font-size:140%;}
 
 li {margin-bottom:1em}
 
@@ -106,6 +108,7 @@ li {margin-bottom:1em}
 .success {background:#cf0}
 .warning {background:#c00; color:#fff}
 .warning a, .warning a:hover {color:#fff; text-decoration:underline}
+#advanced input.text {font-size:100%; width:22em;}
 </style>
 </head>
 
@@ -120,7 +123,7 @@ switch ($install->step) {
 
 // Fatal checks
 case "fatalChecks": ?>
-<h1><img src='logo.gif' alt=''/> Cannot install esoTalk</h1>
+<h1><img src='logo.gif' alt=''/> Uh oh, something's not right!</h1>
 <p>The following errors were found with your esoTalk setup. They must be resolved before you can continue the installation.</p>
 <hr/>
 <ul>
@@ -147,49 +150,63 @@ case "warningChecks": ?>
 // Specify setup information
 case "info": ?>
 <h1><img src='logo.gif' alt=''/> Specify setup information</h1>
-<p>Please specify the following information about your esoTalk setup.</p>
+<p>Welcome to the esoTalk installer! We need a few details from you so we can get your forum set up and ready to go.</p>
+<p>If you have any trouble, get help on the <a href='http://forum.esotalk.com/'>esoTalk support forum</a>!</p>
 <hr/>
 <div>
 
 <ul class='form'>
-<li><label>Forum title</label> <input name='forumTitle' type='text' class='text' value='<?php echo @$_POST["forumTitle"]; ?>'/>
+<li><label>Forum title</label> <div><input id='forumTitle' name='forumTitle' type='text' class='text' value='<?php echo @$_POST["forumTitle"]; ?>'/></div>
 <?php if (isset($install->errors["forumTitle"])): ?><div class='warning msg'><?php echo $install->errors["forumTitle"]; ?></div><?php endif; ?></li>
+<li><label>Default language</label> <div><select id='language' name='language'>
+<?php foreach ($install->languages as $language) echo "<option value='$language'" . ((!empty($_POST["language"]) ? $_POST["language"] : "English (casual)") == $language ? " selected='selected'" : "") . ">$language</option>"; ?>
+</select><br/><small>More language packs are <a href='http://esotalk.com/languages'>available for download</a>!</small></li>
 </ul>
 
-<br/>
+<hr/>
+<p>esoTalk needs access to a MySQL database to store all your forum's data in, such as conversations and posts. If you're unsure of any of these details, you may need to ask your hosting provider.</p>
 
-<div class='form' style='overflow:hidden; zoom:1'>
-<ul class='form' style='float:left'>
-<li><label>MySQL host address</label> <input name='mysqlHost' type='text' class='text' value='<?php echo isset($_POST["mysqlHost"]) ? $_POST["mysqlHost"] : "localhost"; ?>'/></li>
-<li><label>MySQL username</label> <input name='mysqlUser' type='text' class='text' value='<?php echo @$_POST["mysqlUser"]; ?>'/></li>
-<li><label>MySQL password</label> <input name='mysqlPass' type='password' class='text' value='<?php echo @$_POST["mysqlPass"]; ?>'/></li>
-<li><label>MySQL database</label> <input name='mysqlDB' type='text' class='text' value='<?php echo @$_POST["mysqlDB"]; ?>'/></li>
-</ul>
-<?php if (isset($install->errors["mysql"])): ?><span class='warning msg' style='float:left'><?php echo $install->errors["mysql"]; ?></span><?php endif; ?>
-</div>
-
-<br/>
+<?php if (isset($install->errors["mysql"])): ?><div class='warning msg'><?php echo $install->errors["mysql"]; ?></div><?php endif; ?>
 
 <ul class='form'>
-<li><label>Administrator username</label> <input name='adminUser' type='text' class='text' value='<?php echo @$_POST["adminUser"]; ?>'/>
-<?php if (isset($install->errors["adminUser"])): ?><span class='warning msg'><?php echo $install->errors["adminUser"]; ?></span><?php endif; ?></li>
+<li><label>MySQL host address</label> <input id='mysqlHost' name='mysqlHost' type='text' class='text' value='<?php echo isset($_POST["mysqlHost"]) ? $_POST["mysqlHost"] : "localhost"; ?>'/></li>
+<li><label>MySQL username</label> <input id='mysqlUser' name='mysqlUser' type='text' class='text' value='<?php echo @$_POST["mysqlUser"]; ?>'/></li>
+<li><label>MySQL password</label> <input id='mysqlPass' name='mysqlPass' type='password' class='text' value='<?php echo @$_POST["mysqlPass"]; ?>'/></li>
+<li><label>MySQL database</label> <input id='mysqlDB' name='mysqlDB' type='text' class='text' value='<?php echo @$_POST["mysqlDB"]; ?>'/></li>
+</ul>
 
-<li><label>Administrator email</label> <input name='adminEmail' type='text' class='text' value='<?php echo @$_POST["adminEmail"]; ?>'/>
+
+<hr/>
+<p>esoTalk will use the following information to set up your administrator account on your forum.</p>
+
+<ul class='form'>
+<li><label>Administrator username</label> <input id='adminUser' name='adminUser' type='text' class='text' value='<?php echo @$_POST["adminUser"]; ?>'/>
+<?php if (isset($install->errors["adminUser"])): ?><div class='warning msg'><?php echo $install->errors["adminUser"]; ?></div><?php endif; ?></li>
+
+<li><label>Administrator email</label> <input id='adminEmail' name='adminEmail' type='text' class='text' value='<?php echo @$_POST["adminEmail"]; ?>'/>
 <?php if (isset($install->errors["adminEmail"])): ?><span class='warning msg'><?php echo $install->errors["adminEmail"]; ?></span><?php endif; ?></li>
 
-<li><label>Administrator password</label> <input name='adminPass' type='password' class='text' value='<?php echo @$_POST["adminPass"]; ?>'/>
+<li><label>Administrator password</label> <input id='adminPass' name='adminPass' type='password' class='text' value='<?php echo @$_POST["adminPass"]; ?>'/>
 <?php if (isset($install->errors["adminPass"])): ?><span class='warning msg'><?php echo $install->errors["adminPass"]; ?></span><?php endif; ?></li>
 
-<li><label>Confirm password</label> <input name='adminConfirm' type='password' class='text' value='<?php echo @$_POST["adminConfirm"]; ?>'/>
+<li><label>Confirm password</label> <input id='adminConfirm' name='adminConfirm' type='password' class='text' value='<?php echo @$_POST["adminConfirm"]; ?>'/>
 <?php if (isset($install->errors["adminConfirm"])): ?><span class='warning msg'><?php echo $install->errors["adminConfirm"]; ?></span><?php endif; ?></li>
 </ul>
 
+<script type='text/javascript'>
+if (!$("forumTitle").value) makePlaceholder($("forumTitle"), "e.g. Simon's Krav Maga Forum");
+if (!$("mysqlUser").value) makePlaceholder($("mysqlUser"), "simon");
+if (!$("mysqlDB").value) makePlaceholder($("mysqlDB"), "esotalk");
+if (!$("adminUser").value) makePlaceholder($("adminUser"), "Simon");
+if (!$("adminEmail").value) makePlaceholder($("adminEmail"), "simon@example.com");
+</script>
+
 <br/>
 
-<div><a href='javascript:toggleAdvanced()' title='What, you&#39;re too cool for the normal settings?'>Advanced options</a></div>
+<a href='javascript:toggleAdvanced()' title='What, you&#39;re too cool for the normal settings?'>Advanced options</a>
 
 <div id='advanced' style='overflow:hidden; margin:0'>
-<hr/>
+<hr style='margin-top:5px'/>
 
 <?php if (isset($install->errors["tablePrefix"])): ?><p class='warning msg'><?php echo $install->errors["tablePrefix"]; ?></p><?php endif; ?>
 
@@ -211,7 +228,7 @@ function toggleAdvanced() {
 </script>
 </div>
 
-<hr/>
+<hr style='margin-top:5px'/>
 <p id='footer'><?php echo button(array("type" => "submit", "class" => "big", "value" => "Next step &#155;")); ?></p>
 
 <?php break;
@@ -245,26 +262,6 @@ toggleError();
 </p>
 </form>
 
-<?php break;
-
-// Register
-case "register": ?>
-<h1><img src='logo.gif' alt=''/> Register your forum</h1>
-<p>Registration is quick and painless, and it kinda helps us to get an idea of how many people are using esoTalk. ^_^</p>
-<p><strong>If you choose to register, the following information will be sent to us:</strong></p>
-<ul class='form'>
-<li><label>Forum URL</label> <div><?php echo $_SESSION["install"]["baseURL"]; ?></div></li>
-<li><label>PHP version</label> <div><?php echo $install->phpVersion; ?></div></li>
-<li><label>Webserver</label> <div><?php echo $install->serverSoftware; ?></div></li>
-<li><label>MySQL version</label> <div><?php echo $install->mysqlVersion; ?></div></li>
-</ul>
-<hr/>
-<p>
-<input type='radio' name='register' id='yes' value='1' checked='checked'/> <label for='yes' class='radio'><strong>Sure, why not? I'll register!</strong></label><br/>
-<input type='radio' name='register' id='no' value='0'/> <label for='no' class='radio'><strong>No thanks.</strong></label>
-</p>
-<hr/>
-<p id='footer'><?php echo button(array("type" => "submit", "class" => "big", "value" => "Next step &#155;")); ?></p>
 <?php break;
 
 // Finish!
