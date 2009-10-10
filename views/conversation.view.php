@@ -21,7 +21,7 @@ Conversation.id = <?php echo $this->conversation["id"]; ?>;
 Conversation.postCount = <?php echo $this->conversation["postCount"]; ?>;
 Conversation.startFrom = <?php echo $this->startFrom; ?>;
 Conversation.lastActionTime = <?php echo $this->conversation["lastActionTime"]; ?>;
-Conversation.lastRead = <?php echo ($this->esoTalk->user and $this->conversation["id"]) ? min($this->conversation["postCount"], $this->conversation["lastRead"]) : $this->conversation["postCount"]; ?>;
+Conversation.lastRead = <?php echo ($this->esoTalk->user and $this->conversation["id"]) ? max(0, min($this->conversation["postCount"], $this->conversation["lastRead"])) : $this->conversation["postCount"]; ?>;
 Conversation.autoReloadInterval = <?php
 // Find the nearest power of 2 (4, 8, 16, 32, 64, ..., 512) to the square root of the most recent action.
 // ex. if the most recent action is 81 seconds ago, the autoReloadInterval = closest power of 2 to sqrt(81) = 8.

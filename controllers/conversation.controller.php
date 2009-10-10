@@ -146,7 +146,7 @@ function init()
 			$result = $this->esoTalk->db->query("SELECT name, content FROM {$config["tablePrefix"]}posts INNER JOIN {$config["tablePrefix"]}members USING (memberId) WHERE postId=$postId AND conversationId={$this->conversation["id"]}");
 			if (!$this->esoTalk->db->numRows($result)) break;
 			list($member, $content) = $this->esoTalk->db->fetchRow($result);
-			$this->conversation["draft"] = "<blockquote><cite>$member - [post:$postId {$language["go to this post"]}]</cite>" . desanitize($this->formatForEditing($this->removeQuotes($content))) . "</blockquote>";
+			$this->conversation["draft"] = "<blockquote><cite>$member - [post:$postId]</cite>" . desanitize($this->formatForEditing($this->removeQuotes($content))) . "</blockquote>";
 		}
 
 		// Edit a post: set the $this->editingPost variable so that the post is outputted with a textarea later on.
@@ -236,6 +236,9 @@ function init()
 
 		// Finally, get the posts in the conversation.
 		$this->conversation["posts"] = $this->getPosts(array("startFrom" => $this->startFrom, "limit" => $config["postsPerPage"]));
+		
+		// Update the user's last read.
+		$this->updateLastRead(min($this->startFrom + $config["postsPerPage"], $this->conversation["postCount"]));
 	
 	}
 	
@@ -385,7 +388,7 @@ function ajax()
 			if (!$this->esoTalk->validateToken(@$_POST["token"])) return;
 			$postId = (int)@$_POST["postId"];
 			if (!$this->conversation = $this->getConversation("(SELECT conversationId FROM {$config["tablePrefix"]}posts WHERE postId=$postId)")) return;
-			if ($content = $this->editPost($postId, @$_POST["content"])) return array("content" => $content);
+			if ($content = $this->editPost($postId, @$_POST["content"])) return array("content" => $this->displayPost($content));
 			break;
 
 		// Get the controls and content of for a post to be edited.
@@ -409,7 +412,7 @@ function ajax()
 			// Get the post details from the database so we can check if the user has permission to view it.
 			list($memberId, $account, $deleteMember, $content) = $this->esoTalk->db->fetchRow("SELECT p.memberId, account, deleteMember, content FROM {$config["tablePrefix"]}posts p INNER JOIN {$config["tablePrefix"]}members USING (memberId) WHERE postId=$postId");
 			if (($message = $this->canEditPost($postId, $memberId, $account, $deleteMember)) !== true) $this->esoTalk->message($message);
-			else return $content;
+			else return $this->displayPost($content);
 			break;
 
 		// Get the unformatted content of a post for inserting into the reply textarea as a quote.
@@ -418,7 +421,7 @@ function ajax()
 			if (!$this->conversation = $this->getConversation("(SELECT conversationId FROM {$config["tablePrefix"]}posts WHERE postId=$postId)")) return;
 			list($member, $content) = $this->esoTalk->db->fetchRow($this->esoTalk->db->query("SELECT name, content FROM {$config["tablePrefix"]}posts INNER JOIN {$config["tablePrefix"]}members USING (memberId) WHERE postId=$postId"));
 			return array(
-				"member" => $member . " - [post:$postId {$language["go to this post"]}]",
+				"member" => $member . " - [post:$postId]",
 				"content" => desanitize($this->formatForEditing($this->removeQuotes($content))),
 			);
 			break;
@@ -426,7 +429,7 @@ function ajax()
 		// Get the formatted HTML of a string for previewing purposes.
 		case "getPostFormatted":
 			if (empty($_POST["content"])) return;
-			return $this->formatForDisplay($_POST["content"]);
+			return $this->displayPost($this->formatForDisplay($_POST["content"]));
 			break;
 
 		// Add a member to the membersAllowed list.
@@ -653,6 +656,8 @@ function getPosts($criteria = array())
 		// $k is the position of the post within the conversation, and will depend on if we've fetched posts sequentially ($i)
 		// or arbitrarily ($post["number"] if $criteria["lastActionTime"] or $criteria["postIds"] have been used.)
 		$k = isset($post["number"]) ? $post["number"] : $i;
+		
+		$post["content"] = $this->displayPost($post["content"]);
 		
 		// Build the post array.
 		$posts[$k] = array(
@@ -898,6 +903,12 @@ function formatForEditing($string)
 function formatForDisplay($string)
 {
 	return $this->esoTalk->formatter->format($string);
+}
+
+// A post's content will be run through this function before it is rendered.
+function displayPost($content)
+{
+	return $this->esoTalk->formatter->display($content);
 }
 
 // Validate a post - make sure it's not too long but has at least one character.

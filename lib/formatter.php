@@ -20,7 +20,7 @@ var $allowedModes = array(
 	"inline" => array("text", "quote", "cite", "list", "heading", "italic", "bold", "strike", "link", "superscript", "subscript"),
 	
 	// Modes in which paragraph-level formatting (whitespace and images) can be applied.
-	"whitespace" => array("text", "quote", "list", "italic", "bold", "strike"),
+	"whitespace" => array("text", "quote", "list", "italic", "bold", "strike", "link"),
 	
 	// Modes in which block-level formatting (headings, lists, quotes, etc.) can be applied.
 	"block" => array("text", "quote")
@@ -30,7 +30,7 @@ var $allowedModes = array(
 function Formatter()
 {
 	// Set up the lexer.
-	$this->lexer = &new SimpleLexer($this, "text", true);
+	$this->lexer = &new SimpleLexer($this, "text", false);
 	
 	// Define the modes.
 	$this->modes = array(
@@ -102,6 +102,20 @@ function revert($string, $formatters = false)
 	}
 	
 	$string = rtrim($string);
+	return $string;
+}
+
+function display($string, $formatters = false)
+{
+	// Work out which formatters are going to be used.
+	if (is_array($formatters)) $formatters = array_intersect(array_keys($this->modes), $formatters);
+	else $formatters = array_keys($this->modes);
+
+	// Run any more complex display tasks.
+	foreach ($formatters as $v) {
+		if (method_exists($this->modes[$v], "display")) $string = $this->modes[$v]->display($string);
+	}
+	 
 	return $string;
 }
 
@@ -574,7 +588,7 @@ function format()
 		$this->formatter->lexer->addEntryPattern('&lt;a.+?&gt;(?=.*&lt;\/a&gt;)', $mode, "link_html");
 		$this->formatter->lexer->addEntryPattern('\[url=(?:(?:https?|ftp|feed):\/\/|mailto:|).+?](?=.*\[\/url])', $mode, "link_bbcode");
 		$this->formatter->lexer->addEntryPattern('\[(?:(?:https?|ftp|feed):\/\/|mailto:)\S+\s+(?=.*])', $mode, "link_wiki");
-		$this->formatter->lexer->addEntryPattern('\[post:\d+\s+(?=.*])', $mode, "postLink");
+		$this->formatter->lexer->addEntryPattern('\[post:\d+\s*(?=.*])', $mode, "postLink");
 		$this->formatter->lexer->addEntryPattern('\[conversation:\d+\s+(?=.*])', $mode, "conversationLink");
 		$this->formatter->lexer->addSpecialPattern('(?<=[\s>(]|^)[\w-\.]+@(?:[\w-]+\.)+[\w-]{2,4}', $mode, "email");
 	}
@@ -650,7 +664,7 @@ function link($match, $state)
 				$link = $href[2];
 				if (preg_match("`title=(&#39;|&quot;)(.+?)\\1`", $match, $titleMatch)) $title = $titleMatch[2];
 				if (!empty($title)) $quote = strpos($title, "&#39;") === false ? "'" : '"';
-			} elseif (substr($match, 0, 5) == "[url=") $link = substr($match, 5, -1);
+			} elseif (substr(strtolower($match), 0, 5) == "[url=") $link = substr($match, 5, -1);
 			else $link = rtrim(substr($match, 1));
 			$protocol = "";
 			if (!preg_match("`^((?:https?|ftp|feed)://|mailto:)`i", $link)) $protocol = "http://";
@@ -670,11 +684,19 @@ function revert($string)
 {
 	// Emails and links
 	$string = preg_replace("/<a href='mailto:(.*?)'>\\1<\/a>/", "$1", $string);
-	$string = preg_replace("`<a href='" . str_replace("?", "\?", makeLink("post", "(\d+)")) . "'[^>]*>(.*?)<\/a>`", "[post:$1 $2]", $string);
+	$string = preg_replace("`<a href='" . str_replace("?", "\?", makeLink("post", "(\d+)")) . "'[^>]*>(.*?)<\/a>`e", "'[post:$1' . ('$2' ? ' $2' : '') . ']'", $string);
 	$string = preg_replace("`<a href='" . str_replace("?", "\?", makeLink("(\d+)")) . "'[^>]*>(.*?)<\/a>`", "[conversation:$1 $2]", $string);
 	$string = preg_replace("/<a href='(?:\w+:\/\/)?(.*?)'>\\1<\/a>/", "$1", $string);
 	$string = preg_replace("/<a(.*?)>(.*?)<\/a>/", "&lt;a$1&gt;$2&lt;/a&gt;", $string);
 		
+	return $string;
+}
+
+// Convert empty post links to a "go to this post" link in the reader's language.
+function display($string)
+{
+	global $language;
+	$string = preg_replace("`(<a href='" . str_replace("?", "\?", makeLink("post", "(\d+)")) . "'[^>]*>)<\/a>`", "$1{$language["go to this post"]}</a>", $string);
 	return $string;
 }
 
