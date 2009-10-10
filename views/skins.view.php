@@ -17,7 +17,7 @@ if (!defined("IN_ESOTALK")) exit;
 <?php if (file_exists("skins/$k/preview.png")): ?><img src='skins/<?php echo $k; ?>/preview.png' alt='<?php echo $skin["name"]; ?>'/>
 <?php else: ?><span><?php echo $language["No preview"]; ?></span><?php endif; ?>
 </span>
-<big><strong><?php echo $skin["name"]; ?></strong> <?php echo $skin["version"]; ?></big> <?php echo $skin["author"]; ?>
+<big><strong><?php echo $skin["name"]; ?></strong></big> <small><?php printf($language["version"], $skin["version"]); ?> <?php printf($language["author"], $skin["author"]); ?></small>
 </a>
 </li>
 <?php endforeach; ?>

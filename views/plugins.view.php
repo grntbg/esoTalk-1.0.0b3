@@ -16,7 +16,7 @@ function toggleEnabled(id, enabled) {
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=plugins",
 		"post": "action=toggle&id=" + encodeURIComponent(id) + "&enabled=" + (enabled ? "1" : "0"),
-		"success": function() {document.getElementById("ext-" + id).className = enabled ? "enabled" : "";}
+		"success": function() {document.getElementById("ext-" + id).className = "plugin" + (enabled ? " enabled" : "");}
 	});
 }
 function toggleSettings(id) {
@@ -31,7 +31,7 @@ function animateToggle(settings, showing)
 	var overflowDiv = createOverflowDiv(settings);
 	if (!overflowDiv.style.display) overflowDiv.style.display = "none";
 	var initHeight = overflowDiv.offsetHeight;
-	if (!overflowDiv.style.opacity) overflowDiv.style.opacity = 0;
+	//if (!overflowDiv.style.opacity) overflowDiv.style.opacity = 0;
 	var initOpacity = parseFloat(overflowDiv.style.opacity);
 	settings.style.position = "relative";
 	overflowDiv.style.display = "block";
@@ -41,7 +41,7 @@ function animateToggle(settings, showing)
 	overflowDiv.animation = new Animation(function(values, final) {
 		overflowDiv.style.height = Math.round(values[0]) + "px";
 		//settings.style.top = Math.round(values[0] - finalHeight) + "px";
-		overflowDiv.style.opacity = values[1];
+		//overflowDiv.style.opacity = values[1];
 		if (final && values[0] == 0) {
 			overflowDiv.style.display = "none";
 			overflowDiv.style.height = "";
@@ -57,13 +57,14 @@ var plugins = [];
 
 <ul>
 <?php foreach ($this->plugins as $k => $plugin): ?>
-<li id='ext-<?php echo $k; ?>'<?php if ($plugin["loaded"]): ?> class='enabled'<?php endif; ?>>
+<li id='ext-<?php echo $k; ?>' class='plugin<?php if ($plugin["loaded"]): ?> enabled<?php endif; ?>'>
 <div class='controls'>
 <?php if (!empty($plugin["settings"])): ?><a href='javascript:toggleSettings("<?php echo $k; ?>");void(0)'><?php echo $language["settings"]; ?></a><?php endif; ?>
 </div>
 <input type='checkbox' class='checkbox'<?php if ($plugin["loaded"]): ?> checked='checked'<?php endif; ?> id='ext-<?php echo $k; ?>-checkbox' name='plugins[<?php echo $k; ?>]' value='1' onclick='toggleEnabled("<?php echo $k; ?>", this.checked);'/>
 <noscript><div style='display:inline'><a href='<?php echo makeLink("plugins", "?toggle=$k"); ?>'><?php echo $plugin["loaded"] ? "Deactivate" : "Activate"; ?></a></div></noscript>	
-<label for='ext-<?php echo $k; ?>-checkbox' class='checkbox'><big><strong><?php echo $plugin["name"]; ?></strong> <?php echo $plugin["version"]; ?></big></label> &nbsp; <?php echo $plugin["author"] ?> <small><?php echo $plugin["description"]; ?></small>
+<label for='ext-<?php echo $k; ?>-checkbox' class='checkbox'><big><strong><?php echo $plugin["name"]; ?></strong></big></label>
+<small><?php printf($language["version"], $plugin["version"]); ?> <?php printf($language["author"], $plugin["author"]); ?></small> <small><?php echo $plugin["description"]; ?></small>
 
 <?php if (!empty($plugin["settings"])): ?>
 <div id='ext-<?php echo $k; ?>-settings' class='settings'>

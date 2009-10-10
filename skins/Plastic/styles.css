@@ -263,11 +263,13 @@ blockquote p {margin-bottom:.75em}
 #plugins .controls {float:right}
 #plugins .controls a, #plugins small {margin-left:10px}
 #plugins ul {list-style:none; margin:0; padding:0}
-#plugins li {border-bottom:1px solid #ccc; display:block; padding:5px 7px}
+#plugins li {border-bottom:1px solid #ddd; display:block; padding:5px 7px}
+#plugins li strong {font-weight:normal}
+#plugins li.enabled strong {font-weight:bold}
 #plugins li form {margin:15px 23px}
 #plugins li .settings {background:#fff; padding:5px 20px; margin-top:5px}
 #plugins li form label {margin-bottom:10px; width:25em}
-#plugins li .checkbox {margin:2px 7px 2px 0}
+#plugins li input.checkbox {margin:2px 7px 2px 0}
 #plugins li li {border:0; padding:0}
 
 /* Manage skins */
@@ -275,6 +277,9 @@ blockquote p {margin-bottom:.75em}
 #skins li {float:left; margin-right:1px; width:297px}
 #skins a {color:#000; display:block; padding:10px}
 #skins a:hover {text-decoration:none}
+#skins a strong {font-weight:normal}
+#skins li.enabled a strong {font-weight:bold}
+#skins small {margin-left:5px}
 #skins .preview {background:#eee; border:1px solid #ccc; color:#ccc; display:block; font-size:20px; height:153px; margin-bottom:5px; overflow:hidden; text-align:center; width:275px}
 #skins .preview span {display:block; margin-top:65px}
 

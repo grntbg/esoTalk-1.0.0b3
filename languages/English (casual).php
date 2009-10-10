@@ -53,6 +53,8 @@ $language = array(
 // "SESSION + COOKIE information" => "SESSION + COOKIE information",
 // "Show debug information to non-administrators" => "Show debug information to non-administrators",
 // "Update debug information for background AJAX requests" => "Update debug information for background AJAX requests",
+// "author" => "by %s",
+// "version" => "version %s",
 // Deleted: "helpesoTalk"
 // Deleted: "Name"
 // Deleted: "ago"
@@ -128,6 +130,7 @@ $language = array(
 "Administrator-plural" => "Administrators",
 "Appearance settings" => "Appearance settings",
 "Are you human" => "Are you human?",
+"author" => "by %s",
 "Bold" => "Bold",
 "Cancel" => "Cancel",
 "Can't make it out" => "Can't make it out? <a href='%s'>Try another one!</a>",
@@ -282,6 +285,7 @@ $language = array(
 "Upload an plugin" => "Upload a plugin package",
 "Upload a skin" => "Upload a skin package",
 "Username" => "Username",
+"version" => "version %s",
 "Viewing" => "Viewing:",
 "viewingPosts" => "<b>%s-%s</b> of %s posts",
 "Who's online" => "Who's online?",
