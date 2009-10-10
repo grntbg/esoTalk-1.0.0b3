@@ -40,7 +40,7 @@ function initCaptchaForm(&$join)
 	$join->addFieldset("areYouHuman", $language["Are you human"], 900);
 	$join->addToForm("areYouHuman", array(
 		"id" => "captcha",
-		"html" => "<label style='width:20em'>{$language["Type the letters you see"]}<br/><small>" . sprintf($language["Can't make it out"], "$(\"captchaImg\").src=$(\"captchaImg\").src.split(\"?\")[0]+\"?\"+(new Date()).getTime();void(0)") . "</small></label> <div><input id='captcha' name='join[captcha]' type='text' class='text' tabindex='500'/><br/><img src='plugins/Captcha/captchaImg.php' style='margin-top:3px' id='captchaImg' alt='Captcha'/></div>",
+		"html" => "<label style='width:20em'>{$language["Type the letters you see"]}<br/><small>" . sprintf($language["Can't make it out"], "javascript:$(\"captchaImg\").src=$(\"captchaImg\").src.split(\"?\")[0]+\"?\"+(new Date()).getTime();void(0)") . "</small></label> <div><input id='captcha' name='join[captcha]' type='text' class='text' tabindex='500'/><br/><img src='plugins/Captcha/captchaImg.php' style='margin-top:3px' id='captchaImg' alt='Captcha'/></div>",
 		"validate" => array($this, "validateCaptcha"),
 		"required" => true
 	));
