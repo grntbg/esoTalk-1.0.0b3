@@ -269,7 +269,7 @@ function fatalChecks()
 	$fileErrors = array();
 	$filesToCheck = array("", "avatars/", "plugins/", "skins/", "config/", "install/", "upgrade/");
 	foreach ($filesToCheck as $file) {
-		if ((!file_exists("../$file") and !mkdir("../$file")) or (!is_writable("../$file") and !@chmod("../$file", 0777))) {
+		if ((!file_exists("../$file") and !@mkdir("../$file")) or (!is_writable("../$file") and !@chmod("../$file", 0777))) {
 			$realPath = realpath("../$file");
 			$fileErrors[] = $file ? $file : substr($realPath, strrpos($realPath, "/") + 1) . "/";
 		}
