@@ -27,6 +27,16 @@ if ($versions["esoTalk"] != ESOTALK_VERSION) {
 	exit;
 }
 
+// Compare the forum base URL's host to the actual request's host. If they differ, redirect to the base URL.
+// i.e. if baseURL is www.example.com and the forum is accessed from example.com, redirect to www.example.com.
+if (isset($_SERVER["HTTP_HOST"])) {
+	$urlParts = parse_url($config["baseURL"]);
+	if ($urlParts["host"] != $_SERVER["HTTP_HOST"]) {
+		header("Location: " . $config["baseURL"] . substr($_SERVER["REQUEST_URI"], strlen($urlParts["path"])));
+		exit;
+	}
+}
+
 // Require essential files.
 require "functions.php";
 require "database.php";

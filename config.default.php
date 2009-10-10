@@ -17,13 +17,13 @@ $defaultConfig = array(
 "mysqlDB" => "",
 "tablePrefix" => "",
 "forumTitle" => "",
+"language" => "English (casual)",
 "baseURL" => "",
 "rootAdmin" => 1,
 "salt" => "",
 "emailFrom" => "",
 "cookieName" => "",
 
-"language" => "English (casual)", // The default language.
 "forumLogo" => false, // Path to an image file to replace the esoTalk logo (don't make it too big or it'll stretch the header!)
 "sitemapCacheTime" => 3600, // Keep sitemaps for at least 1 hour.
 "verboseFatalErrors" => false, // Show MySQL error information in fatal errors. Enable this if you need to debug a situation.
@@ -34,6 +34,7 @@ $defaultConfig = array(
 "skin" => "Plastic", // The default skin (overridden by config/skin.php.)
 "minPasswordLength" => 6,
 "cookieExpire" => 2592000, // 30 days
+"cookieDomain" => "", // Set a custom cookie domain. Set it to .yourdomain.com to have the cookie set across all subdomains.
 "userOnlineExpire" => 300, // Number of seconds a user's 'last seen time' is before the user 'goes offline'.
 "messageDisplayTime" => 20, // Number of seconds before most messages up the top of the screen disappear.
 

@@ -172,7 +172,7 @@ function login($name = false, $password = false, $hash = false)
 			if (@$_POST["login"]["rememberMe"]) {
 				$ip = (int)ip2long($_SESSION["ip"]);
 				$this->esoTalk->db->query("UPDATE {$config["tablePrefix"]}members SET cookieIP=$ip WHERE memberId={$_SESSION["user"]["memberId"]}");
-				setcookie($config["cookieName"], $_SESSION["user"]["memberId"] . sanitizeForHTTP($hash), time() + $config["cookieExpire"], "/");
+				setcookie($config["cookieName"], $_SESSION["user"]["memberId"] . sanitizeForHTTP($hash), time() + $config["cookieExpire"], "/", $config["cookieDomain"]);
 			}
 			if (!$this->ajax) refresh();
 			return true;
