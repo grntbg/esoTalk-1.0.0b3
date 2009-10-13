@@ -105,20 +105,6 @@ function revert($string, $formatters = false)
 	return $string;
 }
 
-function display($string, $formatters = false)
-{
-	// Work out which formatters are going to be used.
-	if (is_array($formatters)) $formatters = array_intersect(array_keys($this->modes), $formatters);
-	else $formatters = array_keys($this->modes);
-
-	// Run any more complex display tasks.
-	foreach ($formatters as $v) {
-		if (method_exists($this->modes[$v], "display")) $string = $this->modes[$v]->display($string);
-	}
-	 
-	return $string;
-}
-
 function text($match, $state) {
  	$this->output .= $match;
  	return true;
@@ -689,14 +675,6 @@ function revert($string)
 	$string = preg_replace("/<a href='(?:\w+:\/\/)?(.*?)'>\\1<\/a>/", "$1", $string);
 	$string = preg_replace("/<a(.*?)>(.*?)<\/a>/", "&lt;a$1&gt;$2&lt;/a&gt;", $string);
 		
-	return $string;
-}
-
-// Convert empty post links to a "go to this post" link in the reader's language.
-function display($string)
-{
-	global $language;
-	$string = preg_replace("`(<a href='" . str_replace("?", "\?", makeLink("post", "(\d+)")) . "'[^>]*>)<\/a>`", "$1{$language["go to this post"]}</a>", $string);
 	return $string;
 }
 

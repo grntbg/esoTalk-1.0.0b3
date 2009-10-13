@@ -14,24 +14,6 @@ else:
 // If we're starting a new conversation, we'll need a big form around the whole page.
 if (!$this->conversation["id"]): ?><form action='<?php echo curLink(); ?>' method='post' enctype='multipart/form-data'><?php endif; ?>
 
-<script type='text/javascript'>
-// <![CDATA[
-<?php if ($this->conversation["id"]): ?>
-Conversation.id = <?php echo $this->conversation["id"]; ?>;
-Conversation.postCount = <?php echo $this->conversation["postCount"]; ?>;
-Conversation.startFrom = <?php echo $this->startFrom; ?>;
-Conversation.lastActionTime = <?php echo $this->conversation["lastActionTime"]; ?>;
-Conversation.lastRead = <?php echo ($this->esoTalk->user and $this->conversation["id"]) ? max(0, min($this->conversation["postCount"], $this->conversation["lastRead"])) : $this->conversation["postCount"]; ?>;
-Conversation.autoReloadInterval = <?php
-// Find the nearest power of 2 (4, 8, 16, 32, 64, ..., 512) to the square root of the most recent action.
-// ex. if the most recent action is 81 seconds ago, the autoReloadInterval = closest power of 2 to sqrt(81) = 8.
-echo max(4, min(pow(2, round(log(sqrt(time() - $this->conversation["lastActionTime"]), 2))), $config["autoReloadIntervalLimit"]));
-?>;
-<?php endif; ?>
-Conversation.postsPerPage = <?php echo $config["postsPerPage"]; ?>;
-// ]]>
-</script>
-
 <div id='cHdr'>
 
 <div id='cInfo'>
@@ -99,14 +81,26 @@ foreach ($this->esoTalk->labels as $k => $v) echo "<span class='label $k'" . (!i
 // Generate the pagination bar!
 // Work out pagination percentages.
 if ($this->conversation["postCount"] > 0) {
-	$curHandleWidth = max($config["postsPerPage"] / $this->conversation["postCount"], 0.2) * 100;
+	
+	// $handleWidth is a rough width, in %, of the pagination bar handle, used to work out the percent per post.
+	$handleWidth = max($config["postsPerPage"] / $this->conversation["postCount"], 0.2) * 100;
+	
+	// $percentPerPost is the width, in %, of the pagination bar distributed to a single post. 
 	if ($this->conversation["postCount"] <= $config["postsPerPage"]) $percentPerPost = 100 / $this->conversation["postCount"];
-	else $percentPerPost = $this->conversation["postCount"] ? (100 - $curHandleWidth) / ($this->conversation["postCount"] - $config["postsPerPage"]) : 0;
+	else $percentPerPost = $this->conversation["postCount"] ? (100 - $handleWidth) / ($this->conversation["postCount"] - $config["postsPerPage"]) : 0;
+	
+	// $showingPercent is the number of posts displaying multiplied by the % per post.
 	$showingPercent = max($percentPerPost * min($this->conversation["postCount"] - $this->startFrom, $config["postsPerPage"]), 20);
+	
+	// $leftPercent is the offset of the pagination bar handle from the left.
 	$leftPercent = max(0, min(100 - $showingPercent, $this->startFrom * $percentPerPost));
 	$rightPercent = 100 - ($showingPercent + $leftPercent);
+	
+	// $unreadLeft is the offset of the unread section of the pagination bar from the left.
 	$unreadLeft = ($this->esoTalk->user and $this->conversation["id"]) ? min($this->conversation["postCount"], $this->conversation["lastRead"]) * (100 / $this->conversation["postCount"]) : 100;
 	$unreadWidth = max(0, 100 - $unreadLeft);
+	
+// Everything defaults to 0.
 } else $percentPerPost = $unreadLeft = $showingPercent = $leftPercent = $rightPercent = $unreadWidth = 0;
 
 // Generate the buttons.
@@ -142,10 +136,12 @@ echo $paginationHtml;
 <script type='text/javascript'>
 // <![CDATA[
 <?php
+// Make lots of link templates that can be used by JavaScript (functions below),
+// and when rendering the posts in PHP (further below).
 $memberLink = "<a href='" . makeLink("profile", "%d") . "'>%s</a>";
 $editedBy = "({$language["edited by"]} %s %s)";
 $deletedBy = "({$language["deleted by"]})";
-$quoteLink = "<a href='" . makeLink($this->conversation["id"], $this->conversation["slug"], "?quotePost=%s", $this->startFrom ? "&start=$this->startFrom" : "") . "' onclick='Conversation.quotePost(%s);return false'>{$language["quote"]}</a>";
+$quoteLink = "<a href='" . makeLink($this->conversation["id"], $this->conversation["slug"], "?quotePost=%s", $this->startFrom ? "&start=$this->startFrom" : "", "#reply") . "' onclick='Conversation.quotePost(%s);return false'>{$language["quote"]}</a>";
 $editLink = "<a href='" . makeLink($this->conversation["id"], $this->conversation["slug"], "?editPost=%s", $this->startFrom ? "&start=$this->startFrom" : "", "#p%s") . "' onclick='Conversation.editPost(%s);return false'>{$language["edit"]}</a>";
 $deleteLink = "<a href='" . makeLink($this->conversation["id"], $this->conversation["slug"], "?deletePost=%s", $this->startFrom ? "&start=$this->startFrom" : "", "&token=%t") . "' onclick='Conversation.deletePost(%s);return false'>{$language["delete"]}</a>";
 $restoreLink = "<a href='" . makeLink($this->conversation["id"], $this->conversation["slug"], "?restorePost=%s", $this->startFrom ? "&start=$this->startFrom" : "", "&token=%t") . "' onclick='Conversation.restorePost(%s);return false'>{$language["restore"]}</a>";
@@ -191,7 +187,7 @@ if (!empty($post["deleteMember"])): ?>
 <span><?php printf($deletedBy, $post["deleteMember"]); ?></span>
 </div>
 <div class='controls'>
-<?php if ($post["canEdit"]): ?><span><?php echo str_replace("%s", $post["id"], $this->showingDeletedPost == $post["id"] ? $hideDeletedLink : $showDeletedLink); ?></span> <span><?php echo str_replace("%s", $post["id"], $restoreLink); ?></span><?php endif; ?> 
+<?php if ($post["canEdit"]): ?><span><?php echo str_replace("%s", $post["id"], $this->showingDeletedPost == $post["id"] ? $hideDeletedLink : $showDeletedLink); ?></span> <span><?php echo str_replace(array("%s", "%t"), array($post["id"], $_SESSION["token"]), $restoreLink); ?></span><?php endif; ?> 
 </div>
 </div>
 <?php if ($this->showingDeletedPost == $post["id"]): ?><div class='body'><?php echo $post["body"]; ?></div><?php endif; ?>
@@ -223,13 +219,13 @@ if (!isset($this->conversation["posts"][$k - 1]["memberId"]) or $this->conversat
 <?php if ($this->editingPost == $post["id"]): echo implode(" ", $this->getEditControls("p" . $post["id"])); 
 else: ?>
 <?php if ($this->canReply() === true) echo str_replace("%s", $post["id"], $quoteLink), " "; ?>
-<?php if ($post["canEdit"]) echo str_replace(array("%s", "%t"), array($post["id"], $_SESSION["token"]), $editLink), " ", str_replace(array("%s", "%t"), array($post["id"], $_SESSION["token"]), $deleteLink), " "; ?>
+<?php if ($post["canEdit"]) echo str_replace("%s", $post["id"], $editLink), " ", str_replace(array("%s", "%t"), array($post["id"], $_SESSION["token"]), $deleteLink), " "; ?>
 <?php foreach ((array)$post["controls"] as $control) echo $control, " "; ?>
 <?php endif; ?>
 </div>
 </div>
 <div class='body<?php if ($this->editingPost == $post["id"]): ?> edit<?php endif; ?>'>
-<?php echo $this->editingPost == $post["id"] ? $this->getEditArea($post["id"], $this->formatForEditing($post["body"])) : $post["body"]; ?> 
+<?php echo $this->editingPost == $post["id"] ? $this->getEditArea($post["id"], $this->formatForEditing($post["body"])) : $this->displayPost($post["body"]); ?> 
 </div>
 </div>
 <?php

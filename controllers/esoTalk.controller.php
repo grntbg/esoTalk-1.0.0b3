@@ -101,7 +101,7 @@ makePlaceholder($('loginPassword'), '********');" .
 (!empty($_POST["login"]["name"]) ? "$('loginPassword').focus()" : "") . "
 </script>", 100);
 			$this->addToBar("left", "<a href='" . makeLink("join") . "'>{$language["Join this forum"]}</a>", 200);
-			$this->addToBar("right", "<a href='" . makeLink("forgot-password") . "'>{$language["Forgot your password"]}</a>", 100);
+			$this->addToBar("left", "<a href='" . makeLink("forgot-password") . "'>{$language["Forgot your password"]}</a>", 300);
 		}
 		
 		// If the user is logged in, we want to display their name and some links 

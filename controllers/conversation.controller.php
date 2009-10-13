@@ -37,9 +37,10 @@ function init()
 
 	// Add essential variables and language definitions to be accessible through JavaScript. 
 	$this->esoTalk->addLanguageToJS("Starred", "Unstarred", "Lock", "Unlock", "Sticky", "Unsticky", "Moderator", "Moderator-plural", "Administrator", "Administrator-plural", "Member", "Member-plural", "Suspended", "confirmLeave", "confirmDiscard", "confirmDeleteConversation");
+	$this->esoTalk->addVarToJS("postsPerPage", $config["postsPerPage"]);
 	$this->esoTalk->addVarToJS("autoReloadIntervalStart", $config["autoReloadIntervalStart"]);
 	$this->esoTalk->addVarToJS("autoReloadIntervalMultiplier", $config["autoReloadIntervalMultiplier"]);	
-	$this->esoTalk->addVarToJS("autoReloadIntervalLimit", $config["autoReloadIntervalLimit"]);	
+	$this->esoTalk->addVarToJS("autoReloadIntervalLimit", $config["autoReloadIntervalLimit"]);
 	
 	// Work out the title of the page.
 	$this->title = $this->conversation["id"] ? $this->conversation["title"] : $language["Start a conversation"];
@@ -70,7 +71,7 @@ function init()
 		// Save a draft in an existing conversation.
 		elseif (isset($_POST["saveDraft"])) {
 			$this->saveDraft($_POST["content"]);
-			redirect($this->conversation["id"], $this->conversation["slug"], "?start=$this->startFrom", "#reply");
+			redirect($this->conversation["id"], $this->conversation["slug"], "?start={$_GET["start"]}", "#reply");
 		}
 			
 		// Add a reply to an existing conversation.
@@ -92,7 +93,7 @@ function init()
 		}
 		// Otherwise, discard the draft and redirect.
 		$this->discardDraft();
-		redirect($this->conversation["id"], $this->conversation["slug"], "?start=$this->startFrom", "#reply");
+		redirect($this->conversation["id"], $this->conversation["slug"], "?start={$_GET["start"]}", "#reply");
 	}
 
 	// If the conversation does exist...
@@ -232,13 +233,26 @@ function init()
 		$this->esoTalk->addToHead("<meta name='keywords' content='" . str_replace(", ", ",", $this->conversation["tags"]) . "'/>");
 		$this->esoTalk->addToHead("<meta name='description' content='$description'/>");
 		
-		$this->callHook("initExistingConversation");
-
-		// Finally, get the posts in the conversation.
-		$this->conversation["posts"] = $this->getPosts(array("startFrom" => $this->startFrom, "limit" => $config["postsPerPage"]));
+		// Add JavaScript variables which contain conversation information.
+		$this->esoTalk->addVarToJS("conversation", array(
+			"id" => $this->conversation["id"],
+			"postCount" => $this->conversation["postCount"],
+			"startFrom" => $this->startFrom,
+			"lastActionTime" => $this->conversation["lastActionTime"],
+			"lastRead" => ($this->esoTalk->user and $this->conversation["id"])
+				? max(0, min($this->conversation["postCount"], $this->conversation["lastRead"]))
+				: $this->conversation["postCount"],
+			// Start the auto-reload interval at the square root of the number of seconds since the last action.
+			"autoReloadInterval" => max(4, min(round(sqrt(time() - $this->conversation["lastActionTime"])), $config["autoReloadIntervalLimit"]))
+		));
 		
 		// Update the user's last read.
 		$this->updateLastRead(min($this->startFrom + $config["postsPerPage"], $this->conversation["postCount"]));
+
+		$this->callHook("initExistingConversation");
+
+		// Get the posts in the conversation.
+		$this->conversation["posts"] = $this->getPosts(array("startFrom" => $this->startFrom, "limit" => $config["postsPerPage"]));
 	
 	}
 	
@@ -295,7 +309,7 @@ function ajax()
 			if (!isset($_POST["start"]) and !isset($_POST["end"])) return;
 			$start = min((int)@$_POST["start"], (int)@$_POST["end"]);
 			$end = max((int)@$_POST["start"], (int)@$_POST["end"]);
-			$posts = $this->getPosts(array("startFrom" => $start, "limit" => $end - $start + 1));
+			$posts = $this->getPosts(array("startFrom" => $start, "limit" => $end - $start + 1), true);
 			// If there are posts, update the user's last action.
 			if (count($posts)) $this->updateLastAction();
 			return $posts;
@@ -306,7 +320,7 @@ function ajax()
 			if (!$this->conversation = $this->getConversation((int)@$_POST["id"])) return;
 			if ($this->conversation["lastActionTime"] > @$_POST["lastActionTime"]) {
 				$this->updateLastAction();
-				$posts = $this->getPosts(array("lastActionTime" => @$_POST["lastActionTime"]));
+				$posts = $this->getPosts(array("lastActionTime" => @$_POST["lastActionTime"]), true);
 				// If the user's browser will automatically show the new posts (as opposed to showing the "unread" part
 				// of the pagination bar), work out how many new posts there are an update the user's lastRead to the last
 				// visible post.
@@ -332,7 +346,7 @@ function ajax()
 			// the most recent post that is in the JavaScript cache is specified in $_GET["haveDataUpTo"].
 			if (isset($_POST["haveDataUpTo"])) {
 				$startFrom = max($this->conversation["postCount"] - $config["postsPerPage"], $_POST["haveDataUpTo"]);
-				$posts = $this->getPosts(array("startFrom" => $startFrom, "limit" => $this->conversation["postCount"] - $startFrom));
+				$posts = $this->getPosts(array("startFrom" => $startFrom, "limit" => $this->conversation["postCount"] - $startFrom), true);
 			}
 			return array("postCount" => $this->conversation["postCount"], "posts" => $posts, "replyId" => $id, "lastActionTime" => time());
 			break;
@@ -615,7 +629,8 @@ function &getMembersAllowed()
 // "limit": only fetch this many posts
 // "lastActionTime": get all posts created or modified after this time
 // "postIds": get posts matching this comma-separated list of post ids.
-function getPosts($criteria = array())
+// $display determines whether or not to run the post content through the $this->displayPost() function.
+function getPosts($criteria = array(), $display = false)
 {
 	global $language, $config;
 	
@@ -656,9 +671,7 @@ function getPosts($criteria = array())
 		// $k is the position of the post within the conversation, and will depend on if we've fetched posts sequentially ($i)
 		// or arbitrarily ($post["number"] if $criteria["lastActionTime"] or $criteria["postIds"] have been used.)
 		$k = isset($post["number"]) ? $post["number"] : $i;
-		
-		$post["content"] = $this->displayPost($post["content"]);
-		
+				
 		// Build the post array.
 		$posts[$k] = array(
 			"id" => $post["id"],
@@ -676,7 +689,7 @@ function getPosts($criteria = array())
 			"color" => $post["color"],
 			"account" => $post["account"],
 			"accounts" => $this->esoTalk->canChangeGroup($post["memberId"], $post["account"]),
-			"body" => !empty($_SESSION["highlight"]) ? highlight($post["content"], $_SESSION["highlight"]) : $post["content"],
+			"body" => $display ? $this->displayPost($post["content"]) : $post["content"],
 			"avatar" => $this->esoTalk->getAvatar($post["memberId"], $post["avatarFormat"]),
 			"editMember" => $post["editMember"],
 			"lastAction" => strip_tags($post["lastAction"])
@@ -894,21 +907,33 @@ function getEditArea($postId, $content)
 }
 
 // Convert a post from HTML back to formatting code.
-function formatForEditing($string)
+function formatForEditing($content)
 {
-	return $this->esoTalk->formatter->revert($string);
+	$formatters = array();
+	$this->callHook("formatForEditing", array(&$content, &$formatters));
+	return $this->esoTalk->formatter->revert($content, count($formatters) ? $formatters : false);
 }
 
 // Convert a post from formatting code into HTML.
-function formatForDisplay($string)
+function formatForDisplay($content)
 {
-	return $this->esoTalk->formatter->format($string);
+	$formatters = array();
+	$this->callHook("formatForDisplay", array(&$content, &$formatters));
+	return $this->esoTalk->formatter->format($content, count($formatters) ? $formatters : false);
 }
 
-// A post's content will be run through this function before it is rendered.
+// Perform render-level formatting on a post: highlight search keywords and translate "go to this post" links.
 function displayPost($content)
 {
-	return $this->esoTalk->formatter->display($content);
+	// Highlight search keywords.
+	if (!empty($_SESSION["highlight"])) $content = highlight($post["content"], $_SESSION["highlight"]);
+	
+	// Replace empty post links with "go to this post" links.
+	global $language;
+	$content = preg_replace("`(<a href='" . str_replace("?", "\?", makeLink("post", "(\d+)")) . "'[^>]*>)<\/a>`", "$1{$language["go to this post"]}</a>", $content);
+	
+	$this->callHook("displayPost", array(&$content));
+	return $content;
 }
 
 // Validate a post - make sure it's not too long but has at least one character.

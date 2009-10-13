@@ -498,7 +498,6 @@ posts: [], // Array of all the posts we have data for - the post cache.
 startFrom: 0, // What post are we starting from?
 postCount: 0, // The total number of posts in the conversation
 lastActionTime: null, // The conversation's last action time
-postsPerPage: 0, // The numbers of posts displaying per page
 lastRead: 0, // The last post in the conversation the user has read (start of the unread bar)
 updateLastRead: false, // A flag for whether or not to make an AJAX request to update the last read when fetching posts.
 
@@ -511,6 +510,14 @@ multiQuote: false, // If this flag is true, we won't scroll to the reply area wh
 
 // Initialize: set up a timeout to check for new posts, watch window.location.hash, etc.
 init: function() {
+	
+	// Get conversation information from the esoTalk variable.
+	this.id = esoTalk.conversation.id;
+	this.postCount = esoTalk.conversation.postCount;
+	this.startFrom = esoTalk.conversation.startFrom;
+	this.lastActionTime = esoTalk.conversation.lastActionTime;
+	this.lastRead = esoTalk.conversation.lastRead;
+	this.autoReloadInterval = esoTalk.conversation.autoReloadInterval;
 
 	// Hide the save title/tags button
 	if ($("saveTitleTags")) $("saveTitleTags").style.display = "none";
@@ -673,7 +680,7 @@ reloadPosts: function(startFrom, scrollTo, dontDisplay) {
 	// Do we need to make an ajax request to get more post information?
 	// Within the posts we will be viewing, what are the first and last ones we _don't_ have? We'll need to fetch those ones. 
 	var min, max;
-	maxPost = Math.min(startFrom + Conversation.postsPerPage, Conversation.postCount);
+	maxPost = Math.min(startFrom + esoTalk.postsPerPage, Conversation.postCount);
 	for (var i = startFrom; i < maxPost; i++) {
 		if (typeof Conversation.posts[i] == "undefined") {
 			if (typeof min == "undefined") min = i;
@@ -692,7 +699,7 @@ reloadPosts: function(startFrom, scrollTo, dontDisplay) {
 				if (posts = this.result) for (var i in posts) Conversation.posts[i] = posts[i];
 				// Only update the post display if the first/last post numbers of these ajax results are consistent with where we should be viewing.
 				// (Prevents blank display when a user clicks 'Next' or 'Previous' multiple times in a row.)
-				if (min >= Conversation.startFrom && max <= Conversation.startFrom + Conversation.postsPerPage && !dontDisplay) Conversation.displayPosts(scrollTo);
+				if (min >= Conversation.startFrom && max <= Conversation.startFrom + esoTalk.postsPerPage && !dontDisplay) Conversation.displayPosts(scrollTo);
 			},
 			"post": "action=getPosts&id=" + Conversation.id + "&start=" + min + "&end=" + max + (Conversation.updateLastRead ? "&updateLastRead=" + maxPost : "")
 		});
@@ -732,7 +739,7 @@ checkForNewPosts: function() {
 	if (Conversation.editingPosts > 0) return;
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
-		"post": "action=getNewPosts&id=" + Conversation.id + "&lastActionTime=" + Conversation.lastActionTime + (Conversation.startFrom + Conversation.postsPerPage >= Conversation.postCount ? "&oldPostCount=" + Conversation.postCount : ""),
+		"post": "action=getNewPosts&id=" + Conversation.id + "&lastActionTime=" + Conversation.lastActionTime + (Conversation.startFrom + esoTalk.postsPerPage >= Conversation.postCount ? "&oldPostCount=" + Conversation.postCount : ""),
 		"background": true,
 		"success": function() {
 			if (!this.result) {
@@ -753,11 +760,11 @@ checkForNewPosts: function() {
 			// Mark the new posts for animation.
 			for (var i = oldPostCount; i < Conversation.postCount; i++) Conversation.posts[i].animateNew = true;
 			// If we were viewing the last post, move to the _new_ last post.
-			if (Conversation.startFrom + Conversation.postsPerPage >= oldPostCount) {
+			if (Conversation.startFrom + esoTalk.postsPerPage >= oldPostCount) {
 				// If the amount of new posts is greater than the posts per page, go to the first new post.
-				if (newPosts > Conversation.postsPerPage) Conversation.moveTo(oldPostCount, "top");
+				if (newPosts > esoTalk.postsPerPage) Conversation.moveTo(oldPostCount, "top");
 				// If we're _just_ on the edge of the conversation, move forward the amount of new posts
-				else if (Conversation.startFrom + Conversation.postsPerPage <= Conversation.postCount) Conversation.moveTo(Conversation.postCount - Conversation.postsPerPage, "newReply");
+				else if (Conversation.startFrom + esoTalk.postsPerPage <= Conversation.postCount) Conversation.moveTo(Conversation.postCount - esoTalk.postsPerPage, "newReply");
 				// Otherwise, just display from where we currently are.
 				else Conversation.moveTo(Conversation.startFrom);
 			} else Conversation.moveTo(Conversation.startFrom);
@@ -766,7 +773,7 @@ checkForNewPosts: function() {
 },
 
 displayPosts: function(scrollTo) {
-	var max = Math.min(Conversation.startFrom + Conversation.postsPerPage, Conversation.postCount);
+	var max = Math.min(Conversation.startFrom + esoTalk.postsPerPage, Conversation.postCount);
 	var side = false;
 	switch (esoTalk.avatarAlignment || "alternate") {
 		case "alternate": side = Conversation.startFrom % 2 ? "l" : "r"; break;
@@ -858,7 +865,7 @@ displayPosts: function(scrollTo) {
 				for (var i in Conversation.posts) {
 					if (Conversation.posts[i].id == this.postId) {
 						// If the post is on the current page, scroll up to it.
-						if (i >= Conversation.startFrom - Conversation.postsPerPage) Conversation.scrollTo($("p" + this.postId).offsetTop);
+						if (i >= Conversation.startFrom - esoTalk.postsPerPage) Conversation.scrollTo($("p" + this.postId).offsetTop);
 						// Otherwise, move the pagination to where this post is.
 						else Conversation.moveTo(i, "top");
 						return false;
@@ -905,7 +912,7 @@ scrollTo: function(scrollTo) {
 		// Scroll to the position where the user was before adding a reply, minus the height of the new reply (so as to push the reply area down.)
 		// Confused? I am.
 		case "newReply":
-			if (Conversation.postCount <= Conversation.postsPerPage) return;
+			if (Conversation.postCount <= esoTalk.postsPerPage) return;
 			window.scroll(0, getOffsetTop(Conversation.paginations[1].bar) - Conversation.scrollStart);
 			return;
 		// Scroll to the reply area
@@ -950,10 +957,10 @@ mouseMove: function(e) {
 		Conversation.moveHandle(parseFloat(Conversation.marginLeft) + offsetPercent);
 		// Update the numbers in '1-20 of 38 posts'.
 		var startFrom = Math.round(parseFloat(Conversation.paginations[0].viewingPosts.style.marginLeft)
-			* (Conversation.postCount - Conversation.postsPerPage) / Math.max(100 - Conversation.handleWidth, 1));
+			* (Conversation.postCount - esoTalk.postsPerPage) / Math.max(100 - Conversation.handleWidth, 1));
 		for (var i in Conversation.paginations) {
 			Conversation.paginations[i].from.innerHTML = Math.max(parseInt(startFrom) + 1, 1);
-			Conversation.paginations[i].to.innerHTML = Math.min(Math.max(startFrom, 0) + Conversation.postsPerPage, Conversation.postCount);
+			Conversation.paginations[i].to.innerHTML = Math.min(Math.max(startFrom, 0) + esoTalk.postsPerPage, Conversation.postCount);
 			Conversation.paginations[i].viewingPosts.title = Conversation.paginations[i].viewingPosts.firstChild.innerHTML.replace(/<.+?>/g, "");
 		}
 	}
@@ -1000,7 +1007,7 @@ resizeUnread: function(width) {
 // Go to the next page.
 nextPage: function() {
 	if (!this.className || this.className.indexOf("disabled") == -1)
-		Conversation.moveTo(Math.min(Conversation.startFrom + Conversation.postsPerPage, Conversation.postCount - 1), "top");
+		Conversation.moveTo(Math.min(Conversation.startFrom + esoTalk.postsPerPage, Conversation.postCount - 1), "top");
 	return false;
 },
 
@@ -1008,7 +1015,7 @@ nextPage: function() {
 prevPage: function() {
 	if (!this.className || this.className.indexOf("disabled") == -1) {
 		Conversation.scrollStart = getOffsetTop(Conversation.paginations[1].bar) - getScrollTop();
-		Conversation.moveTo(Math.max(0, Conversation.startFrom - Conversation.postsPerPage), this == Conversation.paginations[1].previous ? "pagination" : "bottom");
+		Conversation.moveTo(Math.max(0, Conversation.startFrom - esoTalk.postsPerPage), this == Conversation.paginations[1].previous ? "pagination" : "bottom");
 	}
 	return false;
 },
@@ -1022,7 +1029,7 @@ firstPage: function() {
 // Go to the last page.
 lastPage: function() {
 	Conversation.scrollStart = getOffsetTop(Conversation.paginations[1].bar) - getScrollTop();
-	Conversation.moveTo(Math.max(0, Conversation.postCount - Conversation.postsPerPage), this == Conversation.paginations[1].last ? "pagination" : "bottom");
+	Conversation.moveTo(Math.max(0, Conversation.postCount - esoTalk.postsPerPage), this == Conversation.paginations[1].last ? "pagination" : "bottom");
 	return false;
 },
 
@@ -1050,27 +1057,27 @@ moveTo: function(startFrom, scrollTo) {
 	// Update the numbers in '1-20 of 38 posts', and disable/enable previous/next buttons if necessary.
 	for (var i in Conversation.paginations) {
 		Conversation.paginations[i].from.innerHTML = Math.max(parseInt(startFrom) + 1, 1);
-		Conversation.paginations[i].to.innerHTML = Math.min(Math.max(startFrom, 0) + Conversation.postsPerPage, Conversation.postCount);
+		Conversation.paginations[i].to.innerHTML = Math.min(Math.max(startFrom, 0) + esoTalk.postsPerPage, Conversation.postCount);
 		Conversation.paginations[i].count.innerHTML = Conversation.postCount;
 		Conversation.paginations[i].viewingPosts.title = Conversation.paginations[i].viewingPosts.firstChild.innerHTML.replace(/<.+?>/g, "");
 		if (startFrom <= 0) disable(Conversation.paginations[i].previous);
 		else enable(Conversation.paginations[i].previous);
-		if (startFrom + Conversation.postsPerPage >= Conversation.postCount) disable(Conversation.paginations[i].next);
+		if (startFrom + esoTalk.postsPerPage >= Conversation.postCount) disable(Conversation.paginations[i].next);
 		else enable(Conversation.paginations[i].next);
 	}
 	
 	// Work out where the handle should be in terms of %.
 	var minPercent = 125 / Conversation.paginations[0].middle.offsetWidth;
-	var curHandleWidth = Math.max(Conversation.postsPerPage / Conversation.postCount, minPercent) * 100;
-	if (Conversation.postCount <= Conversation.postsPerPage) var percentPerPost = 100 / Conversation.postCount;
-	else var percentPerPost = (100 - curHandleWidth) / (Conversation.postCount - Conversation.postsPerPage);
+	var curHandleWidth = Math.max(esoTalk.postsPerPage / Conversation.postCount, minPercent) * 100;
+	if (Conversation.postCount <= esoTalk.postsPerPage) var percentPerPost = 100 / Conversation.postCount;
+	else var percentPerPost = (100 - curHandleWidth) / (Conversation.postCount - esoTalk.postsPerPage);
 	// Work out how wide the handle can be.
-	Conversation.handleWidth = Math.max(percentPerPost * Math.min(Conversation.postCount - startFrom, Conversation.postsPerPage), minPercent * 100);
+	Conversation.handleWidth = Math.max(percentPerPost * Math.min(Conversation.postCount - startFrom, esoTalk.postsPerPage), minPercent * 100);
 	Conversation.handlePos = Math.min(100 - Conversation.handleWidth, startFrom * percentPerPost);
 	
 	// Are we overlapping the unread section?
-	if (startFrom + Conversation.postsPerPage > Conversation.lastRead) {
-		Conversation.lastRead = Math.min(startFrom + Conversation.postsPerPage, Conversation.postCount);
+	if (startFrom + esoTalk.postsPerPage > Conversation.lastRead) {
+		Conversation.lastRead = Math.min(startFrom + esoTalk.postsPerPage, Conversation.postCount);
 		Conversation.unreadWidth = Math.max(100 - Conversation.lastRead * (100 / Conversation.postCount), 0);
 		Conversation.updateLastRead = true;
 	}
@@ -1082,7 +1089,7 @@ moveTo: function(startFrom, scrollTo) {
 
 // Move to a specific post, but work out what post from a position (percent) in the bar.
 moveToPercent: function(startFromPercent, scrollTo) {
-	var postNum = Math.round(startFromPercent * (Conversation.postCount - Conversation.postsPerPage) / Math.max(100 - Conversation.handleWidth, 1));
+	var postNum = Math.round(startFromPercent * (Conversation.postCount - esoTalk.postsPerPage) / Math.max(100 - Conversation.handleWidth, 1));
 	Conversation.moveTo(postNum, scrollTo);
 },
 
@@ -1129,9 +1136,9 @@ addReply: function() {
 				
 				// Move the to last post.
 				// If the amount of new posts is greater than the posts per page, go to the first new post.
-				if (newPosts > Conversation.postsPerPage) Conversation.moveTo(oldPostCount);
+				if (newPosts > esoTalk.postsPerPage) Conversation.moveTo(oldPostCount);
 				// If we're _just_ on the edge of the conversation, move forward the amount of new posts.
-				else if (Conversation.startFrom + Conversation.postsPerPage <= Conversation.postCount) Conversation.moveTo(Conversation.postCount - Conversation.postsPerPage, "newReply");
+				else if (Conversation.startFrom + esoTalk.postsPerPage <= Conversation.postCount) Conversation.moveTo(Conversation.postCount - esoTalk.postsPerPage, "newReply");
 				// Otherwise, just display from where we currently are.
 				else Conversation.moveTo(Conversation.startFrom, "newReply");
 				
