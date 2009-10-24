@@ -102,6 +102,12 @@ function error()
 	return mysql_error();
 }
 
+// Escape a string for use in a database query.
+function escape($string)
+{
+	return mysql_real_escape_string($string);
+}
+
 // Construct a select query. $components is an array. ex. array("select" => array("foo", "bar"), "from" => "members")
 function constructSelectQuery($components)
 {

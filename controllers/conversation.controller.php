@@ -741,7 +741,7 @@ function addReply($content, $newConversation = false)
 	}
 
 	// Prepare the post details for the query.
-	$formattedContent = addslashes($this->formatForDisplay($content));
+	$formattedContent = $this->esoTalk->db->escape($this->formatForDisplay($content));
 	$time = time();
 	$post = array(
 		"conversationId" => $this->conversation["id"],
@@ -805,8 +805,8 @@ function saveDraft($content)
 	
 	$this->callHook("saveDraft", array(&$content));
 	
-	// We need to use addslashes here because the content is raw, ie. we don't want to sanitize() it.
-	$slashedContent = addslashes($content);
+	// We need to use $this->esoTalk->db->escape here because the content is raw, ie. we don't want to sanitize() it.
+	$slashedContent = $this->esoTalk->db->escape($content);
 	$this->esoTalk->db->query("INSERT INTO {$config["tablePrefix"]}status (conversationId, memberId, draft) VALUES ({$this->conversation["id"]}, {$this->esoTalk->user["memberId"]}, '$slashedContent') ON DUPLICATE KEY UPDATE draft='$slashedContent'");
 	
 	// Update local conversation details.
@@ -855,7 +855,7 @@ function editPost($postId, $content)
 	// Update the database with the post's new formatted content.
 	$content = $this->formatForDisplay($content);
 	$time = time();
-	$query = "UPDATE {$config["tablePrefix"]}posts p, {$config["tablePrefix"]}conversations c SET p.content='" . addslashes($content) . "', p.editMember={$this->esoTalk->user["memberId"]}, p.editTime=$time, c.lastActionTime=$time WHERE postId=$postId AND c.conversationId=p.conversationId";
+	$query = "UPDATE {$config["tablePrefix"]}posts p, {$config["tablePrefix"]}conversations c SET p.content='" . $this->esoTalk->db->escape($content) . "', p.editMember={$this->esoTalk->user["memberId"]}, p.editTime=$time, c.lastActionTime=$time WHERE postId=$postId AND c.conversationId=p.conversationId";
 	$this->esoTalk->db->query($query);
 	
 	return $content;
@@ -1041,7 +1041,7 @@ function startConversation($conversation)
 	$time = time();
 	$slug = slug($conversation["title"]);
 	$insert = array(
-		"title" => "'" . addslashes($conversation["title"]) . "'",
+		"title" => "'" . $this->esoTalk->db->escape($conversation["title"]) . "'",
 		"slug" => "'$slug'",
 		"startMember" => $this->esoTalk->user["memberId"],
 		"startTime" => $time,
@@ -1162,7 +1162,7 @@ function addMember($name)
 				break;
 			// Otherwise, search for it in the database as an actual member name.
 			default:
-				$name = addslashes($name);
+				$name = $this->esoTalk->db->escape($name);
 				if (!(list($memberId, $memberName) = @$this->esoTalk->db->fetchRow("SELECT memberId, name FROM {$config["tablePrefix"]}members WHERE (name='$name' OR name LIKE '$name%') AND name NOT IN ('" . implode("','", $this->conversation["membersAllowed"]) . "') ORDER BY name='$name' DESC LIMIT 1"))) {
 					$this->esoTalk->message("memberDoesntExist");
 					return false;
@@ -1309,7 +1309,7 @@ function saveTitle($title)
 
 	global $config;
 	$slug = slug($title);
-	$slashedTitle = addslashes($title);
+	$slashedTitle = $this->esoTalk->db->escape($title);
 	$query = "UPDATE {$config["tablePrefix"]}conversations c SET title='$slashedTitle', slug='$slug', lastActionTime=" . time() . " WHERE c.conversationId={$this->conversation["id"]}";
 
 	$this->callHook("saveTitle", array(&$query, $title));
