@@ -13,9 +13,6 @@ define("AJAX_REQUEST", 1);
 // skin file, language file, and load plugins.
 require "lib/init.php";
 
-// This is an ajax request!
-$esoTalk->ajax = true;
-
 // Set up the action controller.
 if (isset($_GET["controller"])) {
 	$esoTalk->action = strtolower($_GET["controller"]);

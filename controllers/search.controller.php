@@ -100,7 +100,7 @@ function init()
 	);
 	
 	// Mark all conversations as read if requested.
-	if (isset($_GET["markAsRead"]) and $this->esoTalk->user and !$this->esoTalk->ajax) $this->markAllConversationsAsRead();
+	if (isset($_GET["markAsRead"]) and $this->esoTalk->user and !defined("AJAX_REQUEST")) $this->markAllConversationsAsRead();
 	
 	// Construct part of the final query that gets the result details.
 	$markedAsRead = !empty($this->esoTalk->user["markedAsRead"]) ? $this->esoTalk->user["markedAsRead"] : "0";
@@ -114,7 +114,7 @@ function init()
 		"LEFT JOIN {$config["tablePrefix"]}members lpm ON (c.lastPostMember=lpm.memberId)"
 	);
 		
-	if (!$this->esoTalk->ajax) {
+	if (!defined("AJAX_REQUEST")) {
 	
 		// Assign the latest search to a session variable.
 		if (isset($_GET["q"])) $_GET["q2"] = $_GET["q"];
@@ -154,7 +154,7 @@ function init()
 	$this->callHook("init");
 	
 	// Last, but definitely not least... perform the search!
-	if (!$this->esoTalk->ajax) $this->doSearch($this->searchString);
+	if (!defined("AJAX_REQUEST")) $this->doSearch($this->searchString);
 }
 
 // Update the "markedAsRead" field in the user's database row to the current time.

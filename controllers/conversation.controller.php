@@ -18,7 +18,7 @@ var $startFrom = 0; // Which post to start viewing from.
 // Initialize the conversation and its posts. Handle non-AJAX conversation actions such as delete, edit, etc.
 function init()
 {
-	if ($this->esoTalk->ajax) return;
+	if (defined("AJAX_REQUEST")) return;
 	
 	global $language, $config;
 
@@ -503,8 +503,6 @@ function ajax()
 			if (!$this->esoTalk->validateToken(@$_POST["token"])) return;
 			if (!empty($_POST["avatarAlignment"]) and in_array($_POST["avatarAlignment"], array("alternate", "right", "left", "none"))) $_SESSION["avatarAlignment"] = $_POST["avatarAlignment"];
 	}
-	
-	return $return;
 }
 
 // Get the conversation details.

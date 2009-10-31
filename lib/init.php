@@ -80,6 +80,9 @@ require "controllers/esoTalk.controller.php";
 $esoTalk = new esoTalk();
 $esoTalk->esoTalk =& $esoTalk;
 
+// Redirect if the 'Start a conversation' button was pressed.
+if (isset($_POST["new"]) and !defined("AJAX_REQUEST")) redirect("conversation", "new");
+
 // Include the language file.
 $esoTalk->language = sanitizeFileName((isset($_SESSION["user"]["language"]) and file_exists("languages/{$_SESSION["user"]["language"]}.php")) ? $_SESSION["user"]["language"] : $config["language"]);
 if (file_exists("languages/$esoTalk->language.php")) include "languages/$esoTalk->language.php";

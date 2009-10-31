@@ -44,7 +44,7 @@ function init()
 	$this->esoTalk->addLanguage("seconds", "seconds");
 	
 	// If this is an AJAX request, add a hook to add debug information to the returned JSON array.
-	if ($this->esoTalk->ajax) {
+	if (defined("AJAX_REQUEST")) {
 		$this->esoTalk->addHook("ajaxFinish", array($this, "addInformationToAjaxResult"));
 		return;
 	}

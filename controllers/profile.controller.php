@@ -14,7 +14,7 @@ var $sections = array();
 
 function init()
 {
-	if ($this->esoTalk->ajax) return;
+	if (defined("AJAX_REQUEST")) return;
 	
 	if (!empty($_GET["q2"])) $memberId = (int)$_GET["q2"];
 	elseif ($this->esoTalk->user) $memberId = $this->esoTalk->user["memberId"];

@@ -192,7 +192,7 @@ function addFieldset($fieldset, $legend, $position = false)
 }
 
 // Validate the confirm password field (requires $_POST["join"]["password"] to be set)
-function validateConfirmPassword($password) {if ($password != ($this->esoTalk->ajax ? $_POST["password"] : $_POST["join"]["password"])) return "passwordsDontMatch";}
+function validateConfirmPassword($password) {if ($password != (defined("AJAX_REQUEST") ? $_POST["password"] : $_POST["join"]["password"])) return "passwordsDontMatch";}
 
 // Validate the name field
 function validateName(&$name)
