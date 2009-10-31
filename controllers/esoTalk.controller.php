@@ -73,7 +73,7 @@ function init()
 	if (!isset($_SESSION["avatarAlignment"])) $_SESSION["avatarAlignment"] = $config["avatarAlignment"];
 	
 	// Star a conversation if necessary.
-	if (isset($_GET["star"])) $this->star($_GET["star"]);
+	if (isset($_GET["star"]) and $this->validateToken(@$_GET["token"])) $this->star($_GET["star"]);
 	
 	// If config/custom.css contains something, add it to be included in the page.
 	if (filesize("config/custom.css") > 0) $this->addCSS("config/custom.css");
@@ -138,7 +138,9 @@ function ajax()
 	
 	switch (@$_POST["action"]) {
 		// Star/unstar a conversation.
-		case "star": $this->star((int)$_POST["conversationId"]);
+		case "star":
+			if (!$this->validateToken(@$_POST["token"])) return;
+			$this->star((int)$_POST["conversationId"]);
 	}
 }
 
@@ -495,7 +497,7 @@ function htmlStar($conversationId, $starred)
 	// Otherwise, return a clickable star, depending on the starred state.
 	else {
 		$conversationId = (int)$conversationId;
-		return "<a href='" . makeLink(@$_GET["q1"], @$_GET["q2"], @$_GET["q3"], "?star=$conversationId") . "' onclick='toggleStar($conversationId, this);return false' class='star" . ($starred ? "1" : "0") . "'>{$language["*"]}<span> " . ($starred ? $language["Starred"] : $language["Unstarred"]) . "</span></a>";
+		return "<a href='" . makeLink(@$_GET["q1"], @$_GET["q2"], @$_GET["q3"], "?star=$conversationId", "&token={$_SESSION["token"]}") . "' onclick='toggleStar($conversationId, this);return false' class='star" . ($starred ? "1" : "0") . "'>{$language["*"]}<span> " . ($starred ? $language["Starred"] : $language["Unstarred"]) . "</span></a>";
 	}
 }
 
