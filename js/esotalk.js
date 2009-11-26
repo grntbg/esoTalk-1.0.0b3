@@ -49,7 +49,7 @@ Animation.prototype.stop = function() {
 		
 Animation.prototype.start = function() {
 	if (!this.stopped) return;
-	if (typeof esoTalk.disableAnimation != "undefined" && esoTalk.disableAnimation) this.finalize();
+	if (typeof esoTalk != "undefined" && esoTalk.disableAnimation) this.finalize();
 	else {
 		this.stopped = false;
 		this.nextFrame();
@@ -64,7 +64,7 @@ Animation.prototype.nextFrame = function() {
 		for (var i in this.begin) result.push(this.easing(this.frame, this.begin[i], this.end[i] - this.begin[i], this.duration));
 		this.callback(result);
 	} else this.callback(this.easing(this.frame++, this.begin, this.end - this.begin, this.duration));
-	if (this.frame <= this.duration) this.timeout = setTimeout(function(){animation.nextFrame();}, 25);
+	if (this.frame <= this.duration) this.timeout = setTimeout(function(){animation.nextFrame();}, 10);
 	else this.finalize();
 };
 	
@@ -88,9 +88,53 @@ function createOverflowDiv(element) {
 };
 
 // Show/hide an element.
-function toggle(element) {element.style.display == "none" ? show(element) : hide(element);};
-function show(element) {element.style.display = "";};
-function hide(element) {element.style.display = "none";};
+function toggle(element, options) {
+	if (typeof element.showing == "undefined") element.showing = element.style.display != "none";
+	element.showing ? hide(element, options) : show(element, options);
+};
+function show(element, options) {
+	element.style.display = "";
+	element.showing = true;
+	animate(element, options);
+
+};
+function hide(element, options) {
+	element.style.display = "none";
+	element.showing = false;
+	animate(element, options);
+};
+function animate(element, options) {
+	if (!options) return;
+	switch (options.animation) {
+		case "verticalSlide":
+		case "horizontalSlide":
+			var overflowDiv = createOverflowDiv(element);
+			if (!overflowDiv.style.display) overflowDiv.style.display = element.showing ? "none" : "";
+			if (!overflowDiv.style.opacity) overflowDiv.style.opacity = element.showing ? 0 : 1;
+			element.style.display = "";
+			var initLength = options["animation"] == "verticalSlide" ? overflowDiv.offsetHeight : overflowDiv.offsetWidth;
+			var initOpacity = parseFloat(overflowDiv.style.opacity);
+			overflowDiv.style.display = "block";
+			overflowDiv.style.overflow = element.style.overflow = "hidden";
+			var finalLength = options["animation"] == "verticalSlide" ? element.offsetHeight : element.offsetWidth;
+			if (options["animation"] == "horizontalSlide") {
+				element.oldWidth = element.style.width;
+				element.style.width = finalLength + "px";
+			}
+			if (overflowDiv.animation) overflowDiv.animation.stop();
+			overflowDiv.animation = new Animation(function(values, final) {
+				overflowDiv.style[options["animation"] == "verticalSlide" ? "height" : "width"] = Math.round(values[0]) + "px";
+				overflowDiv.style.opacity = values[1];
+				if (final && values[0] == 0) {
+					overflowDiv.style.display = "none";
+					overflowDiv.style[options["animation"] == "verticalSlide" ? "height" : "width"] = "";
+					advanced.style.display = "none";
+					if (options["animation"] == "horizontalSlide") element.style.width = element.oldWidth;
+				}
+			}, {begin: [initLength, initOpacity], end: [element.showing ? finalLength : 0, element.showing ? 1 : 0]});
+			overflowDiv.animation.start();
+	}
+}
 
 // Make an input a placeholder (grey text that disappears when you click on it.)
 function makePlaceholder(element, text) {
@@ -140,7 +184,7 @@ function showLogin() {
 var scrollAnimation;
 function animateScroll(scrollDest) {
 	if (scrollAnimation) scrollAnimation.stop();
-	(scrollAnimation = new Animation(function(top) {window.scroll(0, top);}, {begin: getScrollTop(), end: Math.min(scrollDest, getScrollDimensions()[1] - getClientDimensions()[1])})).start();
+	(scrollAnimation = new Animation(function(top) {window.scroll(0, top);}, {begin: getScrollTop(), end: scrollDest})).start();
 }
 
 // Toggle the state of a star.
@@ -529,7 +573,7 @@ init: function() {
 		
 		// Keep watch for any changes to the hash in the url - reload the posts if it does change.
 		setInterval(function() {
-			newHash = window.location.hash.replace("#", "");
+			var newHash = window.location.hash.replace("#", "");
 			if (isNaN(newHash) || Conversation.startFrom == newHash) return;
 			Conversation.moveTo(parseInt(newHash) || 0);
 		}, 500);

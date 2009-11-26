@@ -2,12 +2,13 @@
 // Copyright 2009 Simon Zerner, Toby Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
-// Installer queries: all the queries to create the esoTalk tables and insert default data
+// Installer queries: contains all the queries to create the esoTalk tables and insert default data.
 
 if (!defined("IN_ESOTALK")) exit;
 
 $queries = array();
 
+// Create the conversations table.
 $queries[] = "DROP TABLE IF EXISTS {$config["tablePrefix"]}conversations";
 $queries[] = "CREATE TABLE {$config["tablePrefix"]}conversations (
 	conversationId int unsigned NOT NULL auto_increment,
@@ -30,6 +31,7 @@ $queries[] = "CREATE TABLE {$config["tablePrefix"]}conversations (
 	KEY conversations_sticky (sticky, lastPostTime)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8";
 
+// Create the posts table.
 $queries[] = "DROP TABLE IF EXISTS {$config["tablePrefix"]}posts";
 $queries[] = "CREATE TABLE {$config["tablePrefix"]}posts (
 	postId int unsigned NOT NULL auto_increment,
@@ -48,6 +50,7 @@ $queries[] = "CREATE TABLE {$config["tablePrefix"]}posts (
 	FULLTEXT KEY posts_fulltext (title, content)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8";
 
+// Create the status table.
 $queries[] = "DROP TABLE IF EXISTS {$config["tablePrefix"]}status";
 $queries[] = "CREATE TABLE {$config["tablePrefix"]}status (
 	conversationId int unsigned NOT NULL,
@@ -59,6 +62,7 @@ $queries[] = "CREATE TABLE {$config["tablePrefix"]}status (
 	PRIMARY KEY  (conversationId, memberId)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8";
 
+// Create the members table.
 $queries[] = "DROP TABLE IF EXISTS {$config["tablePrefix"]}members";
 $queries[] = "CREATE TABLE {$config["tablePrefix"]}members (
 	memberId int unsigned NOT NULL auto_increment,
@@ -84,6 +88,7 @@ $queries[] = "CREATE TABLE {$config["tablePrefix"]}members (
 	KEY members_password (password)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8";
 
+// Create the tags table.
 $queries[] = "DROP TABLE IF EXISTS {$config["tablePrefix"]}tags";
 $queries[] = "CREATE TABLE {$config["tablePrefix"]}tags (
 	tag varchar(31) NOT NULL,
@@ -91,22 +96,26 @@ $queries[] = "CREATE TABLE {$config["tablePrefix"]}tags (
 	PRIMARY KEY  (conversationId, tag)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8";
 
+// Create the searches table.
 $queries[] = "DROP TABLE IF EXISTS {$config["tablePrefix"]}searches";
 $queries[] = "CREATE TABLE {$config["tablePrefix"]}searches (
 	ip int unsigned NOT NULL,
 	searchTime int unsigned NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8";
 
+// Create the a member for the administrator.
 $color = rand(1, 27);
 $queries[] = "INSERT INTO {$config["tablePrefix"]}members (memberId, name, email, password, color, account, language) VALUES 
 (1, '{$_SESSION["install"]["adminUser"]}', '{$_SESSION["install"]["adminEmail"]}', '" . md5($config["salt"] . $_SESSION["install"]["adminPass"]) . "', $color, 'Administrator', 'English')";
 
+// Create default conversations.
 $time = time();
 $queries[] = "INSERT INTO {$config["tablePrefix"]}conversations (conversationId, title, slug, sticky, posts, startMember, startTime, lastActionTime, private) VALUES
 (1, 'Welcome to {$_SESSION["install"]["forumTitle"]}!', '" . slug("Welcome to {$_SESSION["install"]["forumTitle"]}!") . "', 1, 1, 1, $time, $time, 0),
 (2, 'How to use esoTalk', '" . slug("How to use esoTalk") . "', 1, 1, 1, $time, $time, 0),
 (3, 'How to customize your forum', '" . slug("How to customize your forum") . "', 0, 1, 1, $time, $time, 1)";
 
+// Insert default posts.
 $queries[] = "INSERT INTO {$config["tablePrefix"]}posts (conversationId, memberId, time, title, content) VALUES
 (1, 1, $time, 'Welcome to {$_SESSION["install"]["forumTitle"]}!', '<p><b>Welcome to {$_SESSION["install"]["forumTitle"]}!</b></p><p>{$_SESSION["install"]["forumTitle"]} is powered by <a href=\'http://esotalk.com/\'>esoTalk</a>, which is a little bit different to some of the other forums you may have previously used. <a href=\'" . makeLink(2) . "\'>Check out this topic</a> for a basic tutorial.</p><p>Otherwise, it&#39;s time to get posting!</p><p>Currently the tag cloud on the index view is going to be full of the tags from these instruction posts. As you start new conversations you&#39;ll notice that the tag cloud adapts to the new content of the forum. In time, it&#39;ll become very distinct and will give visitors a good idea of what your forum is about.</p><p>esoTalk has been designed to be completely customizable. The forum administrator will be able to choose from a bunch of plugins and skins, available <a href=\'http://esotalk.com\'>here</a>, and adapt this forum to the needs of its community.</p><p>Anyway, good luck {$_SESSION["install"]["forumTitle"]}, and we hope you enjoy using esoTalk!</p>'),
 
@@ -114,8 +123,10 @@ $queries[] = "INSERT INTO {$config["tablePrefix"]}posts (conversationId, memberI
 
 (3, 1, $time, 'How to customize your forum', '<h3>Hey {$_SESSION["install"]["adminUser"]}, congrats on getting esoTalk installed!</h3><p>Cool! Your forum is now good-to-go, but you might want to customize it with your own logo, design, and configuration settings - so here&#39;s how. Remember, some of this stuff can be a bit complex, especially if you don&#39;t have much experience with this sorta stuff, so feel free to ask for help at <a href=\'http://forum.esotalk.com/\'>the esoTalk support forum</a>.</p><h3>Adding your logo</h3><ol><li>Get your custom logo graphic file and use <a href=\'http://www.gimp.org/downloads/\'>an image editor</a> to cut it down to size. If you&#39;re not interested in making more advanced design changes then make sure the logo isn&#39;t higher than ~30px.</li><li>Upload the logo to your webserver. If you&#39;re not sure where to put it, just stick it in the same place you put the <code>esoTalk</code> files.</li><li>Edit the file <code>config/config.php</code>.</li><li>Somewhere <b>after</b> <code>\$config = array(</code> and <b>before</b> <code>);</code>, add the following line: <code>&quot;forumLogo&quot; =&gt; &quot;http://your.server.com/logo.jpg&quot;,</code> (make sure the <a href=\'http://your.server.com\'>your.server.com</a> path points to the place were you uploaded your logo).</li><li>If your logo graphic already contains your forum name, you can hide the text title by editing <code>config/custom.css</code> and adding the following code: <code>#forumTitle {display:none}</code></li><li>Refresh your forum index and check it out!</li></ol><h3>Choosing your skin</h3><ol><li>Visit <a href=\'http://esotalk.com/skins/\'>esotalk.com/skins</a> and download the skin you&#39;d like to use.</li><li>Log into your forum and click <code>Skins</code>.</li><li>In the <code>Add a new skin</code> section, click <code>Browse</code> to select the skin archive you previously downloaded, then click <code>Add skin</code>.</li><li>Click on the picture of the newly-added skin to activate it.</li></ol><h3>Plugins</h3><p>Plugins are these nifty little things that add extra functionality to your forum. There are a few installed by default, such as emoticons. You can download new plugins at <a href=\'http://esotalk.com/plugins/\'>esotalk.com/plugins</a> and install them by logging in to your forum, clicking <code>Plugins</code>, browsing for the new plugin archive, then clicking <code>Add plugin</code>.</p><p>Tick the checkbox near a plugin name to enable it. Some plugins have settings which you can change by clicking <code>settings</code> to the right of the plugin name.</p><h3>Advanced configuration settings</h3><p>See all the configuration variables in <code>config.default.php</code>? If you find one you want to change, copy the line into <code>config/config.php</code> and modify the value.</p><h3>Languages</h3><p>esoTalk is available in <a href=\'http://esotalk.com/languages/\'>a number of languages</a>. You can download language packs from <a href=\'http://esotalk.com/languages/\'>esotalk.com/languages</a> and install them by uploading them into the <code>languages</code> of your esoTalk installation.</p><p>Each user can select from any of the language packs you have installed, but you can set a default by editing <code>language</code> entry in your advanced configuration settings. See the <i>Advanced configuration settings</i> section above for details of how to do this.</p><p>If you&#39;d like to make a custom change to the language of your forum (ex. changing the footer text), find the appropriate language entry in the language file and override it in <code>config/custom.php</code>.</p><h3>We hope you enjoy using esoTalk!</h3><p>There are a whole bunch of other things you can do to customize your forum, but that sorta stuff is getting a bit too advanced for this tutorial. You can check out <a href=\'http://forum.esotalk.com/\'>the esoTalk support forum</a> for further information and/or assistance. Or just drop by and say &quot;Hi&quot;! (We love to hear feedback!)</p><p>Good luck with your forum, {$_SESSION["install"]["adminUser"]}! <img src=\'js/x.gif\' style=\'background-position:0 -40px\' alt=\'^_^\' class=\'emoticon\'/></p>')";
 
+// Make the "How to customize your forum" conversation only viewable by the administrator.
 $queries[] = "INSERT INTO {$config["tablePrefix"]}status (conversationId, memberId, allowed) VALUES (3, 1, 1)";
 
+// Add tags for the default conversations.
 $queries[] = "INSERT INTO {$config["tablePrefix"]}tags (conversationId, tag) VALUES (1, 'welcome'), (1, 'introduction'), (2, 'esotalk'), (2, 'tutorial'), (2, 'faq'), (2, 'howto'), (3, 'esotalk'), (3, 'customization'), (3, 'tutorial'), (3, 'administration')";
 
 ?>

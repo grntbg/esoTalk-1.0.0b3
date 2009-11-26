@@ -2,49 +2,36 @@
 // Copyright 2009 Simon Zerner, Toby Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
-// Installer
+// Installer wrapper: sets up the Install controller and displays the installer interface.
 
 define("IN_ESOTALK", 1);
 
-// No timeout
+// Unset the page execution time limit.
 @set_time_limit(0);
 
-// Require essential files
+// Require essential files.
 require "../lib/functions.php";
 require "../lib/database.php";
 
-// Start a session if one does not already exist
+// Start a session if one does not already exist.
 if (!session_id()) session_start();
 
-// Undo register globals
+// Undo register_globals.
 undoRegisterGlobals();
 
-// Generate button html
-function button($attributes)
-{
-	$class = $id = $style = ""; $attr = " type='submit'";
-	foreach ($attributes as $k => $v) {
-		if ($k == "class") $class = " $v";
-		elseif ($k == "id") $id = " id='$v'";
-		elseif ($k == "style") $style = " style='$v'";
-		else $attr .= " $k='$v'";
-	}
-	return "<input class='button$class'$id$style$attr/>";
-}
-
-// If magic quotes is on, strip the slashes that it added
+// If magic quotes is on, strip the slashes that it added.
 if (get_magic_quotes_gpc()) {
 	$_GET = array_map("undoMagicQuotes", $_GET);
 	$_POST = array_map("undoMagicQuotes", $_POST);
 	$_COOKIE = array_map("undoMagicQuotes", $_COOKIE);
 }
 
-// Clean and sterilize the request data
+// Sanitize the request data. This is pretty much the same as using htmlentities. 
 $_POST = sanitize($_POST);
 $_GET = sanitize($_GET);
 $_COOKIE = sanitize($_COOKIE);
 
-// Set up the Install controller
+// Set up the Install controller, which will perform all installation tasks.
 require "install.controller.php";
 $install = new Install();
 $install->init();
@@ -57,59 +44,7 @@ $install->init();
 <title>esoTalk Installer</title>
 <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
 <script type='text/javascript' src='../js/esotalk.js'></script>
-<style type='text/css'>
-body {background:#fff; font-size:75%}
-body, input, select, textarea, table {font-family:arial, helvetica, sans-serif; margin:0}
-input, select, textarea {font-size:100%}
-#container {margin:50px auto 0 auto; width:55em; background:#f5f5ff; padding:20px; font-size:120%; line-height:1.4}
-#container h1 {margin:0 0 20px 0; font-size:160%; font-weight:normal}
-#container h1 img {vertical-align:middle; margin-right:15px}
-a {text-decoration:none; color:#00f}
-a:hover {text-decoration:underline; color:#000}
-hr {color:#bbf; border:solid #bbf; border-width:1px 0 0 0; height:1px; margin:15px 0}
-#footer {text-align:right; font-size:90%}
-pre {overflow:auto; padding-bottom:5px}
-.form small {color:#888; font-size:75%}
-.form small a {color:#55f}
-
-/* Inputs, buttons, and other form elements */
-form {margin:0}
-input.text, textarea {border:1px solid #aaa; background:#fff; padding:2px}
-input.text:focus, textarea.text:focus {border-color:#555}
-#cInfo .editable:focus {background:#fff}
-#reset {color:#aaa; background:#fff; border-color:#aaa}
-#reset:hover {color:#000; border-color:#aaa}
-.placeholder {color:#aaa}
-input.checkbox, input.radio {padding:0; margin:0 2px 0 5px; vertical-align:-2px}
-label.checkbox, label.radio {cursor:pointer}
-fieldset {border:1px solid #ccc; margin:10px 0 20px 0; padding:0 15px 15px}
-legend {font-size:140%; padding:5px 10px 10px; font-weight:bold; color:#000}
-
-/* Structured forms */
-.form label {width:16em; float:left; text-align:right; margin:2px 1em 0 0}
-.form div label {float:none; width:auto; text-align:left; margin:0}
-.form label.long {width:100%; text-align:left}
-.form label.radio {text-align:left; cursor:pointer}
-.form input.text, .form select {width:17em; margin:0; float:left; font-size:130%}
-.form div {float:left}
-.form div input.text, .form div select {float:none}
-.form {margin:0; padding:0}
-.form li {margin-bottom:4px; overflow:hidden; list-style:none; display:block; zoom:1}
-.form .msg {font-size:75%; padding:3px 5px; margin:0 0 0 5px; float:left; width:19em}
-
-#footer .button {margin-left:5px}
-
-.big {font-size:140%;}
-
-li {margin-bottom:1em}
-
-.msg {padding:5px 10px; background:#ddd; margin:0 0 1em 0; line-height:1.4}
-.info {background:#fad163}
-.success {background:#cf0}
-.warning {background:#c00; color:#fff}
-.warning a, .warning a:hover {color:#fff; text-decoration:underline}
-#advanced input.text {font-size:100%; width:22em;}
-</style>
+<link type='text/css' rel='stylesheet' href='install.css'/>
 </head>
 
 <body>
@@ -121,7 +56,8 @@ li {margin-bottom:1em}
 
 switch ($install->step) {
 
-// Fatal checks
+
+// Fatal checks.
 case "fatalChecks": ?>
 <h1><img src='logo.gif' alt=''/> Uh oh, something's not right!</h1>
 <p>The following errors were found with your esoTalk setup. They must be resolved before you can continue the installation.</p>
@@ -131,10 +67,11 @@ case "fatalChecks": ?>
 </ul>
 <p>If you run into any other problems or just want some help with the installation, feel free to ask for assistance at the <a href='http://forum.esotalk.com/'>esoTalk support forum</a> where a bunch of friendly people will be happy to help you out.</p>
 <hr/>
-<p id='footer'><?php echo button(array("type" => "submit", "class" => "big", "value" => "Try again")); ?></p>
+<p id='footer'><input class='button' value='Try again' type='submit'/></p>
 <?php break;
 
-// Warning checks
+
+// Warning checks.
 case "warningChecks": ?>
 <h1><img src='logo.gif' alt=''/> Warning!</h1>
 <p>The following errors were found with your esoTalk setup. You can continue the esoTalk install without resolving them, but some esoTalk functionality may be limited.</p>
@@ -144,23 +81,25 @@ case "warningChecks": ?>
 </ul>
 <p>If you run into any other problems or just want some help with the installation, feel free to ask for assistance at the <a href='http://forum.esotalk.com/'>esoTalk support forum</a> where a bunch of friendly people will be happy to help you out.</p>
 <hr/>
-<p id='footer'><?php echo button(array("type" => "submit", "name" => "next", "class" => "big", "value" => "Next step &#155;")); ?></p>
+<p id='footer'><input class='button' value='Next step &#155;' type='submit' name='next'/></p>
 <?php break;
 
-// Specify setup information
+
+// Specify setup information.
 case "info": ?>
 <h1><img src='logo.gif' alt=''/> Specify setup information</h1>
 <p>Welcome to the esoTalk installer! We need a few details from you so we can get your forum set up and ready to go.</p>
 <p>If you have any trouble, get help on the <a href='http://forum.esotalk.com/'>esoTalk support forum</a>!</p>
 <hr/>
-<div>
 
 <ul class='form'>
-<li><label>Forum title</label> <div><input id='forumTitle' name='forumTitle' type='text' class='text' value='<?php echo @$_POST["forumTitle"]; ?>'/></div>
+<li><label>Forum title</label> <input id='forumTitle' name='forumTitle' tabindex='1' type='text' class='text' value='<?php echo @$_POST["forumTitle"]; ?>'/>
 <?php if (isset($install->errors["forumTitle"])): ?><div class='warning msg'><?php echo $install->errors["forumTitle"]; ?></div><?php endif; ?></li>
-<li><label>Default language</label> <div><select id='language' name='language'>
+
+<li><label>Default language</label> <div><select id='language' name='language' tabindex='2'>
 <?php foreach ($install->languages as $language) echo "<option value='$language'" . ((!empty($_POST["language"]) ? $_POST["language"] : "English (casual)") == $language ? " selected='selected'" : "") . ">$language</option>"; ?>
-</select><br/><small>More language packs are <a href='http://esotalk.com/languages'>available for download</a>!</small></li>
+</select><br/>
+<small>More language packs are <a href='http://esotalk.com/languages'>available for download</a>!</small></div></li>
 </ul>
 
 <hr/>
@@ -169,27 +108,29 @@ case "info": ?>
 <?php if (isset($install->errors["mysql"])): ?><div class='warning msg'><?php echo $install->errors["mysql"]; ?></div><?php endif; ?>
 
 <ul class='form'>
-<li><label>MySQL host address</label> <input id='mysqlHost' name='mysqlHost' type='text' class='text' value='<?php echo isset($_POST["mysqlHost"]) ? $_POST["mysqlHost"] : "localhost"; ?>'/></li>
-<li><label>MySQL username</label> <input id='mysqlUser' name='mysqlUser' type='text' class='text' value='<?php echo @$_POST["mysqlUser"]; ?>'/></li>
-<li><label>MySQL password</label> <input id='mysqlPass' name='mysqlPass' type='password' class='text' value='<?php echo @$_POST["mysqlPass"]; ?>'/></li>
-<li><label>MySQL database</label> <input id='mysqlDB' name='mysqlDB' type='text' class='text' value='<?php echo @$_POST["mysqlDB"]; ?>'/></li>
-</ul>
+<li><label>MySQL host address</label> <input id='mysqlHost' name='mysqlHost' tabindex='3' type='text' class='text' value='<?php echo isset($_POST["mysqlHost"]) ? $_POST["mysqlHost"] : "localhost"; ?>'/></li>
 
+<li><label>MySQL username</label> <input id='mysqlUser' name='mysqlUser' tabindex='4' type='text' class='text' value='<?php echo @$_POST["mysqlUser"]; ?>'/></li>
+
+<li><label>MySQL password</label> <input id='mysqlPass' name='mysqlPass' tabindex='5' type='password' class='text' value='<?php echo @$_POST["mysqlPass"]; ?>'/></li>
+
+<li><label>MySQL database</label> <input id='mysqlDB' name='mysqlDB' tabindex='6' type='text' class='text' value='<?php echo @$_POST["mysqlDB"]; ?>'/></li>
+</ul>
 
 <hr/>
 <p>esoTalk will use the following information to set up your administrator account on your forum.</p>
 
 <ul class='form'>
-<li><label>Administrator username</label> <input id='adminUser' name='adminUser' type='text' class='text' value='<?php echo @$_POST["adminUser"]; ?>'/>
+<li><label>Administrator username</label> <input id='adminUser' name='adminUser' tabindex='7' type='text' class='text' value='<?php echo @$_POST["adminUser"]; ?>'/>
 <?php if (isset($install->errors["adminUser"])): ?><div class='warning msg'><?php echo $install->errors["adminUser"]; ?></div><?php endif; ?></li>
-
-<li><label>Administrator email</label> <input id='adminEmail' name='adminEmail' type='text' class='text' value='<?php echo @$_POST["adminEmail"]; ?>'/>
+	
+<li><label>Administrator email</label> <input id='adminEmail' name='adminEmail' tabindex='8' type='text' class='text' value='<?php echo @$_POST["adminEmail"]; ?>'/>
 <?php if (isset($install->errors["adminEmail"])): ?><span class='warning msg'><?php echo $install->errors["adminEmail"]; ?></span><?php endif; ?></li>
-
-<li><label>Administrator password</label> <input id='adminPass' name='adminPass' type='password' class='text' value='<?php echo @$_POST["adminPass"]; ?>'/>
+	
+<li><label>Administrator password</label> <input id='adminPass' name='adminPass' tabindex='9' type='password' class='text' value='<?php echo @$_POST["adminPass"]; ?>'/>
 <?php if (isset($install->errors["adminPass"])): ?><span class='warning msg'><?php echo $install->errors["adminPass"]; ?></span><?php endif; ?></li>
-
-<li><label>Confirm password</label> <input id='adminConfirm' name='adminConfirm' type='password' class='text' value='<?php echo @$_POST["adminConfirm"]; ?>'/>
+	
+<li><label>Confirm password</label> <input id='adminConfirm' name='adminConfirm' tabindex='10' type='password' class='text' value='<?php echo @$_POST["adminConfirm"]; ?>'/>
 <?php if (isset($install->errors["adminConfirm"])): ?><span class='warning msg'><?php echo $install->errors["adminConfirm"]; ?></span><?php endif; ?></li>
 </ul>
 
@@ -202,38 +143,41 @@ if (!$("adminEmail").value) makePlaceholder($("adminEmail"), "simon@example.com"
 </script>
 
 <br/>
-
-<a href='javascript:toggleAdvanced()' title='What, you&#39;re too cool for the normal settings?'>Advanced options</a>
-
-<div id='advanced' style='overflow:hidden; margin:0'>
-<hr style='margin-top:5px'/>
+<a href='#advanced' onclick='toggleAdvanced();return false' title='What, you&#39;re too cool for the normal settings?'>Advanced options</a>
+<hr class='aboveToggle'/>
+<div id='advanced'>
 
 <?php if (isset($install->errors["tablePrefix"])): ?><p class='warning msg'><?php echo $install->errors["tablePrefix"]; ?></p><?php endif; ?>
 
 <ul class='form'>
-<li><label>MySQL table prefix</label> <input name='tablePrefix' type='text' class='text' value='<?php echo isset($_POST["tablePrefix"]) ? $_POST["tablePrefix"] : "et_"; ?>'/></li>
+<li><label>MySQL table prefix</label> <input name='tablePrefix' id='tablePrefix' type='text' class='text' value='<?php echo isset($_POST["tablePrefix"]) ? $_POST["tablePrefix"] : "et_"; ?>'/></li>
 
 <li><label>Base URL</label> <input name='baseURL' type='text' class='text' value='<?php echo isset($_POST["baseURL"]) ? $_POST["baseURL"] : $install->suggestBaseUrl(); ?>'/></li>
 
 <li><label>Use friendly URLs</label> <input name='friendlyURLs' type='checkbox' class='checkbox' value='1' checked='<?php echo (!empty($_POST["friendlyURLs"]) or $install->suggestFriendlyUrls()) ? "checked" : ""; ?>'/></li>
 </ul>
 
-<input type='hidden' name='showAdvanced' id='showAdvanced' value=''/>
+<hr/>
+
+<input type='hidden' name='showAdvanced' id='showAdvanced' value='<?php echo $_POST["showAdvanced"]; ?>'/>
 <script type='text/javascript'>
 function toggleAdvanced() {
-	$("advanced").style.display = $("advanced").style.display == "none" ? "" : "none";
-	$("showAdvanced").value = $("advanced").style.display == "none" ? "" : "1";
+	toggle($("advanced"), {animation: "verticalSlide"});
+	$("showAdvanced").value = $("advanced").showing ? "1" : "";
+	if ($("advanced").showing) {
+		animateScroll($("advanced").offsetTop + $("advanced").offsetHeight + getClientDimensions()[1]);
+		$("tablePrefix").focus();
+	}
 }
-<?php if (empty($_POST["showAdvanced"])): ?>toggleAdvanced();<?php endif; ?>
+<?php if (empty($_POST["showAdvanced"])): ?>hide($("advanced"));<?php endif; ?>
 </script>
 </div>
 
-<hr style='margin-top:5px'/>
-<p id='footer'><?php echo button(array("type" => "submit", "class" => "big", "value" => "Next step &#155;")); ?></p>
-
+<p id='footer' style='margin:0'><input type='submit' value='Next step &#155;' class='button'/></p>
 <?php break;
 
-// Show an installation error
+
+// Show an installation error.
 case "install": ?>
 <h1><img src='logo.gif' alt=''/> Uh oh! It's a fatal error...</h1>
 <p class='warning msg'>The esoTalk installer encountered an error.</p>
@@ -243,59 +187,56 @@ case "install": ?>
 <li><strong>Go back and check your settings.</strong> In particular, make sure your database information is correct.</li>
 <li><strong>Get help.</strong> Go on the <a href='http://forum.esotalk.com' title='Don&#039;t worry, we&#039;re friendly!'>esoTalk support forum</a> and <a href='http://forum.esotalk.com/search/tag:installation'>search</a> to see if anyone else is having the same problem as you are. If not, start a new conversation about your problem, including the error details below.</li>
 </ul>
-<div><a href='javascript:toggleError()'>Show error information</a></div>
+
+<a href='#' onclick='toggleError();return false'>Show error information</a>
+<hr class='aboveToggle'/>
 <div id='error'>
-<hr/>
 <?php echo $install->errors[1]; ?>
+<hr/>
 </div>
 <script type='text/javascript'>
 function toggleError() {
-	$("error").style.display = $("error").style.display == "none" ? "" : "none";
+	toggle($("error"), {animation: "verticalSlide"});
 }
-toggleError();
+hide($("error"));
 </script>
-<hr/>
-<form action='' method='post'>
-<p id='footer'>
-<?php echo button(array("type" => "submit", "class" => "big", "value" => "&#139; Go back", "name" => "back")); ?>
-<?php echo button(array("type" => "submit", "class" => "big", "value" => "Try again")); ?>
+<p id='footer' style='margin:0'>
+<input type='submit' class='button' value='&#139; Go back' name='back'/>
+<input type='submit' class='button' value='Try again'/>
 </p>
-</form>
-
 <?php break;
+
 
 // Finish!
 case "finish": ?>
 <h1><img src='logo.gif' alt=''/> Congratulations!</h1>
 <p>esoTalk has been installed, and your forum should be up and ready to go.</p>
 <p>It's highly recommended that you <strong>remove the <code>install</code> folder</strong> to prevent anyone from hacking your forum.</p>
-<p><a href='javascript:toggleAdvanced()'>Show advanced information</a></p>
+
+<a href='javascript:toggleAdvanced()'>Show advanced information</a>
+<hr class='aboveToggle'/>
 <div id='advanced'>
-<hr/>
-<p><strong>Queries run</strong></p>
+<strong>Queries run</strong>
 <pre>
 <?php if (isset($_SESSION["queries"]) and is_array($_SESSION["queries"]))
 	foreach ($_SESSION["queries"] as $query) echo sanitize($query) . ";<br/><br/>"; ?>
 </pre>
+<hr/>
 </div>
 <script type='text/javascript'>
 function toggleAdvanced() {
-	$("advanced").style.display = $("advanced").style.display == "none" ? "" : "none";
+	toggle($("advanced"), {animation: "verticalSlide"});
 }
-toggleAdvanced();
+hide($("advanced"));
 </script>
-<hr/>
-<p style='text-align:center;' id='footer'><?php echo button(array("type" => "submit", "class" => "big", "value" => "Take me to my forum!", "name" => "finish")); ?></p>
+<p style='text-align:center' id='footer'><input type='submit' class='button' value='Take me to my forum!' name='finish'/></p>
 <?php break;
 
 }
-
 ?>
-</div>
 
 </div>
 </form>
 
 </body>
-
 </html>

@@ -924,7 +924,7 @@ function formatForDisplay($content)
 function displayPost($content)
 {
 	// Highlight search keywords.
-	if (!empty($_SESSION["highlight"])) $content = highlight($post["content"], $_SESSION["highlight"]);
+	if (!empty($_SESSION["highlight"])) $content = highlight($content, $_SESSION["highlight"]);
 	
 	// Replace empty post links with "go to this post" links.
 	global $language;

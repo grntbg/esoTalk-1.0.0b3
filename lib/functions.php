@@ -60,7 +60,7 @@ function highlight($text, $words)
 {
 	foreach ($words as $word) {
 		if (!$word = trim($word)) continue;
-		$text = preg_replace("/\b(" . preg_quote($word, "/") . ")\b/i", "<span class='highlight'>$1</span>", $text);
+		$text = preg_replace("/(?<=[\s>]|^)(" . preg_quote($word, "/") . ")(?=[\s<,.?!:]|$)/i", "<span class='highlight'>$1</span>", $text);
 	}
 	return $text; 
 }
@@ -420,7 +420,7 @@ function writeConfigFile($file, $variable, $settings)
 	return writeFile($file, "<?php\n$variable = " . variableToText($settings, "\t") . ";\n?>");
 }
 
-// A shorthand version of fopen/fwrite/fclose. Returns a descriptive error message if the file can't be opened for writing.
+// A shorthand version of fopen/fwrite/fclose. Returns false if the file can't be opened for writing.
 function writeFile($file, $contents)
 {
 	// Attempt to open the file for writing.
@@ -431,6 +431,7 @@ function writeFile($file, $contents)
 	return true;
 }
 
+// Regenerate the session token.
 function regenerateToken()
 {
 	$_SESSION["token"] = md5(uniqid(rand()));

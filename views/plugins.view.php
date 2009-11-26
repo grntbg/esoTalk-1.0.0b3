@@ -20,37 +20,10 @@ function toggleEnabled(id, enabled) {
 	});
 }
 function toggleSettings(id) {
-	for (var i in plugins) if (plugins[i] != id && $("ext-" + plugins[i] + "-settings") && $("ext-" + plugins[i] + "-settings").showing) animateToggle($("ext-" + plugins[i] + "-settings"), 0);
-	animateToggle($("ext-" + id + "-settings"), !$("ext-" + id + "-settings").showing);
+	for (var i in plugins) if (plugins[i] != id && $("ext-" + plugins[i] + "-settings") && $("ext-" + plugins[i] + "-settings").showing) hide($("ext-" + plugins[i] + "-settings"), {animation: "verticalSlide"});
+	toggle($("ext-" + id + "-settings"), {animation: "verticalSlide"});
 }
 
-function animateToggle(settings, showing)
-{
-	settings.showing = showing;
-	settings.style.display = "block";
-	var overflowDiv = createOverflowDiv(settings);
-	if (!overflowDiv.style.display) overflowDiv.style.display = "none";
-	var initHeight = overflowDiv.offsetHeight;
-	//if (!overflowDiv.style.opacity) overflowDiv.style.opacity = 0;
-	var initOpacity = parseFloat(overflowDiv.style.opacity);
-	settings.style.position = "relative";
-	overflowDiv.style.display = "block";
-	overflowDiv.style.overflow = "hidden";
-	var finalHeight = settings.offsetHeight;
-	if (overflowDiv.animation) overflowDiv.animation.stop();
-	overflowDiv.animation = new Animation(function(values, final) {
-		overflowDiv.style.height = Math.round(values[0]) + "px";
-		//settings.style.top = Math.round(values[0] - finalHeight) + "px";
-		//overflowDiv.style.opacity = values[1];
-		if (final && values[0] == 0) {
-			overflowDiv.style.display = "none";
-			overflowDiv.style.height = "";
-			settings.style.display = "none";
-			settings.style.top = "";
-		}
-	}, {begin: [initHeight, initOpacity], end: [showing ? finalHeight : 0, showing ? 1 : 0]});
-	overflowDiv.animation.start();
-}
 var plugins = [];
 // ]]>
 </script>
