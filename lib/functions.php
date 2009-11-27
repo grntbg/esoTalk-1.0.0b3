@@ -261,7 +261,7 @@ function relativeTime($then)
 		$minutes = floor($ago / 60);
 		return sprintf($language[($minutes == 1 ? "minute" : "minutes") . " ago"], $minutes);
 	}
-	// 1 second = 1 second. Yeah, I'm sure.
+	// 1 second = 1 second. Duh.
 	elseif ($ago >= 1) {
 		$seconds = floor($ago / 1);
 		return sprintf($language[($seconds == 1 ? "second" : "seconds") . " ago"], $seconds);
