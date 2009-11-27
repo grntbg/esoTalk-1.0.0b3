@@ -25,10 +25,10 @@ if (!defined("IN_ESOTALK")) exit;
 <ul class='form stats'>
 
 <li><label><?php echo $language["Last active"]; ?></label>
-<div><?php echo relativeTime($this->member["lastSeen"]), (!empty($this->member["lastAction"]) ? " <small>({$this->member["lastAction"]})</small>" : ""); ?></div></li>
+<div><abbr title='<?php echo date($language["dateFormat"], $this->member["lastSeen"]); ?>'><?php echo relativeTime($this->member["lastSeen"]); ?></abbr> <?php echo !empty($this->member["lastAction"]) ? " <small>({$this->member["lastAction"]})</small>" : ""; ?></div></li>
 
 <li><label><?php echo $language["First posted"]; ?></label>
-<div><?php echo relativeTime($this->member["firstPosted"]); ?></div></li>
+<div><abbr title='<?php echo date($language["dateFormat"], $this->member["firstPosted"]); ?>'><?php echo relativeTime($this->member["firstPosted"]); ?></abbr></div></li>
 
 <li><label><?php echo $language["Post count"]; ?></label>
 <div><?php echo number_format($this->member["postCount"]); ?>
