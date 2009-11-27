@@ -55,6 +55,7 @@ $language = array(
 // "Update debug information for background AJAX requests" => "Update debug information for background AJAX requests",
 // "author" => "by %s",
 // "version" => "version %s",
+// "profile" => "%s's profile",
 // Deleted: "helpesoTalk"
 // Deleted: "Name"
 // Deleted: "ago"
@@ -233,6 +234,7 @@ $language = array(
 "Plugins" => "Plugins",
 "Preview" => "Preview",
 "Previous" => "&#139; Previous",
+"profile" => "%s's profile",
 "Post a reply" => "Post a reply",
 "Post count" => "Post count",
 "posts" => "posts",
