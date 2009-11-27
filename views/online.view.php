@@ -2,13 +2,17 @@
 // Copyright 2009 Simon Zerner, Toby Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
-// Online view - displays a list of members currently online.
+// Online view: displays a list of members currently online.
 
 if (!defined("IN_ESOTALK")) exit;
 ?>
-<h2><?php echo $language["Who's online"]; ?></h2>
+<fieldset>
+<legend><?php echo $language["Who's online"]; ?></legend>
 
-<?php if ($this->numberOnline): ?>
+<?php
+// If there are members online, list them.
+if ($this->numberOnline): ?>
+
 <div id='membersOnline'>
 <?php while (list($memberId, $name, $avatarFormat, $color, $account, $lastSeen, $lastAction) = $this->esoTalk->db->fetchRow($this->online)): ?>
 <div class='p c<?php echo $color; ?>'><div class='hdr'>
@@ -19,6 +23,8 @@ if (!defined("IN_ESOTALK")) exit;
 <?php endwhile; ?>
 </div>
 
-<?php else: ?>
-<?php echo $this->esoTalk->htmlMessage("noMembersOnline"); ?>
-<?php endif; ?>
+<?php
+// Otherwise, display a 'no members online' message.
+else: echo $this->esoTalk->htmlMessage("noMembersOnline"); endif; ?>
+
+</fieldset>
