@@ -20,6 +20,14 @@ function init()
 	// Add the formatter
 	$this->esoTalk->formatter->addFormatter("emoticons", "Formatter_Emoticons");
 	
+	// Convert emoticons to text in the feed.
+	if ($this->esoTalk->action == "feed")
+		$this->esoTalk->controller->addHook("formatPost", array($this, "revertEmoticons"));
+}
+
+function revertEmoticons($controller, &$post)
+{
+	$post = $this->esoTalk->formatter->modes["emoticons"]->revert($post);
 }
 
 }

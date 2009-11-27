@@ -1,4 +1,11 @@
-<?php echo "<?xml version='1.0' encoding='{$language["charset"]}'?>\n"; ?>
+<?php
+// Copyright 2009 Simon Zerner, Toby Zerner
+// This file is part of esoTalk. Please see the included license file for usage information.
+
+// Feed view: outputs items specified by the feed controller in RSS format.
+
+if (!defined("IN_ESOTALK")) exit;
+?><?php echo "<?xml version='1.0' encoding='{$language["charset"]}'?>\n"; ?>
 <rss version='2.0'>
 	<channel>
 		<title><?php echo $this->controller->title; ?></title>

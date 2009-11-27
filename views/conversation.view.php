@@ -2,7 +2,7 @@
 // Copyright 2009 Simon Zerner, Toby Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
-// Conversation view - displays conversation header, pagination, posts, and reply box.
+// Conversation view: displays conversation header, pagination, posts, and reply box.
 
 if (!defined("IN_ESOTALK")) exit;
 ?>

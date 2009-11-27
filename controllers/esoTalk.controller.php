@@ -203,7 +203,7 @@ function login($name = false, $password = false, $hash = false)
 				setcookie($config["cookieName"], $_SESSION["user"]["memberId"] . sanitizeForHTTP($hash), time() + $config["cookieExpire"], "/", $config["cookieDomain"]);
 			}
 			
-			if (!$this->ajax) refresh();
+			if (!defined("AJAX_REQUEST")) refresh();
 			return true;
 		}
 
@@ -296,7 +296,7 @@ function fatalError($message)
 {
 	global $language, $config;
 	$this->callHook("fatalError", array(&$message));
-	if ($this->ajax) {
+	if (defined("AJAX_REQUEST")) {
 		header("HTTP/1.0 500 Internal Server Error");
 		echo strip_tags("{$language["Fatal error"]} - $message");
 	} else {
