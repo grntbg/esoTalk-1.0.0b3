@@ -2,14 +2,19 @@
 // Copyright 2009 Simon Zerner, Toby Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
+// Sitemap: generates necessary sitemap files and outputs sitemap.xml.
+
 define("IN_ESOTALK", 1);
 
+// Include our config files.
 require "config.default.php";
 @include "config/config.php";
 if (!isset($config)) exit;
+// Combine config.default.php and config/config.php into $config (the latter will overwrite the former.)
 $config = array_merge($defaultConfig, $config);
 
-// Compare versions (file version and database version)
+// Compare the hardcoded version of esoTalk (ESOTALK_VERSION) to the installed one ($versions["esoTalk"]).
+// If they're out-of-date, stop page execution.
 require "config/versions.php";
 if ($versions["esoTalk"] != ESOTALK_VERSION) exit;
 
@@ -22,7 +27,7 @@ if (!file_exists("sitemap.xml") or filemtime("sitemap.xml") < time() - $config["
 	// If there are lots of conversations, this might take a while...
 	set_time_limit(0);
 
-	// Connect to the db.
+	// Connect to the database.
 	require "database.php";
 	$db = new Database();
 	if (!$db->connect($config["mysqlHost"], $config["mysqlUser"], $config["mysqlPass"], $config["mysqlDB"])) exit;
@@ -43,10 +48,10 @@ if (!file_exists("sitemap.xml") or filemtime("sitemap.xml") < time() - $config["
 		// Set the filename with the counter.
 		$filename = "sitemap.conversations.$i.xml" . ZLIB;
 
-		// Get the next batch of public conversations from the db.
+		// Get the next batch of public conversations from the database.
 		$r = mysql_query("SELECT conversationId, slug, posts / ((UNIX_TIMESTAMP() - startTime) / 86400) AS postsPerDay, IF(lastActionTime, lastActionTime, startTime) AS lastUpdated, posts FROM {$config["tablePrefix"]}conversations WHERE !private LIMIT " . (($i - 1) * URLS_PER_SITEMAP) . "," . URLS_PER_SITEMAP);
 
-		// If there are no conversations left, break.
+		// If there are no conversations left, break from the loop.
 		if (!mysql_num_rows($r)) break;
 
 		// Otherwise let's make the sitemap file.
@@ -55,7 +60,9 @@ if (!file_exists("sitemap.xml") or filemtime("sitemap.xml") < time() - $config["
 
 			// Create a <url> tag for each conversation in the result set.
 			while (list($conversationId, $slug, $postsPerDay, $lastUpdated, $posts) = mysql_fetch_row($r)) {
+				
 				$urlset .= "<url><loc>{$config["baseURL"]}" . makeLink($conversationId, $slug) . "</loc><lastmod>" . gmdate("Y-m-d\TH:i:s+00:00", $lastUpdated) . "</lastmod><changefreq>";
+				
 				// How often should we tell them to check for updates?
 				if ($postsPerDay < 0.006) $urlset .= "yearly";
 				elseif ($postsPerDay < 0.07) $urlset .= "monthly";
@@ -63,6 +70,7 @@ if (!file_exists("sitemap.xml") or filemtime("sitemap.xml") < time() - $config["
 				elseif ($postsPerDay < 3) $urlset .= "daily";
 				else $urlset .= "hourly";
 				$urlset .= "</changefreq>";
+				
 				// Estimate the conversation's importance based upon the number of posts.
 				if ($posts < 50) ; // Default priority is 0.5, so specifying it is redundant.
 				elseif ($posts < 100) $urlset .= "<priority>0.6</priority>";
@@ -70,6 +78,7 @@ if (!file_exists("sitemap.xml") or filemtime("sitemap.xml") < time() - $config["
 				elseif ($posts < 1000) $urlset .= "<priority>0.8</priority>";
 				else $urlset .= "<priority>0.9</priority>";
 				$urlset .= "</url>";
+				
 			}
 
 			// [Encode, and] write out the file.
@@ -87,7 +96,8 @@ if (!file_exists("sitemap.xml") or filemtime("sitemap.xml") < time() - $config["
 	// For each conversation sitemap that we wrote, up until we break'd, add a <sitemap> entry to the index.
 	for ($j = 1; $j < $i; $j++) $sitemap .= "<sitemap><loc>{$config["baseURL"]}sitemap.conversations.$j.xml" . ZLIB . "</loc><lastmod>" . gmdate("Y-m-d\TH:i:s+00:00") . "</lastmod></sitemap>";
 	$sitemap .= "</sitemapindex>";
-	// And write out.
+	
+	// And write out!
 	writeFile("sitemap.xml", $sitemap);
 }
 

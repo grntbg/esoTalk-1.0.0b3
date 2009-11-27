@@ -301,7 +301,7 @@ function fatalError($message)
 		echo strip_tags("{$language["Fatal error"]} - $message");
 	} else {
 		$messageTitle = isset($language["Fatal error"]) ? $language["Fatal error"] : "Fatal error";
-		$messageBody = $language["fatalErrorMessage"] . ($message ? "<div>$message</div>" : "");
+		$messageBody = $language["fatalErrorMessage"] . ($message ? "<div class='info'>$message</div>" : "");
 		include "views/message.php";
 	}
 	exit;

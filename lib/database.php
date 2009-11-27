@@ -12,7 +12,7 @@ class Database {
 var $esoTalk;
 var $link;
 
-// Connect to a database.
+// Connect to a MySQL server and database.
 function connect($host, $user, $password, $db)
 {
 	global $language, $config;
@@ -20,15 +20,18 @@ function connect($host, $user, $password, $db)
 	return true;
 }
 
-// Run a query. If $fatal is true, then a fatal error will be displayed and page execution will be halted if the query fails.
+// Run a query. If $fatal is true, then a fatal error will be displayed and page execution will be halted if the query
+// fails.
 function query($query, $fatal = true)
 {
 	global $language, $config;
+	
+	// If the query is empty, don't bother proceeding.
 	if (!$query) return false;
 	
 	$this->esoTalk->callHook("beforeDatabaseQuery", array(&$query));
 
-	// Execute the query. If there is a problem, return a formatted fatal error.
+	// Execute the query. If there is a problem, display a formatted fatal error.
 	$result = mysql_query($query, $this->link);
 	if (!$result and $fatal) {
 		$error = $this->error();
@@ -40,7 +43,7 @@ function query($query, $fatal = true)
 	return $result;
 }
 
-// Find anything in single quotes in the error and make it red in the query (just to make debugging a bit easier.)
+// Find anything in single quotes in the error and make it red in the query (just to make debugging a bit easier!)
 function highlightQueryErrors($query, $error)
 {
 	preg_match("/'(.+?)'/", $error, $matches);
@@ -54,7 +57,7 @@ function affectedRows()
 	return mysql_affected_rows($this->link);
 }
 
-// Fetch associative array.
+// Fetch an associative array. $input can be a string or a MySQL result.
 function fetchAssoc($input)
 {
 	if (is_resource($input)) return mysql_fetch_assoc($input);
@@ -63,7 +66,7 @@ function fetchAssoc($input)
 	return $this->fetchAssoc($result);
 }
 
-// Fetch sequential array.
+// Fetch a sequential array. $input can be a string or a MySQL result.
 function fetchRow($input)
 {
 	if (is_resource($input)) return mysql_fetch_row($input);
@@ -72,7 +75,7 @@ function fetchRow($input)
 	return $this->fetchRow($result);
 }
 
-// Database result.
+// Get a database result. $input can be a string or a MySQL result.
 function result($input, $field = 0)
 {
 	if (is_resource($input)) return mysql_result($input, $field);
@@ -81,13 +84,13 @@ function result($input, $field = 0)
 	return $this->result($result);
 }
 
-// Get the last db insert id.
+// Get the last database insert ID.
 function lastInsertId()
 {
 	return $this->result($this->query("SELECT LAST_INSERT_ID()"), 0);
 }
 
-// Return the number of rows in the result.
+// Return the number of rows in the result. $input can be a string or a MySQL result.
 function numRows($input)
 {
 	if (!$input) return false;
@@ -96,7 +99,7 @@ function numRows($input)
 	return $this->numRows($result);
 }
 
-// Return the most recent mysql error.
+// Return the most recent MySQL error.
 function error()
 {
 	return mysql_error();
@@ -134,6 +137,8 @@ function constructInsertQuery($table, $data)
 // Construct an update query with associative arrays of data/conditions.
 function constructUpdateQuery($table, $data, $conditions)
 {
+	global $config;
+	
 	$update = "";
 	foreach ($data as $k => $v) $update .= "$k=$v, ";
 	$update = rtrim($update, ", ");
@@ -142,7 +147,6 @@ function constructUpdateQuery($table, $data, $conditions)
 	foreach ($conditions as $k => $v) $where .= "$k=$v AND ";
 	$where = rtrim($where, " AND ");
 	
-	global $config;
 	return "UPDATE {$config["tablePrefix"]}$table SET $update WHERE $where";
 }
 

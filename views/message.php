@@ -17,10 +17,11 @@ if (!defined("IN_ESOTALK")) exit;
 body {background:#fff; font-size:75%; font-family:arial,helvetica,sans-serif; margin:0}
 #container {margin:50px auto; width:55em; background:#f5f5ff; padding:20px; font-size:120%; line-height:1.4}
 h1 {margin:0 0 20px; font-size:150%; font-weight:normal; color:#32517e}
-#container div {border:1px dashed #bbf; padding:10px}
+#container div.info {border:1px dashed #bbf; padding:10px}
 a {color:#00f; text-decoration:none}
 a:hover {color:#000; text-decoration:underline}
 </style>
+<?php if (!empty($messageHead)) echo $messageHead; ?>
 </head>
 <body>
 	

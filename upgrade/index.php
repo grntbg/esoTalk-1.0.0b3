@@ -2,7 +2,8 @@
 // Copyright 2009 Simon Zerner, Toby Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
-// Upgrader: Upgrades esoTalk with every new release
+// Upgrader: this page is loaded whenever the build esoTalk version in config.default.php differs from the one the forum
+// is up-to-date with (in config.php). Sets up the Upgrade controller.
 
 define("IN_ESOTALK", 1);
 

@@ -1,4 +1,5 @@
 <?php
+// This Lexer is part of SimpleTest (http://www.simpletest.org/)
 /**
  *  base include file for SimpleTest
  *  @package    SimpleTest

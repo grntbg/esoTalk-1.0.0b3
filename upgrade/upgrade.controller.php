@@ -2,7 +2,7 @@
 // Copyright 2009 Simon Zerner, Toby Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
-// Upgrade controller
+// Upgrade controller: performs necessary upgrade(s) and displays the upgrade interface.
 
 class Upgrade extends Database {
 
@@ -27,13 +27,14 @@ function init()
 		writeConfigFile("../config/versions.php", '$versions', $versions);
 	}
 	
-	// Finish the upgrade
+	// Write the program version to the versions.php file.
 	if ($versions["esoTalk"] != ESOTALK_VERSION) {
 		$versions["esoTalk"] = ESOTALK_VERSION;
 		writeConfigFile("../config/versions.php", '$versions', $versions);
 	}
 	
-	// Display a success message.
+	// Now, prepare a success message to be displayed!
+	$messageHead = "<script type='text/javascript' src='js/esotalk.js'></script>";	
 	$messageTitle = "You're good to go!";
 	$messageBody = "<p>esoTalk has successfully been upgraded. Here's some stuff you should do now:</p>
 	<ul>
@@ -41,7 +42,7 @@ function init()
 	<li><a href='{$config["baseURL"]}'>Visit your forum</a> and make sure everything is working - if not, get help at the <a href='http://forum.esotalk.com'>esoTalk support forum</a>.</li>
 	<li>If you're interested, <a href='javascript:toggleAdvanced()'>see advanced information</a> about what happened during the upgrade process.</li>
 	</ul>
-	<div id='advanced'>";
+	<div class='info' id='advanced'>";
 	
 	// Advanced information...
 	// Warnings.
@@ -63,27 +64,32 @@ function init()
 	$messageBody .= "</div>
 	<script type='text/javascript'>
 	function toggleAdvanced() {
-		document.getElementById(\"advanced\").style.display = document.getElementById(\"advanced\").style.display == \"none\" ? \"\" : \"none\";
+		toggle($(\"advanced\"), {animation:'verticalSlide'});
 	}
-	toggleAdvanced();
+	hide($(\"advanced\"));
 	</script>";
+	
+	// Display the message.
 	include "../views/message.php";
 	exit;
 }
 
-// Perform a mysql query.
+// Perform a MySQL query.
 function query($query)
 {
-	// Perform the query.
+	// Log the query.
 	if (!isset($_SESSION["queries"]) or !is_array($_SESSION["queries"])) $_SESSION["queries"] = array();
 	$_SESSION["queries"][] = $query;
+	
+	// Perform the query and return its result if successful.
 	$result = mysql_query($query, $this->link);
 	if ($result) return $result;
+	
 	// Otherwise, show a fatal error.
 	else $this->fatalError($this->error() . "<p style='font:100% monospace; overflow:auto'>" . $this->highlightQueryErrors($query, $this->error()) . "</p>");
 }
 
-// Display a fatal error with a 'Try again' link.
+// Display a fatal error message with a 'Try again' link.
 function fatalError($message)
 {
 	$messageTitle = "Uh oh! It's a fatal error...";
@@ -92,7 +98,7 @@ function fatalError($message)
 	<li><strong>Get help.</strong> Go on the <a href='http://forum.esotalk.com' title='Don&#039;t worry, we&#039;re friendly!'>esoTalk support forum</a> and <a href='http://forum.esotalk.com/search/tag:upgrade'>search</a> to see if anyone else is having the same problem as you are. If not, start a new conversation about your problem, including the error details below.</li>
 	<li>Try hitting the computer - that sometimes works for me.</li>
 	</ul>
-	<div>$message</div>";
+	<div class='info'>$message</div>";
 	include "../views/message.php";
 	exit;
 }
@@ -115,34 +121,34 @@ function upgrade_100b1()
 {
 	global $config;
 	
-	// Add the markedAsRead field
+	// Add the markedAsRead field to the members table, used for the new 'Mark all conversations as read' feature.
 	if (!$this->numRows("SHOW COLUMNS FROM {$config["tablePrefix"]}members LIKE 'markedAsRead'"))
 		$this->query("ALTER TABLE {$config["tablePrefix"]}members ADD COLUMN markedAsRead int unsigned default NULL AFTER disableJSEffects");
 
-	// Add the cookieIP field
+	// Add the cookieIP field to the members table, used for extra security when logging in with cookies.
 	if (!$this->numRows("SHOW COLUMNS FROM {$config["tablePrefix"]}members LIKE 'cookieIP'"))
 		$this->query("ALTER TABLE {$config["tablePrefix"]}members ADD COLUMN cookieIP int default NULL AFTER resetPassword");	
 		
-	// Fix avatarFormat
+	// Rename avatarFormat to avatarExtension in the members table.
 	if ($this->numRows("SHOW COLUMNS FROM {$config["tablePrefix"]}members LIKE 'avatarExtension'"))
 		$this->query("ALTER TABLE {$config["tablePrefix"]}members CHANGE COLUMN avatarExtension avatarFormat enum('jpg','png','gif') default NULL");
 	
-	// Add a unique constraint to email in members
+	// Add a unique constraint to email in the members table.
 	if (!$this->numRows("SHOW INDEX FROM {$config["tablePrefix"]}members WHERE Key_name='members_email'"))
 		$this->query("CREATE UNIQUE INDEX members_email ON {$config["tablePrefix"]}members (email)");
 		
-	// Fix NOT NULL's from a4 (oops!)
+	// Fix NOT NULL bugs from 1.0.0a4 (oops!)
 	$this->query("ALTER TABLE {$config["tablePrefix"]}conversations MODIFY lastPostMember int unsigned default NULL");
 	$this->query("ALTER TABLE {$config["tablePrefix"]}posts MODIFY editMember int unsigned default NULL, MODIFY deleteMember int unsigned default NULL");
 	
-	// Create the searches table.
+	// Create the searches table, used for search flood control.
 	if (!$this->numRows("SHOW TABLES LIKE '{$config["tablePrefix"]}searches'"))
 		$this->query("CREATE TABLE {$config["tablePrefix"]}searches (
 			ip int unsigned NOT NULL,
 			searchTime int unsigned NOT NULL
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8");
 	
-	// Add an index to the sticky column.
+	// Add an index to the sticky column in the conversations table.
 	if (!$this->numRows("SHOW INDEX FROM {$config["tablePrefix"]}conversations WHERE Key_name='conversations_sticky'"))		
 		$this->query("CREATE INDEX conversations_sticky ON {$config["tablePrefix"]}conversations (sticky, lastPostTime)");
 	if (!$this->numRows("SHOW INDEX FROM {$config["tablePrefix"]}conversations WHERE Key_name='conversations_startTime'"))		

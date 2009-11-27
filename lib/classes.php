@@ -12,20 +12,24 @@
 if (!defined("IN_ESOTALK")) exit;
 
 // Hookable - a class in which code can be hooked on to.
-// Extend this class and then use $this->callHook("uniqueMarker") in the class code
-// to call any code which has been hooked via $classInstance->addHook("uniqueMarker", "function").
+// Extend this class and then use $this->callHook("uniqueMarker") in the class code to call any code which has been
+// hooked via $classInstance->addHook("uniqueMarker", "function").
 class Hookable {
 
 var $hookedFunctions = array();
 
-// Run all collective hooked functions for the specified point
+// Run all collective hooked functions for the specified marker.
 function callHook($marker, $parameters = array(), $return = false)
 {
 	if (isset($this->hookedFunctions[$marker]) and count($this->hookedFunctions[$marker])) {
-		// Can't use array_unshift because call-time pass-by-reference has been deprecated
+		
+		// Add the instance of this class to the parameters.
+		// We can't use array_unshift here because call-time pass-by-reference has been deprecated.
 		$parameters = array_merge(array(&$this), $parameters);
+		
+		// Loop through the functions which have been hooked on this hook and execute them.
+		// If this hook requires a return value and the function we're running returns something, return that.
 		foreach ($this->hookedFunctions[$marker] as $function) {
-			// If this hook requires a return value and the function we're running returns something, return that.
 			if (($returned = call_user_func_array($function, $parameters)) and $return) return $returned;
 		}
 	}
@@ -72,7 +76,7 @@ var $version;
 var $author;
 var $description;
 
-// Constructor - include the config file / write the default config if it doesn't exist
+// Constructor: include the config file or write the default config if it doesn't exist.
 function Plugin()
 {
 	if (!empty($this->defaultConfig)) {
@@ -83,10 +87,11 @@ function Plugin()
 	}
 }
 
+// For automatic version checking, call this function (parent::init()) at the beginning of a plugin's init() function.
 function init()
 {
-	// Compare the version of the code ($this->version) to the installed one (config/versions.php)
-	// If it's different, run the upgrade() function, and write the new version to config/versions.php
+	// Compare the version of the code ($this->version) to the installed one (config/versions.php).
+	// If it's different, run the upgrade() function, and write the new version number to config/versions.php.
 	global $versions;
 	if (!isset($versions[$this->id]) or $versions[$this->id] != $this->version) {
 		$this->upgrade(@$versions[$this->id]);

@@ -8,7 +8,7 @@
 
 if (!defined("IN_ESOTALK")) exit;
 
-// Include out config files.
+// Include our config files.
 require "config.default.php";
 @include "config/config.php";
 // If $config isn't set, esoTalk hasn't been installed. Redirect to the installer.
