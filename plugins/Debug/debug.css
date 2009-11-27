@@ -5,6 +5,6 @@
 #debug h3 a {display:block; border:solid #a6dee0; color:#0c7a7f; border-width:1px 0; background:#dee9e9; padding:4px 25px; font-weight:normal}
 #debug h3 a:hover {text-decoration:none}
 #debug h3 a:active {background:#a6dee0}
-#debug div {padding:10px 25px}
+#debugPostGetFiles, #debugSessionCookie {padding:10px 25px}
 #debug ul {margin:0; padding:0}
 #debug li {list-style-type:none; border-bottom:1px solid #a6dee0; padding:10px 25px}

@@ -2,7 +2,7 @@
 // Copyright 2009 Simon Zerner, Toby Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
-// Debug plugin: Shows programming debug information for administrators
+// Debug plugin: Shows programming debug information for administrators.
 
 if (!defined("IN_ESOTALK")) exit;
 
@@ -70,23 +70,25 @@ function settings()
 	
 	// Add language definitions.
 	$this->esoTalk->addLanguage("Show debug information to non-administrators", "Show debug information to non-administrators");
-	
-	// Update the config file if the form has been submitted.
-	if (isset($_POST["Debug"])) {
-		$config["Debug"]["showToNonAdmins"] = (bool)@$_POST["Debug"]["showToNonAdmins"];
-		writeConfigFile("config/Debug.php", '$config["Debug"]', $config["Debug"]);
-		$this->esoTalk->message("changesSaved");
-	}
 
 	// Generate settings panel HTML.
-	$settingsHtml = "<form action='" . curLink() . "' method='post'>
+	$settingsHTML = "<form action='" . curLink() . "' method='post'>
 	<ul class='form'>
  	<li><label for='Debug_showToNonAdmins' class='checkbox'>{$language["Show debug information to non-administrators"]}</label> <input id='Debug_showToNonAdmins' name='Debug[showToNonAdmins]' type='checkbox' class='checkbox' value='1' " . ($config["Debug"]["showToNonAdmins"] ? "checked='checked'" : "") . "/></li>
-	<li><label></label> " . $this->esoTalk->skin->button(array("value" => $language["Save changes"], "name" => "Debug[submit]")) . "</li>
+	<li><label></label> " . $this->esoTalk->skin->button(array("value" => $language["Save changes"], "name" => "saveSettings")) . "</li>
 	</ul>
 	</form>";
 	
-	return $settingsHtml;
+	return $settingsHTML;
+}
+
+// Save the plugin settings.
+function saveSettings()
+{
+	global $config;
+	$config["Debug"]["showToNonAdmins"] = (bool)@$_POST["Debug"]["showToNonAdmins"];
+	writeConfigFile("config/Debug.php", '$config["Debug"]', $config["Debug"]);
+	$this->esoTalk->message("changesSaved");
 }
 
 // Add the debug information to the JSON array which is returned from an AJAX request.
@@ -159,7 +161,7 @@ function renderDebug($esoTalk)
 <h2>{$language["Debug information"]} <small>" . sprintf($language["Page loaded in"], $time) . "</small> <small style='float:right'><input type='checkbox' class='checkbox' id='debugUpdateBackground' value='1' checked='checked' onchange='Ajax.debugUpdateBackground=this.checked'/> <label for='debugUpdateBackground' class='checkbox'>{$language["Update debug information for background AJAX requests"]}</label></small></h2>";
 	
 	// MySQL queries.
-	echo "<h3><a href='#' onclick='toggle($(\"debugQueries\"));return false'>{$language["MySQL queries"]} (<span id='debugQueriesCount'>" . count($_SESSION["queries"]) . "</span>)</a></h3>
+	echo "<h3><a href='#' onclick='toggle($(\"debugQueries\"), {animation:\"verticalSlide\"});return false'>{$language["MySQL queries"]} (<span id='debugQueriesCount'>" . count($_SESSION["queries"]) . "</span>)</a></h3>
 	<ul id='debugQueries' class='fixed'>";
 	if (!count($_SESSION["queries"])) echo "<li></li>";
 	else foreach ($_SESSION["queries"] as $query) echo "<li>" . sanitize($query[0]) . " <small>(" . $query[1] . " {$language["seconds"]})</small></li>";
@@ -167,7 +169,7 @@ function renderDebug($esoTalk)
 	
 	// POST + GET + FILES information.
 	echo "</ul>
-	<h3><a href='#' onclick='toggle($(\"debugPostGetFiles\"));return false'>{$language["POST + GET + FILES information"]}</a></h3>
+	<h3><a href='#' onclick='toggle($(\"debugPostGetFiles\"), {animation:\"verticalSlide\"});return false'>{$language["POST + GET + FILES information"]}</a></h3>
 	<div id='debugPostGetFiles'>
 	<p style='white-space:pre' class='fixed' id='debugPost'>\$_POST = ";
 	echo sanitize(print_r($_POST, true));
@@ -179,7 +181,7 @@ function renderDebug($esoTalk)
 	</div>";
 	
 	// SESSION + COOKIE information.
-	echo "<h3><a href='#' onclick='toggle($(\"debugSessionCookie\"));return false'>{$language["SESSION + COOKIE information"]}</a></h3>
+	echo "<h3><a href='#' onclick='toggle($(\"debugSessionCookie\"), {animation:\"verticalSlide\"});return false'>{$language["SESSION + COOKIE information"]}</a></h3>
 	<div id='debugSessionCookie'><p style='white-space:pre' class='fixed' id='debugSession'>\$_SESSION = ";
 	echo sanitize(print_r($_SESSION, true));
 	echo "</p><p style='white-space:pre' class='fixed' id='debugCookie'>\$_COOKIE = ";
@@ -188,7 +190,11 @@ function renderDebug($esoTalk)
 	</div>";
 	
 	// Hide all panels by default.
-	echo "<script type='text/javascript'>hide($(\"debugQueries\")); hide($(\"debugPostGetFiles\")); hide($(\"debugSessionCookie\"));</script>";
+	echo "<script type='text/javascript'>
+	// <![CDATA[
+	hide($(\"debugQueries\")); hide($(\"debugPostGetFiles\")); hide($(\"debugSessionCookie\"));
+	// ]]>
+	</script>";
 }
 
 }

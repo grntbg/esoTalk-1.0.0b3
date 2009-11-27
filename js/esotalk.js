@@ -128,7 +128,6 @@ function animate(element, options) {
 				if (final && values[0] == 0) {
 					overflowDiv.style.display = "none";
 					overflowDiv.style[options["animation"] == "verticalSlide" ? "height" : "width"] = "";
-					advanced.style.display = "none";
 					if (options["animation"] == "horizontalSlide") element.style.width = element.oldWidth;
 				}
 			}, {begin: [initLength, initOpacity], end: [element.showing ? finalLength : 0, element.showing ? 1 : 0]});

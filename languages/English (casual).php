@@ -93,6 +93,7 @@ $language = array(
 // Changed key: "accountInformation" -> "Account information"
 // Changed key: "check them out" -> "show conversations started"
 // Changed key: "let's see" -> "show conversations participated in"
+// Changed key: "Upload an plugin" -> "Upload a plugin"
 
 // Added in 1.0.0a5
 // "Never" => "Never",
@@ -284,7 +285,7 @@ $language = array(
 "Unvalidated" => "Unvalidated",
 "Update debug information for background AJAX requests" => "Update debug information for background AJAX requests",
 "Upload an avatar" => "Upload an avatar from your computer",
-"Upload an plugin" => "Upload a plugin package",
+"Upload a plugin" => "Upload a plugin package",
 "Upload a skin" => "Upload a skin package",
 "Username" => "Username",
 "version" => "version %s",

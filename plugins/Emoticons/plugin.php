@@ -1,4 +1,10 @@
 <?php
+// Copyright 2009 Simon Zerner, Toby Zerner
+// This file is part of esoTalk. Please see the included license file for usage information.
+
+// Emoticons plugin: Converts emoticon text entities into graphic emoticons.
+
+if (!defined("IN_ESOTALK")) exit;
 
 class Emoticons extends Plugin {
 
@@ -15,12 +21,13 @@ function init()
 {
 	parent::init();
 	
+	// Add the emoticon CSS style to the head.
 	$this->esoTalk->addToHead("<style type='text/css'>.emoticon {width:16px; height:16px; background:url({$this->emoticonDir}emoticons.png); background-repeat:no-repeat}</style>");
 	
-	// Add the formatter
+	// Add the emoticon formatter that will parse and unparse emoticons.
 	$this->esoTalk->formatter->addFormatter("emoticons", "Formatter_Emoticons");
 	
-	// Convert emoticons to text in the feed.
+	// Add a hook to convert emoticons to text in the feed.
 	if ($this->esoTalk->action == "feed")
 		$this->esoTalk->controller->addHook("formatPost", array($this, "revertEmoticons"));
 }
@@ -41,7 +48,7 @@ function Formatter_Emoticons(&$formatter)
 {
 	$this->formatter = &$formatter;
 	
-	// Define emoticons
+	// Define the emoticons.
 	$this->emoticons[":)"] = "<img src='js/x.gif' style='background-position:0 0' alt=':)' class='emoticon'/>";
 	$this->emoticons["=)"] = "<img src='js/x.gif' style='background-position:0 0' alt='=)' class='emoticon'/>";
 	$this->emoticons[":D"] = "<img src='js/x.gif' style='background-position:0 -20px' alt=':D' class='emoticon'/>";
@@ -109,24 +116,31 @@ function Formatter_Emoticons(&$formatter)
 	$this->emoticons[">:D"] = "<img src='js/x.gif' style='background-position:0 -640px' alt='&gt;:D' class='emoticon'/>";
 }
 
+// Add an emoticon to the output.
 function emoticon($match, $state)
 {
 	$this->formatter->output .= $this->emoticons[desanitize($match)];
 	return true;
 }
 
+// Set up the lexer to parse emoticons.
 function format()
 {
+	// Make an array of regular-expression-safe emoticon patterns.
 	$patterns = array();
 	foreach ($this->emoticons as $k => $v) $patterns[] = preg_quote(sanitize($k), "/");
 	
+	// Map a function to handle emoticons.
 	$this->formatter->lexer->mapFunction("emoticon", array($this, "emoticon"));
+	
+	// Add the emoticon mode to the lexer - emoticons are allowed in all modes.
 	$allowedModes = $this->formatter->getModes($this->formatter->allowedModes["inline"]);
 	foreach ($allowedModes as $mode) {
 		$this->formatter->lexer->addSpecialPattern('(?<=^|[\s.,!<>])(?:' . implode("|", $patterns) . ')(?=[\s.,!<>)]|$)', $mode, "emoticon");
 	}
 }
 
+// Convert emoticons back into their corresponding text entity.
 function revert($string)
 {
 	return strtr($string, array_flip($this->emoticons));

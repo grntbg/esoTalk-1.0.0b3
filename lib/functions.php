@@ -400,14 +400,31 @@ function addToArrayString(&$array, $key, $value, $position = false)
 function variableToText($variable, $indent = "")
 {
 	$text = "";
+	
+	// If the variable is an array...
 	if (is_array($variable)) {
+		
+		// Loop through the array and check if the keys are all consecutive integers starting from 0.
+		// If they are, we can omit the keys.
+		$noKeys = true;
+		for ($i = 0, reset($variable); $i < count($variable); $i++, next($variable)) {
+			if (key($variable) !== $i) {
+				$noKeys = false;
+				break;
+			}
+		}
+		// Now loop through the array again, this time adding each key/value's string representation to $text.
 		$text .= "array(\n";
 		foreach ($variable as $k => $v) {
-			$text .= $indent . (is_string($k) ? "\"" . escapeDoubleQuotes($k) . "\"" : $k);
-			$text .= " => " . variableToText($v, "$indent\t") . ",\n";
+			$text .= $indent;
+			if (!$noKeys) $text .= (is_string($k) ? "\"" . escapeDoubleQuotes($k) . "\"" : $k) . " => ";
+			$text .= variableToText($v, "$indent\t") . ",\n";
 		}
 		$text = rtrim($text, ",\n") . "\n" . substr($indent, 1) . ")";
-	} elseif (is_string($variable)) $text .= "\"" . escapeDoubleQuotes($variable) . "\"";
+	}
+	
+	// If the variable is of another type, add its appropriate text representation.
+	elseif (is_string($variable)) $text .= "\"" . escapeDoubleQuotes($variable) . "\"";
 	elseif (is_bool($variable)) $text .= $variable ? "true" : "false";
 	elseif (is_null($variable)) $text .= "null";
 	elseif (!is_object($variable) and !is_resource($variable)) $text .= $variable;
