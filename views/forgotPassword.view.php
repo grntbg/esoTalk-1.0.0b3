@@ -7,6 +7,8 @@
 
 if (!defined("IN_ESOTALK")) exit;
 ?>
+<fieldset>
+<legend><?php echo $language["Forgot your password"]; ?></legend>
 <?php
 
 // Display a form with an email field.
@@ -48,3 +50,4 @@ echo $this->esoTalk->htmlMessage("setNewPassword"); ?>
 </form>
 
 <?php endif; ?>
+</fieldset>

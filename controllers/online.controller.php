@@ -15,7 +15,7 @@ function init()
 	global $language, $config;
 	
 	// Set the title and make sure this page isn't indexed.
-	$this->title = $language["Who's online"];
+	$this->title = $language["Online members"];
 	$this->esoTalk->addToHead("<meta name='robots' content='noindex, noarchive'/>");
 	
 	// Fetch a list of members who have been logged in the members table as 'online' in the last

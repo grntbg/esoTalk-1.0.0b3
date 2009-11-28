@@ -58,6 +58,7 @@ $language = array(
 // "profile" => "%s's profile",
 // "Change my password or email" => "Change my password or email",
 // "My current password" => "My current password",
+// "Online members" => "Online members",
 // Deleted: "helpesoTalk"
 // Deleted: "Name"
 // Deleted: "ago"
@@ -85,6 +86,7 @@ $language = array(
 // Deleted: "Change your password or email"
 // Deleted: "Your current password"
 // Deleted: "My profile"
+// Deleted: "Who's online"
 // Changed: "loginRequired" => array("class" => "warning", "message" => "You need to <a href='" . curLink() . "#' onclick='showLogin();return false'>log in</a> or <a href='" . makeLink("join") . "'>create an account</a> to do anything on this forum."),
 // Changed: "ajaxDisconnected" => "Unable to communicate with the server. Wait a few seconds and <a href='javascript:Ajax.resumeAfterDisconnection()'>try again</a>, or <a href='' onclick='window.location.reload();return false'>refresh the page</a>.",
 // Changed: "downloadPlugins" => array("class" => "info", "message" => "You can download more plugins from the <a href='%s'>esoTalk website</a>."),
@@ -232,6 +234,7 @@ $language = array(
 "on the left" => "on the left",
 "on the right" => "on the right",
 "online" => "online",
+"Online members" => "Online members",
 "optional" => "(optional)",
 "Other settings" => "Other settings",
 "Page loaded in" => "Page loaded in just over <strong><span id='debugLoadTime'>%s</span> seconds</strong>",
@@ -296,7 +299,6 @@ $language = array(
 "version" => "version %s",
 "Viewing" => "Viewing:",
 "viewingPosts" => "<b>%s-%s</b> of %s posts",
-"Who's online" => "Who's online?",
 
 "emails" => array(
 
@@ -427,7 +429,7 @@ Enter the password for <strong>%s</strong>: %s"),
 "cannotViewConversation" => array("class" => "warning", "message" => "For some reason this conversation cannot be viewed. Maybe it's been deleted? Or maybe it's a private conversation, in which case you might not be logged in or you might not be invited. Oh man, I hope they're not talking about you behind your back!"),
 "emailDoesntExist" => array("class" => "warning", "message" => "That email address doesn't match any members in the database. Did you make a typo?"),
 "passwordEmailSent" => array("class" => "success", "message" => "Ok, we've sent you an email containing a link to reset your password. Check your spam folder if you don't receive it within the next minute or two. Yeah, some times we get put through to spam - can you believe it?!"),
-"passwordChanged" => array("class" => "success", "message" => "Your password has been changed. You may now log in with your new password."),
+"passwordChanged" => array("class" => "success", "message" => "Alright, your password has been changed. Now you can log in! Hey, try not to forget it again, ok?"),
 "reenterInformation" => array("class" => "info", "message" => "Please reenter this information"),
 "accountValidated" => array("class" => "success", "message" => "Cool! Your account has been validated and you may now start participating in conversations. Why not <a href='" . makeLink("new") . "'>start one</a> yourself?"),
 "avatarError" => array("class" => "warning", "message" => "There was a problem uploading your avatar. Make sure you're using a valid image type (like .jpg, .png, or .gif) and the file isn't really really huge."),

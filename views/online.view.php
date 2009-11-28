@@ -7,7 +7,7 @@
 if (!defined("IN_ESOTALK")) exit;
 ?>
 <fieldset>
-<legend><?php echo $language["Who's online"]; ?></legend>
+<legend><?php echo $language["Online members"]; ?></legend>
 
 <?php
 // If there are members online, list them.
