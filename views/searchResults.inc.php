@@ -13,7 +13,8 @@ if (!defined("IN_ESOTALK")) exit;
 <tbody id='conversations'>
 
 <?php
-// Loop through the conversations and output a table row for each one.
+// If there are results, loop through the conversations and output a table row for each one.
+if (count($this->results)):
 foreach ($this->results as $conversation): ?>
 
 <tr id='c<?php echo $conversation["id"]; ?>'<?php if ($conversation["starred"]): ?> class='starred'<?php endif; ?>>
@@ -53,7 +54,8 @@ if ($labelsHtml) echo "<span class='labels'>$labelsHtml</span>";
 // Last post column. ?>
 <td class='lastPost'><span class='lastPostMember'><?php if ($conversation["posts"] > 1): ?><a href='<?php echo makeLink("profile", $conversation["lastPostMemberId"]); ?>'><?php echo $conversation["lastPostMember"]; ?></a><?php endif; ?></span><br/><small class='lastPostTime'><?php if ($conversation["posts"] > 1): ?><?php echo relativeTime($conversation["lastPostTime"]); ?><?php endif; ?></small></td>
 </tr>
-<?php endforeach; ?>
+<?php endforeach;
+endif; ?>
 
 </tbody>
 </table>
