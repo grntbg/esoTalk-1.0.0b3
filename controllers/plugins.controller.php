@@ -103,23 +103,23 @@ function togglePlugin($plugin)
 function installPlugin()
 {
 	// If the uploaded file has any errors, don't proceed.
-	if ($_FILES["uploadPlugin"]["error"]) {
+	if ($_FILES["installPlugin"]["error"]) {
 		$this->esoTalk->message("invalidPlugin");
 		return false;
 	}
 	
 	// Temorarily move the uploaded plugin into the plugins directory so that we can read it.
-	if (!move_uploaded_file($_FILES["uploadPlugin"]["tmp_name"], "plugins/{$_FILES["uploadPlugin"]["name"]}")) {
+	if (!move_uploaded_file($_FILES["installPlugin"]["tmp_name"], "plugins/{$_FILES["installPlugin"]["name"]}")) {
 		$this->esoTalk->message("notWritable", false, "plugins/");
 		return false;
 	}
 	
 	// Unzip the plugin. If we can't, show an error.
-	if (!($files = unzip("plugins/{$_FILES["uploadPlugin"]["name"]}", "plugins/"))) $this->esoTalk->message("invalidPlugin");
+	if (!($files = unzip("plugins/{$_FILES["installPlugin"]["name"]}", "plugins/"))) $this->esoTalk->message("invalidPlugin");
 	else {
 		
 		// Loop through the files in the zip and make sure it's a valid plugin.
-		$directories = 0; $settingsFound = false;
+		$directories = 0; $pluginFound = false;
 		foreach ($files as $k => $file) {
 			
 			// Strip out annoying Mac OS X files!
@@ -164,7 +164,7 @@ function installPlugin()
 	}
 	
 	// Delete the temporarily uploaded plugin file.
-	unlink("plugins/{$_FILES["uploadPlugin"]["name"]}");
+	unlink("plugins/{$_FILES["installPlugin"]["name"]}");
 }
 	
 }

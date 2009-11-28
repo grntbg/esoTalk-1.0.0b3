@@ -92,6 +92,7 @@ a.s5 {font-size:90%}
 .success {background:#cf0}
 .warning {background:#c00; color:#fff}
 .warning a, .warning a:hover {color:#fff; text-decoration:underline}
+.msg code {background:none}
 
 /* Stars */ 
 .star1, .star0 {cursor:default; display:block; font-size:600%; font-weight:normal; height:0.4em; line-height:0.8; overflow:hidden}
