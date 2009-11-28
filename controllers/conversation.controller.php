@@ -588,9 +588,9 @@ function getConversation($id = false)
 			"private" => true,
 			"tags" => !empty($_POST["cTags"]) ? $_POST["cTags"] : $language["exampleTags"],
 			"title" => !empty($_POST["cTitle"]) ? $_POST["cTitle"] :
-				(!empty($_SESSION["membersAllowed"]) and is_array($_SESSION["membersAllowed"]))
+				((!empty($_SESSION["membersAllowed"]) and is_array($_SESSION["membersAllowed"]))
 					? sprintf($language["Start a private conversation"], reset($_SESSION["membersAllowed"]))
-					: $language["Enter a conversation title"],
+					: $language["Enter a conversation title"]),
 			"slug" => "",
 			"startMember" => $this->esoTalk->user["memberId"],
 			"startMemberName" => $this->esoTalk->user["name"],

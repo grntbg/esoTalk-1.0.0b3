@@ -109,17 +109,19 @@ function animate(element, options) {
 		case "verticalSlide":
 		case "horizontalSlide":
 			var overflowDiv = createOverflowDiv(element);
-			if (!overflowDiv.style.display) overflowDiv.style.display = element.showing ? "none" : "";
+			if (!overflowDiv.style.display) overflowDiv.style.display = element.showing ? "none"
+				: (options["animation"] == "horizontalSlide" ? "inline-block" : "block");
 			if (!overflowDiv.style.opacity) overflowDiv.style.opacity = element.showing ? 0 : 1;
 			element.style.display = "";
 			var initLength = options["animation"] == "verticalSlide" ? overflowDiv.offsetHeight : overflowDiv.offsetWidth;
 			var initOpacity = parseFloat(overflowDiv.style.opacity);
-			overflowDiv.style.display = "block";
+			overflowDiv.style.display = options["animation"] == "horizontalSlide" ? "inline-block" : "block";
 			overflowDiv.style.overflow = element.style.overflow = "hidden";
 			var finalLength = options["animation"] == "verticalSlide" ? element.offsetHeight : element.offsetWidth;
 			if (options["animation"] == "horizontalSlide") {
 				element.oldWidth = element.style.width;
 				element.style.width = finalLength + "px";
+				overflowDiv.style.verticalAlign = "bottom";
 			}
 			if (overflowDiv.animation) overflowDiv.animation.stop();
 			overflowDiv.animation = new Animation(function(values, final) {
@@ -552,12 +554,14 @@ multiQuote: false, // If this flag is true, we won't scroll to the reply area wh
 init: function() {
 	
 	// Get conversation information from the esoTalk variable.
-	this.id = esoTalk.conversation.id;
-	this.postCount = esoTalk.conversation.postCount;
-	this.startFrom = esoTalk.conversation.startFrom;
-	this.lastActionTime = esoTalk.conversation.lastActionTime;
-	this.lastRead = esoTalk.conversation.lastRead;
-	this.autoReloadInterval = esoTalk.conversation.autoReloadInterval;
+	if (esoTalk.conversation) {
+		this.id = esoTalk.conversation.id;
+		this.postCount = esoTalk.conversation.postCount;
+		this.startFrom = esoTalk.conversation.startFrom;
+		this.lastActionTime = esoTalk.conversation.lastActionTime;
+		this.lastRead = esoTalk.conversation.lastRead;
+		this.autoReloadInterval = esoTalk.conversation.autoReloadInterval;
+	}
 
 	// Hide the save title/tags button
 	if (getById("saveTitleTags")) getById("saveTitleTags").style.display = "none";
@@ -1260,7 +1264,7 @@ saveDraft: function() {
 			if (!this.messages) {
 				Messages.hideMessage("emptyPost");
 				// Show the draft label, disable the save draft button, and enable the discard draft button.
-				show(getElementsByClassName(getById("cLabels"), "draft")[0]);
+				show(getElementsByClassName(getById("cLabels"), "draft")[0], {animation: "horizontalSlide"});
 				disable(getById("saveDraft")); enable(getById("discardDraft"));
 				Conversation.editingReply = false;
 			}
@@ -1279,7 +1283,7 @@ discardDraft: function() {
 		"post": "action=discardDraft&id=" + Conversation.id,
 		"success": function() {
 			// Hide the draft label and reinitialize the reply area
-			hide(getElementsByClassName(getById("cLabels"), "draft")[0]);
+			hide(getElementsByClassName(getById("cLabels"), "draft")[0], {animation: "horizontalSlide"});
 			getById("reply-textarea").value = "";
 			Conversation.togglePreview("reply", false);
 			Conversation.initReply();
@@ -1458,8 +1462,8 @@ cancelEdit: function(postId) {
 // Toggle sticky
 toggleSticky: function() {
 	var label = getElementsByClassName(getById("cLabels"), "sticky")[0];
-	toggle(label);
-	getById("stickyLink").innerHTML = esoTalk.language[label.style.display == "none" ? "Sticky" : "Unsticky"];
+	toggle(label, {animation: "horizontalSlide"});
+	getById("stickyLink").innerHTML = esoTalk.language[label.showing ? "Unsticky" : "Sticky"];
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"post": "action=toggleSticky&id=" + Conversation.id
@@ -1469,8 +1473,8 @@ toggleSticky: function() {
 // Toggle lock
 toggleLock: function() {
 	label = getElementsByClassName(getById("cLabels"), "locked")[0];
-	toggle(label);
-	getById("lockLink").innerHTML = esoTalk.language[label.style.display == "none" ? "Lock" : "Unlock"];
+	toggle(label, {animation: "horizontalSlide"});
+	getById("lockLink").innerHTML = esoTalk.language[label.showing ? "Unlock" : "Lock"];
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"post": "action=toggleLock&id=" + Conversation.id
@@ -1488,7 +1492,7 @@ addMember: function(name) {
 			if (!this.messages) {
 				// Update the list/labels
 				getById("allowedList").innerHTML = this.result.list;
-				show(getElementsByClassName(getById("cLabels"), "private")[0]);
+				show(getElementsByClassName(getById("cLabels"), "private")[0], {animation: "horizontalSlide"});
 			}
 		}, 
 		"post": "action=addMember&member=" + encodeURIComponent(name) + (Conversation.id ? "&id=" + Conversation.id : "")
@@ -1501,7 +1505,7 @@ removeMember: function(name) {
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"success": function() {
 			getById("allowedList").innerHTML = this.result.list;
-			if (!this.result.private) hide(getElementsByClassName(getById("cLabels"), "private")[0]);
+			if (!this.result.private) hide(getElementsByClassName(getById("cLabels"), "private")[0], {animation: "horizontalSlide"});
 		},
 		"post": "action=removeMember&member=" + encodeURIComponent(name) + (Conversation.id ? "&id=" + Conversation.id : "")
 	});
