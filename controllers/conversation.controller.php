@@ -906,7 +906,7 @@ function getEditArea($postId, $content)
 </div>
 <div class='editButtons'>
 " . $this->esoTalk->skin->button(array("name" => "cancel", "class" => "big", "value" => $language["Cancel"], "onclick" => "Conversation.cancelEdit($postId);return false", "tabindex" => "-1")) . "
-" . $this->esoTalk->skin->button(array("name" => "save", "class" => "big submit", "value" => $language["Save post"], "onclick" => "Conversation.saveEditPost($postId,\getById(\"p$postId-textarea\").value);return false", "accesskey" => "s")) . "
+" . $this->esoTalk->skin->button(array("name" => "save", "class" => "big submit", "value" => $language["Save post"], "onclick" => "Conversation.saveEditPost($postId,getById(\"p$postId-textarea\").value);return false", "accesskey" => "s")) . "
 </div>
 </form>";
 
