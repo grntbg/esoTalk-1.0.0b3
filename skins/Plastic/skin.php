@@ -2,7 +2,7 @@
 // Copyright 2009 Simon Zerner, Toby Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
-// Plastic skin file
+// Plastic skin file.
 
 if (!defined("IN_ESOTALK")) exit;
 

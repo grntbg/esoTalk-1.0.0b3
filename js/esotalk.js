@@ -116,7 +116,7 @@ function animate(element, options) {
 			var initLength = options["animation"] == "verticalSlide" ? overflowDiv.offsetHeight : overflowDiv.offsetWidth;
 			var initOpacity = parseFloat(overflowDiv.style.opacity);
 			overflowDiv.style.display = options["animation"] == "horizontalSlide" ? "inline-block" : "block";
-			overflowDiv.style.overflow = element.style.overflow = "hidden";
+			overflowDiv.style.overflow = "hidden";
 			var finalLength = options["animation"] == "verticalSlide" ? element.offsetHeight : element.offsetWidth;
 			if (options["animation"] == "horizontalSlide") {
 				element.oldWidth = element.style.width;
