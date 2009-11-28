@@ -144,12 +144,12 @@ function animate(element, options) {
 			var initLength = options["animation"] == "verticalSlide" ? overflowDiv.offsetHeight : overflowDiv.offsetWidth;
 			var initOpacity = parseFloat(overflowDiv.style.opacity);
 			
-			// Now show the overflow div.
+			// Now show the overflow div and get the final length from it.
 			overflowDiv.style.display = options["animation"] == "horizontalSlide" ? "inline-block" : "block";
 			overflowDiv.style.overflow = "hidden";
+			var finalLength = options["animation"] == "verticalSlide" ? overflowDiv.offsetHeight : overflowDiv.offsetWidth;
 			
-			// Get the final length from the height/width of the element.
-			var finalLength = options["animation"] == "verticalSlide" ? element.offsetHeight : element.offsetWidth;
+			// If it's a horizontal slide, save the element's width to go back to when the animation is finished.
 			if (options["animation"] == "horizontalSlide") {
 				element.oldWidth = element.style.width;
 				element.style.width = finalLength + "px";
