@@ -75,6 +75,15 @@ function fetchRow($input)
 	return $this->fetchRow($result);
 }
 
+// Fetch an object. $input can be a string or a MySQL result.
+function fetchObject($input)
+{
+	if (is_resource($input)) return mysql_fetch_object($input);
+	$result = $this->query($input);
+	if (!$this->numRows($result)) return false;
+	return $this->fetchObject($result);
+}
+
 // Get a database result. $input can be a string or a MySQL result.
 function result($input, $field = 0)
 {
