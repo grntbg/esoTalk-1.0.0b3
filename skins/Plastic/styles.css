@@ -153,7 +153,7 @@ a.star0:active, a.star1:active {color:#e4b600}
 #cInfo .editable:hover {border-style:dotted; border-width:1px; padding:2px}
 #cInfo .editable:focus {border-style:solid; border-width:1px; padding:2px}
 #cInfo dl {margin:0}
-#cInfo dt {clear:left; float:left; line-height:2em; margin:5px 11px 0 0; padding-bottom:1px; text-align:right; width:3em}
+#cInfo dt {clear:left; float:left; line-height:2.1em; margin:5px 11px 0 0; padding-bottom:1px; text-align:right; width:3em}
 #cInfo dd {display:block; line-height:2em; margin:0; padding-top:4px}
 #cInfo .button {line-height:1}
 #cTags a {color:#000}
