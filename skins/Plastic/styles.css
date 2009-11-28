@@ -18,7 +18,7 @@ a, .link, .p .hdr a.link {color:#00f}
 .clear {clear:both; font-size:1px; height:1px; margin:0; padding:0; width:1px}
 small, dt {color:#888; font-size:90%}
 small a, dt a {color:#55f}
-#loading {background:#cf0; color:#000; font-weight:bold; padding:5px 15px; position:fixed; right:10px; top:0; z-index:10000}
+#loading {background:#dcff52; border:solid #d4e58f; border-width:0 1px 1px 1px; font-size:120%; padding:5px 15px; position:fixed; right:10px; top:0; z-index:10000; -webkit-box-shadow:rgba(0, 0, 0, 0.2) 0 0 3px}
 .strike {text-decoration:line-through}
 img.avatar, div.avatar img {vertical-align:bottom}
 .enabled, #skins a:hover {background:#ffa}

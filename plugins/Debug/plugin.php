@@ -72,12 +72,10 @@ function settings()
 	$this->esoTalk->addLanguage("Show debug information to non-administrators", "Show debug information to non-administrators");
 
 	// Generate settings panel HTML.
-	$settingsHTML = "<form action='" . curLink() . "' method='post'>
-	<ul class='form'>
+	$settingsHTML = "<ul class='form'>
  	<li><label for='Debug_showToNonAdmins' class='checkbox'>{$language["Show debug information to non-administrators"]}</label> <input id='Debug_showToNonAdmins' name='Debug[showToNonAdmins]' type='checkbox' class='checkbox' value='1' " . ($config["Debug"]["showToNonAdmins"] ? "checked='checked'" : "") . "/></li>
 	<li><label></label> " . $this->esoTalk->skin->button(array("value" => $language["Save changes"], "name" => "saveSettings")) . "</li>
-	</ul>
-	</form>";
+	</ul>";
 	
 	return $settingsHTML;
 }

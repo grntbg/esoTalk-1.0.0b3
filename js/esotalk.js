@@ -2,7 +2,9 @@
 // This file is part of esoTalk. Please see the included license file for usage information.
 
 // document.getElementById shortcut.
-function getById(id) {return document.getElementById(id) || null;};
+function getById(id) {
+	return document.getElementById(id) || null;
+};
 
 // Get elements by their class name.
 function getElementsByClassName(parent, className) {
@@ -15,6 +17,7 @@ function getElementsByClassName(parent, className) {
 	return found;
 };
 
+// Determine whether an object is an array or not.
 function isArray(array) {
   return Object.prototype.toString.call(array) === "[object Array]";
 };
@@ -29,7 +32,9 @@ Math.easeOutQuart = function (t, b, c, d) {
 	return -c * ((t=t/d-1)*t*t*t - 1) + b;
 };
 
-// Animation class
+
+// Animation class: enables quick and easy animations. Example usage:
+// (new Animation(function(height) {element.height = height + "px";}, {begin: 0, end: 100})).start();
 var Animation = function(callback, parameters) {
 	parameters = parameters || {};
 	this.callback = callback;
@@ -42,42 +47,61 @@ var Animation = function(callback, parameters) {
 	this.stopped = true;	
 };
 
+// Stop the animation.
 Animation.prototype.stop = function() {
 	clearTimeout(this.timeout);
 	this.stopped = true;
 };
-		
+
+// Start the animation.
 Animation.prototype.start = function() {
 	if (!this.stopped) return;
+	
+	// If the user has disabled animations, skip straight to the final frame.
 	if (typeof esoTalk != "undefined" && esoTalk.disableAnimation) this.finalize();
+	
+	// Otherwise, proceed to the first frame of animation.
 	else {
 		this.stopped = false;
 		this.nextFrame();
 	}
 };
-	
+
+// Apply the next frame in the animation.
 Animation.prototype.nextFrame = function() {
 	var animation = this;
+	
+	// If the begin and end parameters are arrays, progress each of the elements individually.
 	if (isArray(this.begin) && isArray(this.end)) {
 		this.frame++;
 		var result = [];
 		for (var i in this.begin) result.push(this.easing(this.frame, this.begin[i], this.end[i] - this.begin[i], this.duration));
-		this.callback(result);
-	} else this.callback(this.easing(this.frame++, this.begin, this.end - this.begin, this.duration));
+	}
+	// Otherwise, progress the value normally. 
+	else var result = this.easing(this.frame++, this.begin, this.end - this.begin, this.duration);
+	
+	// Call the animation callback with the new value(s).
+	this.callback(result);
+	
+	// Set a timeout for the next frame, or finalize the animation if finished.
 	if (this.frame <= this.duration) this.timeout = setTimeout(function(){animation.nextFrame();}, 10);
 	else this.finalize();
 };
-	
+
+// Finalize the animation; call the animation callback with the final value.
 Animation.prototype.finalize = function() {
 	this.stopped = true;
 	this.callback(this.end, true);
 };
 
-// Wrap a new div around an element with overflow=hidden, so we can change the height of the element for animations.
+
+// Wrap a new div around an element with overflow:hidden, so we can change the height of the element for animations.
 function createOverflowDiv(element) {
 	if (!element) return false;
+	
 	// If there's already an overflow div, use that.
 	if (element.parentNode.className.indexOf("overflowDiv") != -1) return element.parentNode;
+	
 	// Otherwise, create one, insert it before the post, and move the post inside it.
 	overflowDiv = document.createElement("div");
 	overflowDiv.style.overflow = "hidden";
@@ -87,7 +111,7 @@ function createOverflowDiv(element) {
 	return overflowDiv;
 };
 
-// Show/hide an element.
+// Show/hide an element. An animation can be applied using options = {animation: type}.
 function toggle(element, options) {
 	if (typeof element.showing == "undefined") element.showing = element.style.display != "none";
 	element.showing ? hide(element, options) : show(element, options);
@@ -96,37 +120,49 @@ function show(element, options) {
 	element.style.display = "";
 	element.showing = true;
 	animate(element, options);
-
 };
 function hide(element, options) {
 	element.style.display = "none";
 	element.showing = false;
 	animate(element, options);
 };
+
+// Animate the showing/hiding of an element.
 function animate(element, options) {
 	if (!options) return;
 	switch (options.animation) {
 		case "verticalSlide":
 		case "horizontalSlide":
+			// Create an overflow div to perform the animation on. Set some default attributes.
 			var overflowDiv = createOverflowDiv(element);
 			if (!overflowDiv.style.display) overflowDiv.style.display = element.showing ? "none"
 				: (options["animation"] == "horizontalSlide" ? "inline-block" : "block");
 			if (!overflowDiv.style.opacity) overflowDiv.style.opacity = element.showing ? 0 : 1;
+			
+			// Get the starting height/width and opacity of the overflow div.
 			element.style.display = "";
 			var initLength = options["animation"] == "verticalSlide" ? overflowDiv.offsetHeight : overflowDiv.offsetWidth;
 			var initOpacity = parseFloat(overflowDiv.style.opacity);
+			
+			// Now show the overflow div.
 			overflowDiv.style.display = options["animation"] == "horizontalSlide" ? "inline-block" : "block";
 			overflowDiv.style.overflow = "hidden";
+			
+			// Get the final length from the height/width of the element.
 			var finalLength = options["animation"] == "verticalSlide" ? element.offsetHeight : element.offsetWidth;
 			if (options["animation"] == "horizontalSlide") {
 				element.oldWidth = element.style.width;
 				element.style.width = finalLength + "px";
 				overflowDiv.style.verticalAlign = "bottom";
 			}
+			
+			// Set up the animation on the overflow div.
 			if (overflowDiv.animation) overflowDiv.animation.stop();
 			overflowDiv.animation = new Animation(function(values, final) {
 				overflowDiv.style[options["animation"] == "verticalSlide" ? "height" : "width"] = Math.round(values[0]) + "px";
 				overflowDiv.style.opacity = values[1];
+				
+				// If this is the final frame, let the width/height be automatic and hide the overflow div if necessary.
 				if (final) {
 					overflowDiv.style[options["animation"] == "verticalSlide" ? "height" : "width"] = "";
 					if (!element.showing) {
@@ -136,6 +172,18 @@ function animate(element, options) {
 				}
 			}, {begin: [initLength, initOpacity], end: [element.showing ? finalLength : 0, element.showing ? 1 : 0]});
 			overflowDiv.animation.start();
+			break;
+			
+		case "fade":
+			element.style.display = "";
+			var initOpacity = parseFloat(element.style.opacity);
+			if (element.animation) element.animation.stop();
+			element.animation = new Animation(function(opacity, final) {
+				element.style.opacity = opacity;
+				element.style.filter = "alpha(opacity=" + Math.round(opacity * 100) + ")";
+				if (final && !element.showing) element.style.display = "none";
+			}, {begin: initOpacity, end: element.showing ? 1 : 0});
+			element.animation.start();
 	}
 }
 
@@ -159,7 +207,7 @@ function makePlaceholder(element, text) {
 	element.onblur();
 };
 
-// Disable a button.
+// Disable a button (add the [big]disabled class.)
 function disable(button) {
 	if (button.className.indexOf("big") != -1 && button.className.indexOf("bigDisabled") == -1) button.className += " bigDisabled";
 	else if (button.className.indexOf("button") != -1 && button.className.indexOf("buttonDisabled") == -1) button.className += " buttonDisabled";
@@ -168,7 +216,7 @@ function disable(button) {
 	else button.disabled = "true";
 };
 
-// Enable a button.
+// Enable a button (remove the [big]disabled class.)
 function enable(button) {
 	button.className = button.className.replace(/(buttonD|bigD|d)isabled/g, "");
 	if (button.getElementsByTagName("input")[0]) button.getElementsByTagName("input")[0].disabled = "";
@@ -184,6 +232,7 @@ function showLogin() {
 	animateScroll(0);
 }
 
+// Animate a scroll.
 var scrollAnimation;
 function animateScroll(scrollDest) {
 	if (scrollAnimation) scrollAnimation.stop();
@@ -201,7 +250,8 @@ function toggleStar(conversationId, star) {
 	if (getById("c" + conversationId)) getById("c" + conversationId).className = star.className == "star1" ? "starred" : "";
 };
 
-// Functions to get the scrollTop, scrollHeight/Width, and clientHeight/Width (as different browsers make this difficult!)
+// Functions to get the scrollTop, scrollHeight/Width, and clientHeight/Width (as different browsers make this
+// difficult!)
 function getScrollTop() {
 	if (typeof window.pageYOffset == "number") return window.pageYOffset;
 	else if (typeof document.documentElement.scrollTop == "number") return document.documentElement.scrollTop;
@@ -218,6 +268,8 @@ function getClientDimensions() {
 	else if (typeof document.documentElement.clientHeight == "number") return [document.documentElement.clientWidth, document.documentElement.clientHeight];
 	return [0, 0];
 };
+
+// Get the offsetTop of an element that is embedded in relatively positioned elements.
 function getOffsetTop(obj) {
 	var top = 0;
 	if (obj.offsetParent) {
@@ -227,13 +279,14 @@ function getOffsetTop(obj) {
 	return top;
 };
 
-// Messages system
+
+// Messages system.
 var Messages = {
 
 container: null,
 messages: {},
 
-// Initialize the page; animate messages which are already displaying in the HTML.
+// Initialize: set up the messages container.
 init: function() {
 	this.container = getById("messages");
 	this.container.innerHTML = "";
@@ -248,30 +301,34 @@ init: function() {
 	if (isIE6) {
 		this.container.style.position = "absolute";
 		this.container.runtimeStyle.setExpression("top", "eval(document.documentElement.scrollTop)");
-		// The fixed element will flicker when the page is scrolled. Fix this by applying a "background image" to the body.
-		// Thanks http://ie7-js.googlecode.com/svn/trunk/src/ie7-fixed.js!
+		// The fixed element will flicker when the page is scrolled. Fix this by applying a "background image" to the
+		// body. Thanks http://ie7-js.googlecode.com/svn/trunk/src/ie7-fixed.js!
 		document.body.runtimeStyle.backgroundRepeat = "no-repeat";
 		document.body.runtimeStyle.backgroundImage = "url(iTrickedYouIE.gif)";
 		document.body.runtimeStyle.backgroundAttachment = "fixed";
 	}
 },
 
-// Show a message in the message area.
+// Show a message in the message container.
 showMessage: function(key, type, text, disappear, hideX) {
+	
 	// If this message is not already in the messages array, create an entry for it.
 	if (!this.messages[key]) {
 		this.messages[key] = {div: document.createElement("div")};
 		this.container.appendChild(this.messages[key].div);
 	}
+	
 	// Update the message details.
 	this.messages[key].div.className = "msg " + type;
 	this.messages[key].div.innerHTML = (!hideX ? "<a href='javascript:Messages.hideMessage(\"" + key + "\")' class='close'>x</a>" : "") + text;
 	this.messages[key].type = type;
 	this.messages[key].text = text;
 	clearTimeout(this.messages[key].timeout);
-	// Set a timeout if this message is supposed to automatically disappear
+	
+	// Set a timeout if this message is supposed to automatically disappear.
 	if (disappear) this.messages[key].timeout = setTimeout(function(){Messages.hideMessage(key);}, esoTalk.messageDisplayTime * 1000);
 	this.messages[key].div.style.top = -this.messages[key].div.offsetHeight + "px";
+	
 	// Animate the message.
 	this.animateMessage(key, "show");
 },
@@ -324,17 +381,18 @@ clearMessages: function() {
 
 };
 
-// Ajax functions.
+
+// Ajax system.
 var Ajax = {
 
 activeRequests: 0, // Number of currently running requests.
-beenLoggedOut: false, // Has the user been logged out since we loaded the page? If so, disable all other AJAX until it's resolved.
+beenLoggedOut: false, // Has the user been logged out since we loaded the page? If so, disable ajax until it's resolved.
 disconnected: false, // If we've been disconnected from the server...
 disconnectedRequest: false, // The request to repeat after being disconnected from the server.
 maxSimultaneousRequests: 3, // Maximum number of ajax requests going at the same time.
 queue: [], // A queue of requests waiting to be started or waiting to finish.
 
-// Add a request to the request queue
+// Add a request to the request queue.
 request: function(request) {
 	if (!request || this.beenLoggedOut) return false;
 	if (!request.success) request.success = function() {};
@@ -343,13 +401,14 @@ request: function(request) {
 },
 
 // Do the next request in the queue.
-// Because we are doing simultaneous requests, requests must wait for their predecessors to finish before they can fire their success event.
-// This function fires the first request in the queue's success event if it is completed, and then starts as many requests as it can.
+// Because we are doing simultaneous requests, requests must wait for their predecessors to finish before they can fire
+// their success event. This function fires the first request in the queue's success event if it is completed, and then
+// starts as many requests as it can.
 doNextRequest: function() {
 	if (!this.queue.length) return;
 	while (this.queue.length && this.queue[0].completed) {
 		this.queue.shift().success();
-		if (Ajax.activeRequests < 1) hide(getById("loading"));
+		if (Ajax.activeRequests < 1) hide(getById("loading"), {animation: "fade"});
 	}
 	for (var i in this.queue) {
 		if (this.activeRequests >= this.maxSimultaneousRequests) break;
@@ -367,7 +426,8 @@ doRequest: function(request) {
 	request.http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 	
 	// If we're not loading, change the window onbeforeunload
-	// Add an onbeforeunload to prevent the user from quitting during a request, but only if it's not a background request.
+	// Add an onbeforeunload to prevent the user from quitting during a request, but only if it's not a background
+	// request.
 	if (!this.loading && !request.background && typeof window._onbeforeunload == "undefined") {
 		window._onbeforeunload = window.onbeforeunload;
 		window.onbeforeunload = function onbeforeunload() {return esoTalk.language["ajaxRequestPending"];};
@@ -384,7 +444,7 @@ doRequest: function(request) {
 			if (Ajax.activeRequests < 1) {
 				Ajax.loading = false;
 				if (!request.background) {
-					if (getById("loading")) hide(getById("loading"));
+					if (getById("loading")) hide(getById("loading"), {animation: "fade"});
 					window.onbeforeunload = window._onbeforeunload || null;
 					if (window._onbeforeunload) window._onbeforeunload = undefined;
 				}
@@ -478,7 +538,7 @@ doRequest: function(request) {
 	request.http.send("loggedInAs=" + (esoTalk.user ? esoTalk.user : "") + "&token=" + esoTalk.token + "&" + (request.post ? request.post : ""));
 	// Now we're loading... If there's an element with the id "loading", show it
 	this.loading = true;
-	if (!request.background && getById("loading")) show(getById("loading"));
+	if (!request.background && getById("loading")) show(getById("loading"), {animation: "fade"});
 
 },
 
