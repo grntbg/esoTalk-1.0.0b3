@@ -28,10 +28,10 @@ function toggleEnabled(id, enabled) {
 // Toggle the visibility of a plugin's settings.
 function toggleSettings(id) {
 	for (var i in plugins) {
-		if (plugins[i] != id && $("ext-" + plugins[i] + "-settings") && $("ext-" + plugins[i] + "-settings").showing)
-			hide($("ext-" + plugins[i] + "-settings"), {animation: "verticalSlide"});
+		if (plugins[i] != id && getById("ext-" + plugins[i] + "-settings") && getById("ext-" + plugins[i] + "-settings").showing)
+			hide(getById("ext-" + plugins[i] + "-settings"), {animation: "verticalSlide"});
 	}
-	toggle($("ext-" + id + "-settings"), {animation: "verticalSlide"});
+	toggle(getById("ext-" + id + "-settings"), {animation: "verticalSlide"});
 }
 var plugins = [];
 // ]]>
@@ -63,8 +63,8 @@ if (!empty($plugin["settings"])): ?>
 <script type='text/javascript'>// <![CDATA[
 plugins.push("<?php echo $k; ?>");
 <?php if (!empty($plugin["settings"])):
-	if (@$_POST["plugin"] != $k): ?>hide($("ext-<?php echo $k; ?>-settings"));<?php
-	else: ?>$("ext-<?php echo $k; ?>-settings").showing = true;<?php endif;
+	if (@$_POST["plugin"] != $k): ?>hide(getById("ext-<?php echo $k; ?>-settings"));<?php
+	else: ?>getById("ext-<?php echo $k; ?>-settings").showing = true;<?php endif;
 endif; ?> 
 // ]]></script>
 </li>

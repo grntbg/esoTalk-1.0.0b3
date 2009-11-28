@@ -29,6 +29,7 @@ endforeach;
 <p><?php echo $this->esoTalk->skin->button(array("id" => "joinSubmit", "name" => "searchSubmit", "value" => $language["Join this forum"], "class" => "big", "tabindex" => 1000)); ?></p>
 
 <script type='text/javascript'>
+// <![CDATA[
 // An array of the fields and if they're validated
 Join.fieldsValidated = {<?php
 $array = array();
@@ -37,6 +38,7 @@ foreach ($this->fields as $field) if (!empty($field["ajax"]))
 echo implode(",", $array);
 ?>};
 Join.init();
+// ]]>
 </script>
 
 </form>

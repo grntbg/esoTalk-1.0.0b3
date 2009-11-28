@@ -8,14 +8,14 @@ Ajax.request = function(request) {
 		this._success();
 		if (!Ajax.debugUpdateBackground && this.background) return;
 		if (!this.json.queries) return;
-		$("debugQueries").innerHTML = this.json.queries;
-		$("debugQueriesCount").innerHTML = this.json.queriesCount;
-		$("debugLoadTime").innerHTML = this.json.loadTime;
-		$("debugPost").innerHTML = this.json.debugPost;
-		$("debugGet").innerHTML = this.json.debugGet;
-		$("debugFiles").innerHTML = this.json.debugFiles;
-		$("debugSession").innerHTML = this.json.debugSession;
-		$("debugCookie").innerHTML = this.json.debugCookie;
+		getById("debugQueries").innerHTML = this.json.queries;
+		getById("debugQueriesCount").innerHTML = this.json.queriesCount;
+		getById("debugLoadTime").innerHTML = this.json.loadTime;
+		getById("debugPost").innerHTML = this.json.debugPost;
+		getById("debugGet").innerHTML = this.json.debugGet;
+		getById("debugFiles").innerHTML = this.json.debugFiles;
+		getById("debugSession").innerHTML = this.json.debugSession;
+		getById("debugCookie").innerHTML = this.json.debugCookie;
 		if (this.json.log) Messages.showMessage("debugLog", "info", "<div style='overflow:auto;max-height:400px'>" + this.json.log + "</div>", false);
 	};
 	this.queue.push(request);
@@ -37,6 +37,6 @@ Ajax.disconnect = function(request) {
 };
 
 Ajax.toggleDebugInfo = function(link) {
-	toggle($("debugInfo"));
-	link.innerHTML = $("debugInfo").style.display == "none" ? "show debug info" : "hide debug info";
+	toggle(getById("debugInfo"));
+	link.innerHTML = getById("debugInfo").style.display == "none" ? "show debug info" : "hide debug info";
 };

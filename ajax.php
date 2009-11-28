@@ -48,8 +48,8 @@ $controllerResult = null;
 
 // Are we still logged in? If not, display a "been logged out" message/form.
 if (!empty($_POST["loggedInAs"]) and empty($esoTalk->user["name"])) {
-	$esoTalk->message("beenLoggedOut", false, array($_POST["loggedInAs"], "<input id='loginMsgPassword' type='password' class='text' onkeypress='if(event.keyCode==13)$(\"loginMsgSubmit\").click()'/> 
-<input type='submit' value='{$language["Log in"]}' onclick='Ajax.login($(\"loginMsgPassword\").value);return false' id='loginMsgSubmit'/> <input type='button' value='{$language["Cancel"]}' onclick='Ajax.dismissLoggedOut()'/>"));
+	$esoTalk->message("beenLoggedOut", false, array($_POST["loggedInAs"], "<input id='loginMsgPassword' type='password' class='text' onkeypress='if(event.keyCode==13)getById(\"loginMsgSubmit\").click()'/> 
+<input type='submit' value='{$language["Log in"]}' onclick='Ajax.login(getById(\"loginMsgPassword\").value);return false' id='loginMsgSubmit'/> <input type='button' value='{$language["Cancel"]}' onclick='Ajax.dismissLoggedOut()'/>"));
 }
 
 // Everything's fine; we're still logged in. Proceed with normal page actions.

@@ -39,8 +39,10 @@ if (!$this->conversation["id"]): ?><form action='<?php echo curLink(); ?>' metho
 <?php else: ?><span id='cTags'><?php echo $this->linkTags(@$this->conversation["tags"]); ?>&nbsp;</span><?php endif; ?>
 <?php if (!$this->conversation["id"] and (empty($_POST["cTitle"]) or empty($_POST["cTags"]))): ?>
 <script type='text/javascript'>
-<?php if (empty($_POST["cTitle"])): ?>makePlaceholder($("cTitle"), $("cTitle").value);<?php endif; ?>
-<?php if (empty($_POST["cTags"])): ?>makePlaceholder($("cTags"), $("cTags").value);<?php endif; ?>
+// <![CDATA[
+<?php if (empty($_POST["cTitle"])): ?>makePlaceholder(getById("cTitle"), getById("cTitle").value);<?php endif; ?>
+<?php if (empty($_POST["cTags"])): ?>makePlaceholder(getById("cTags"), getById("cTags").value);<?php endif; ?>
+// ]]>
 </script>
 <?php endif; ?>
 </dd>

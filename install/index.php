@@ -135,11 +135,13 @@ case "info": ?>
 </ul>
 
 <script type='text/javascript'>
-if (!$("forumTitle").value) makePlaceholder($("forumTitle"), "e.g. Simon's Krav Maga Forum");
-if (!$("mysqlUser").value) makePlaceholder($("mysqlUser"), "simon");
-if (!$("mysqlDB").value) makePlaceholder($("mysqlDB"), "esotalk");
-if (!$("adminUser").value) makePlaceholder($("adminUser"), "Simon");
-if (!$("adminEmail").value) makePlaceholder($("adminEmail"), "simon@example.com");
+// <![CDATA[
+if (!getById("forumTitle").value) makePlaceholder(getById("forumTitle"), "e.g. Simon's Krav Maga Forum");
+if (!getById("mysqlUser").value) makePlaceholder(getById("mysqlUser"), "simon");
+if (!getById("mysqlDB").value) makePlaceholder(getById("mysqlDB"), "esotalk");
+if (!getById("adminUser").value) makePlaceholder(getById("adminUser"), "Simon");
+if (!getById("adminEmail").value) makePlaceholder(getById("adminEmail"), "simon@example.com");
+// ]]>
 </script>
 
 <br/>
@@ -161,15 +163,17 @@ if (!$("adminEmail").value) makePlaceholder($("adminEmail"), "simon@example.com"
 
 <input type='hidden' name='showAdvanced' id='showAdvanced' value='<?php echo $_POST["showAdvanced"]; ?>'/>
 <script type='text/javascript'>
+// <![CDATA[
 function toggleAdvanced() {
-	toggle($("advanced"), {animation: "verticalSlide"});
-	$("showAdvanced").value = $("advanced").showing ? "1" : "";
-	if ($("advanced").showing) {
-		animateScroll($("advanced").offsetTop + $("advanced").offsetHeight + getClientDimensions()[1]);
-		$("tablePrefix").focus();
+	toggle(getById("advanced"), {animation: "verticalSlide"});
+	getById("showAdvanced").value = getById("advanced").showing ? "1" : "";
+	if (getById("advanced").showing) {
+		animateScroll(getById("advanced").offsetTop + getById("advanced").offsetHeight + getClientDimensions()[1]);
+		getById("tablePrefix").focus();
 	}
 }
-<?php if (empty($_POST["showAdvanced"])): ?>hide($("advanced"));<?php endif; ?>
+<?php if (empty($_POST["showAdvanced"])): ?>hide(getById("advanced"));<?php endif; ?>
+// ]]>
 </script>
 </div>
 
@@ -195,10 +199,12 @@ case "install": ?>
 <hr/>
 </div>
 <script type='text/javascript'>
+// <![CDATA[
 function toggleError() {
-	toggle($("error"), {animation: "verticalSlide"});
+	toggle(getById("error"), {animation: "verticalSlide"});
 }
-hide($("error"));
+hide(getById("error"));
+// ]]>
 </script>
 <p id='footer' style='margin:0'>
 <input type='submit' class='button' value='&#139; Go back' name='back'/>
@@ -224,10 +230,12 @@ case "finish": ?>
 <hr/>
 </div>
 <script type='text/javascript'>
+// <![CDATA[
 function toggleAdvanced() {
-	toggle($("advanced"), {animation: "verticalSlide"});
+	toggle(getById("advanced"), {animation: "verticalSlide"});
 }
-hide($("advanced"));
+hide(getById("advanced"));
+// ]]>
 </script>
 <p style='text-align:center' id='footer'><input type='submit' class='button' value='Take me to my forum!' name='finish'/></p>
 <?php break;

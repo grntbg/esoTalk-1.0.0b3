@@ -63,10 +63,12 @@ function init()
 	
 	$messageBody .= "</div>
 	<script type='text/javascript'>
+	// <![CDATA[
 	function toggleAdvanced() {
-		toggle($(\"advanced\"), {animation:'verticalSlide'});
+		toggle(getById(\"advanced\"), {animation:'verticalSlide'});
 	}
-	hide($(\"advanced\"));
+	hide(getById(\"advanced\"));
+	// ]]>
 	</script>";
 	
 	// Display the message.

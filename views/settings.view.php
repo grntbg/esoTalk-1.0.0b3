@@ -9,15 +9,15 @@ if (!defined("IN_ESOTALK")) exit;
 <script type='text/javascript'>
 // <![CDATA[
 function changeColor(color) {
-	if ((new RegExp("c" + color + "$")).test($("preview").className)) return;
+	if ((new RegExp("c" + color + "$")).test(getById("preview").className)) return;
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=settings",
 		"success": function() {
-			p = $("palette");
+			p = getById("palette");
 			colors = p.getElementsByTagName("a");
 			for (var i = 0, c; c = colors[i]; i++) c.className = c.className.replace("selected", "");
-			$("color-" + color).className += " selected";
-			$("preview").className = $("preview").className.replace(/c\d+/, "c" + color);
+			getById("color-" + color).className += " selected";
+			getById("preview").className = getById("preview").className.replace(/c\d+/, "c" + color);
 		},
 		"post": "action=changeColor&color=" + color,
 		"background": false
@@ -50,7 +50,7 @@ function changeColor(color) {
 <input type='radio' class='radio' value='upload' name='avatar[type]' id='upload'<?php if (@$_POST["avatar"]["type"] == "upload") echo " checked='checked'"; ?>/>
 <?php echo $language["Upload an avatar"]; ?>
 </label>
-<input name='avatarUpload' type='file' class='text' size='20' onchange='$("upload").checked="true"'/>
+<input name='avatarUpload' type='file' class='text' size='20' onchange='getById("upload").checked="true"'/>
 </li>
 
 <?php if (ini_get("allow_url_fopen")): ?>
@@ -59,7 +59,7 @@ function changeColor(color) {
 <input type='radio' class='radio' value='url' name='avatar[type]' id='url'<?php if (@$_POST["avatar"]["type"] == "url") echo " checked='checked'"; ?>/>
 <?php echo $language["Enter the web address of an avatar"]; ?>
 </label>
-<input name='avatar[url]' type='text' class='text' onkeypress='$("url").checked="true"' value='<?php if (!empty($_POST["avatar"]["url"])) echo $_POST["avatar"]["url"]; ?>'/>
+<input name='avatar[url]' type='text' class='text' onkeypress='getById("url").checked="true"' value='<?php if (!empty($_POST["avatar"]["url"])) echo $_POST["avatar"]["url"]; ?>'/>
 </li>
 <?php endif; ?>
 

@@ -2,7 +2,7 @@
 // This file is part of esoTalk. Please see the included license file for usage information.
 
 // document.getElementById shortcut.
-function $(id) {return document.getElementById(id) || null;};
+function getById(id) {return document.getElementById(id) || null;};
 
 // Get elements by their class name.
 function getElementsByClassName(parent, className) {
@@ -173,9 +173,9 @@ function enable(button) {
 
 // Show the login form (we're really just scrolling up to it.)
 function showLogin() {
-	if (!$("loginName")) window.location = window.location;
+	if (!getById("loginName")) window.location = window.location;
 	var top = getScrollTop();
-	$("loginName").focus();
+	getById("loginName").focus();
 	window.scroll(0, top);
 	animateScroll(0);
 }
@@ -194,7 +194,7 @@ function toggleStar(conversationId, star) {
 	});
 	star.className = star.className == "star0" ? "star1" : "star0";
 	star.getElementsByTagName("span")[0].innerHTML = esoTalk.language[star.className == "star1" ? "Starred" : "Unstarred"];
-	if ($("c" + conversationId)) $("c" + conversationId).className = star.className == "star1" ? "starred" : "";
+	if (getById("c" + conversationId)) getById("c" + conversationId).className = star.className == "star1" ? "starred" : "";
 };
 
 // Functions to get the scrollTop, scrollHeight/Width, and clientHeight/Width (as different browsers make this difficult!)
@@ -231,7 +231,7 @@ messages: {},
 
 // Initialize the page; animate messages which are already displaying in the HTML.
 init: function() {
-	this.container = $("messages");
+	this.container = getById("messages");
 	this.container.innerHTML = "";
 	// Vegeta, what does the scouter say about his power level?
 	this.container.style.display = "";
@@ -345,7 +345,7 @@ doNextRequest: function() {
 	if (!this.queue.length) return;
 	while (this.queue.length && this.queue[0].completed) {
 		this.queue.shift().success();
-		if (Ajax.activeRequests < 1) hide($("loading"));
+		if (Ajax.activeRequests < 1) hide(getById("loading"));
 	}
 	for (var i in this.queue) {
 		if (this.activeRequests >= this.maxSimultaneousRequests) break;
@@ -380,7 +380,7 @@ doRequest: function(request) {
 			if (Ajax.activeRequests < 1) {
 				Ajax.loading = false;
 				if (!request.background) {
-					if ($("loading")) hide($("loading"));
+					if (getById("loading")) hide(getById("loading"));
 					window.onbeforeunload = window._onbeforeunload || null;
 					if (window._onbeforeunload) window._onbeforeunload = undefined;
 				}
@@ -436,7 +436,7 @@ doRequest: function(request) {
 			// If the user has been logged out and our "beenLoggedOut" message is displaying...
 			if (Ajax.beenLoggedOut) {
 				// Show a big shadow over the page.
-				if (!$("beenLoggedOutShadow")) {
+				if (!getById("beenLoggedOutShadow")) {
 					var div = document.createElement("div");
 					div.id = "beenLoggedOutShadow";
 					div.style.background = "#000";
@@ -461,7 +461,7 @@ doRequest: function(request) {
 					}
 				}
 				// Focus on the password input.
-				$("loginMsgPassword").focus();
+				getById("loginMsgPassword").focus();
 				request.repeat = true;
 			}
 
@@ -477,7 +477,7 @@ doRequest: function(request) {
 	request.http.send("loggedInAs=" + (esoTalk.user ? esoTalk.user : "") + "&token=" + esoTalk.token + "&" + (request.post ? request.post : ""));
 	// Now we're loading... If there's an element with the id "loading", show it
 	this.loading = true;
-	if (!request.background && $("loading")) show($("loading"));
+	if (!request.background && getById("loading")) show(getById("loading"));
 
 },
 
@@ -502,7 +502,7 @@ dismissLoggedOut: function(loggedInAs) {
 	this.beenLoggedOut = false;
 	// Hide the message and the shadow.
 	Messages.clearMessages();
-	if ($("beenLoggedOutShadow")) document.body.removeChild($("beenLoggedOutShadow"));
+	if (getById("beenLoggedOutShadow")) document.body.removeChild(getById("beenLoggedOutShadow"));
 	// Set the new 'logged in' user. If we ended up pressing cancel, proceed with the ajax request that caused this mess...
 	esoTalk.user = loggedInAs ? loggedInAs : "";
 },
@@ -563,7 +563,7 @@ init: function() {
 	this.autoReloadInterval = esoTalk.conversation.autoReloadInterval;
 
 	// Hide the save title/tags button
-	if ($("saveTitleTags")) $("saveTitleTags").style.display = "none";
+	if (getById("saveTitleTags")) getById("saveTitleTags").style.display = "none";
 	
 	// If we're not starting a new conversation...
 	if (this.id) {
@@ -580,36 +580,36 @@ init: function() {
 	}
 	
 	// Initialize the add member form
-	if ($("addMemberSubmit")) {
-		$("addMemberSubmit").onclick = function onclick() {Conversation.addMember($("addMember").value); return false;};
-		$("addMember").onkeypress = function(e) {
+	if (getById("addMemberSubmit")) {
+		getById("addMemberSubmit").onclick = function onclick() {Conversation.addMember(getById("addMember").value); return false;};
+		getById("addMember").onkeypress = function(e) {
 			if (!e) e = window.event;
-			if (e.keyCode == 13) {Conversation.addMember($("addMember").value); return false;}
-			else enable($("addMemberSubmit"));
+			if (e.keyCode == 13) {Conversation.addMember(getById("addMember").value); return false;}
+			else enable(getById("addMemberSubmit"));
 		};
-		disable($("addMemberSubmit"));
+		disable(getById("addMemberSubmit"));
 	}
 	
 	// Initialize the title/tag inputs (only if it's not a new conversation).
 	if (this.id) {
-		if ($("cTitle").tagName.toLowerCase() == "input") {
-			$("cTitle").onfocus = function(){this.initValue=this.value;};
-			$("cTitle").onblur = function(){if(this.value!=this.initValue)Conversation.saveTitle(this.value);};
-			$("cTitle").onkeypress = function(e){if(!e)e=window.event;if(e.keyCode==13){this.blur();return false;}};
+		if (getById("cTitle").tagName.toLowerCase() == "input") {
+			getById("cTitle").onfocus = function(){this.initValue=this.value;};
+			getById("cTitle").onblur = function(){if(this.value!=this.initValue)Conversation.saveTitle(this.value);};
+			getById("cTitle").onkeypress = function(e){if(!e)e=window.event;if(e.keyCode==13){this.blur();return false;}};
 		}
-		if ($("cTags").tagName.toLowerCase() == "input") {
-			$("cTags").onfocus = function(){this.initValue=this.value;};
-			$("cTags").onblur = function(){if(this.value!=this.initValue)Conversation.saveTags(this.value);};
-			$("cTags").onkeypress = function(e){if(!e)e=window.event;if(e.keyCode==13){this.blur();return false;}};
+		if (getById("cTags").tagName.toLowerCase() == "input") {
+			getById("cTags").onfocus = function(){this.initValue=this.value;};
+			getById("cTags").onblur = function(){if(this.value!=this.initValue)Conversation.saveTags(this.value);};
+			getById("cTags").onkeypress = function(e){if(!e)e=window.event;if(e.keyCode==13){this.blur();return false;}};
 		}
 	}
-	Conversation.title = typeof $("cTitle").value != "undefined" ? $("cTitle").value : $("cTitle").innerHTML;
+	Conversation.title = typeof getById("cTitle").value != "undefined" ? getById("cTitle").value : getById("cTitle").innerHTML;
 	
 	// Initialize the pagination
 	Conversation.initPagination();
 	
 	// If there's a reply box, initilize it.
-	if ($("reply")) Conversation.initReply();
+	if (getById("reply")) Conversation.initReply();
 	
 	// Onbeforeunload handler
 	window.onbeforeunload = Conversation.beforeUnload;
@@ -629,7 +629,7 @@ init: function() {
 initPagination: function() {
 	
 	// Loop through the bars and create an easy-to-access array of their child elements
-	paginations = [$("pagination"), $("paginationBottom")];
+	paginations = [getById("pagination"), getById("paginationBottom")];
 	for (var i in paginations) {
 		pg = {
 			"bar": paginations[i],
@@ -680,27 +680,27 @@ initReply: function() {
 	Conversation.editingReply = false;
 	
 	// Disable the post reply button if there's not a draft. Disable the save draft button regardless.
-	if (!$("reply-textarea").value) {disable($("postReply")); disable($("discardDraft"));}
-	disable($("saveDraft"));
+	if (!getById("reply-textarea").value) {disable(getById("postReply")); disable(getById("discardDraft"));}
+	disable(getById("saveDraft"));
 	
 	// Add event handlers on the textarea to enable/disable buttons
-	$("reply-textarea").onkeyup = function onkeyup() {
-		if (this.value) {enable($("saveDraft")); enable($("postReply")); Conversation.editingReply = true;}
-		else {disable($("saveDraft")); disable($("postReply")); Conversation.editingReply = false;}
+	getById("reply-textarea").onkeyup = function onkeyup() {
+		if (this.value) {enable(getById("saveDraft")); enable(getById("postReply")); Conversation.editingReply = true;}
+		else {disable(getById("saveDraft")); disable(getById("postReply")); Conversation.editingReply = false;}
 	};
-	$("reply-previewCheckbox").checked = false;
+	getById("reply-previewCheckbox").checked = false;
 	
 	// Add click events to the buttons
-	if ($("saveDraft")) $("saveDraft").getElementsByTagName("input")[0].onclick = function onclick() {Conversation.saveDraft(); return false;};
-	if ($("discardDraft")) $("discardDraft").getElementsByTagName("input")[0].onclick = function onclick() {Conversation.discardDraft(); return false;};
-	if ($("postReply")) $("postReply").getElementsByTagName("input")[0].onclick = function onclick() {
+	if (getById("saveDraft")) getById("saveDraft").getElementsByTagName("input")[0].onclick = function onclick() {Conversation.saveDraft(); return false;};
+	if (getById("discardDraft")) getById("discardDraft").getElementsByTagName("input")[0].onclick = function onclick() {Conversation.discardDraft(); return false;};
+	if (getById("postReply")) getById("postReply").getElementsByTagName("input")[0].onclick = function onclick() {
 		if (Conversation.id) Conversation.addReply();
 		else Conversation.startConversation();
 		return false;
 	};
 	
 	// Register the Ctrl+Enter shortcut.
-	$("reply-textarea").onkeypress = function onkeypress(e) {
+	getById("reply-textarea").onkeypress = function onkeypress(e) {
 		if (!e) e = window.event;
 		if (e.ctrlKey && e.keyCode == 13) {
 			if (Conversation.editingReply) {
@@ -880,7 +880,7 @@ displayPosts: function(scrollTo) {
 		if (post.lastAction) html.push("<span>", makeLastAction(post.lastAction), "</span> ");
 		for (var i in post.info) html.push("<span>", post.info[i], "</span> ");
 		html.push("</div><div class='controls'>");
-		if ($("reply")) html.push(makeQuoteLink(post.id), " ");
+		if (getById("reply")) html.push(makeQuoteLink(post.id), " ");
 		if (post.canEdit) html.push(makeEditLink(post.id), " ", makeDeleteLink(post.id), " ");
 		for (var i in post.controls) html.push(post.controls[i], " ");
 		html.push("</div></div><div class='body'>", post.body, "</div></div>");
@@ -894,12 +894,12 @@ displayPosts: function(scrollTo) {
 		}
 	}
 
-	$("cPosts").innerHTML = html.join("");
+	getById("cPosts").innerHTML = html.join("");
 	
 	// Loop through all post links (i.e. "go to this post" links) and add a click handler
 	// to check if the post they are directed at is in the current conversation post cache.
 	// If it is, just scroll up to it.
-	var postLinks = getElementsByClassName($("cPosts"), "postLink");
+	var postLinks = getElementsByClassName(getById("cPosts"), "postLink");
 	for (var i = 0; i < postLinks.length; i++) {
 		var linkParts = postLinks[i].href.split("/");
 		// If we can get a proper postId from the link...
@@ -908,7 +908,7 @@ displayPosts: function(scrollTo) {
 				for (var i in Conversation.posts) {
 					if (Conversation.posts[i].id == this.postId) {
 						// If the post is on the current page, scroll up to it.
-						if (i >= Conversation.startFrom - esoTalk.postsPerPage) Conversation.scrollTo($("p" + this.postId).offsetTop);
+						if (i >= Conversation.startFrom - esoTalk.postsPerPage) Conversation.scrollTo(getById("p" + this.postId).offsetTop);
 						// Otherwise, move the pagination to where this post is.
 						else Conversation.moveTo(i, "top");
 						return false;
@@ -932,7 +932,7 @@ displayPosts: function(scrollTo) {
 	// Animate new posts
 	for (var i = Conversation.startFrom; i < max; i++) {
 		if (Conversation.posts[i].animateNew) {
-			Conversation.animateNewPost($("p" + Conversation.posts[i].id));
+			Conversation.animateNewPost(getById("p" + Conversation.posts[i].id));
 			Conversation.posts[i].animateNew = false;
 		}
 	}
@@ -959,7 +959,7 @@ scrollTo: function(scrollTo) {
 			window.scroll(0, getOffsetTop(Conversation.paginations[1].bar) - Conversation.scrollStart);
 			return;
 		// Scroll to the reply area
-		case "reply": Conversation.scrollDest = getOffsetTop($("reply")) + $("reply").offsetHeight - getClientDimensions()[1] + 10; break;
+		case "reply": Conversation.scrollDest = getOffsetTop(getById("reply")) + getById("reply").offsetHeight - getClientDimensions()[1] + 10; break;
 		default: Conversation.scrollDest = parseInt(scrollTo);
 	}
 	if (Conversation.scrollDest) animateScroll(Conversation.scrollDest);
@@ -1093,7 +1093,7 @@ jumpTo: function(e) {
 
 // Move to a specific post. Takes care of pagination, animation, and reloading the posts.
 moveTo: function(startFrom, scrollTo) {
-	$("cBody").style.display = Conversation.postCount ? "block" : "none";
+	getById("cBody").style.display = Conversation.postCount ? "block" : "none";
 	// Check if we're editing any posts - if we are, confirm it with the user.
 	if (Conversation.editingPosts > 0 && !confirm(Conversation.beforeUnload())) startFrom = Conversation.startFrom;
 	else Conversation.editingPosts = 0;
@@ -1138,9 +1138,9 @@ moveToPercent: function(startFromPercent, scrollTo) {
 
 // Add a reply
 addReply: function() {
-	content = $("reply-textarea").value;
+	content = getById("reply-textarea").value;
 	// Disable the reply/draft buttons.
-	disable($("postReply")); disable($("saveDraft"));
+	disable(getById("postReply")); disable(getById("saveDraft"));
 	
 	// What is the last post in the conversation we have data for? We'll need to get any posts we don't have.
 	var max = 0;
@@ -1161,8 +1161,8 @@ addReply: function() {
 				Messages.hideMessage("emptyPost");
 				
 				// Everything went just as planned; initialize the reply area again
-				hide(getElementsByClassName($("cLabels"), "draft")[0]);
-				$("reply-textarea").value = "";
+				hide(getElementsByClassName(getById("cLabels"), "draft")[0]);
+				getById("reply-textarea").value = "";
 				Conversation.togglePreview("reply", false);
 				Conversation.initReply();
 				
@@ -1189,7 +1189,7 @@ addReply: function() {
 				
 			} else {
 				// Enable the reply/draft buttons.
-				enable($("postReply")); enable($("saveDraft"));
+				enable(getById("postReply")); enable(getById("saveDraft"));
 			}
 		}
 	});
@@ -1224,19 +1224,19 @@ animateDeletePost: function(post, startHeight) {
 startConversation: function(draft) {
 
 	// Prepare the conversation data
-	var title = encodeURIComponent($("cTitle").placeholderFlag ? "" : $("cTitle").value);
-	var content = encodeURIComponent($("reply-textarea").value);
-	var tags = encodeURIComponent($("cTags").placeholderFlag ? "" : $("cTags").value);
+	var title = encodeURIComponent(getById("cTitle").placeholderFlag ? "" : getById("cTitle").value);
+	var content = encodeURIComponent(getById("reply-textarea").value);
+	var tags = encodeURIComponent(getById("cTags").placeholderFlag ? "" : getById("cTags").value);
 	
 	// Disable the post reply and save draft buttons.
-	disable($("postReply")); disable($("saveDraft"));
+	disable(getById("postReply")); disable(getById("saveDraft"));
 	
 	// Make the ajax request
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"post": "action=startConversation&content=" + content + "&title=" + title + "&tags=" + tags + (draft ? "&draft=true" : ""),
 		"success": function() {
-			if (this.messages) {enable($("postReply")); enable($("saveDraft"));}
+			if (this.messages) {enable(getById("postReply")); enable(getById("saveDraft"));}
 			// Redirect to the new conversation page
 			else if (!this.messages && this.result.redirect) {
 				Conversation.editingReply = false;
@@ -1258,13 +1258,13 @@ saveDraft: function() {
 	}
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
-		"post": "action=saveDraft&id=" + Conversation.id + "&content=" + encodeURIComponent($("reply-textarea").value),
+		"post": "action=saveDraft&id=" + Conversation.id + "&content=" + encodeURIComponent(getById("reply-textarea").value),
 		"success": function() {
 			if (!this.messages) {
 				Messages.hideMessage("emptyPost");
 				// Show the draft label, disable the save draft button, and enable the discard draft button.
-				show(getElementsByClassName($("cLabels"), "draft")[0]);
-				disable($("saveDraft")); enable($("discardDraft"));
+				show(getElementsByClassName(getById("cLabels"), "draft")[0]);
+				disable(getById("saveDraft")); enable(getById("discardDraft"));
 				Conversation.editingReply = false;
 			}
 		}
@@ -1282,8 +1282,8 @@ discardDraft: function() {
 		"post": "action=discardDraft&id=" + Conversation.id,
 		"success": function() {
 			// Hide the draft label and reinitialize the reply area
-			hide(getElementsByClassName($("cLabels"), "draft")[0]);
-			$("reply-textarea").value = "";
+			hide(getElementsByClassName(getById("cLabels"), "draft")[0]);
+			getById("reply-textarea").value = "";
 			Conversation.togglePreview("reply", false);
 			Conversation.initReply();
 		}
@@ -1307,9 +1307,9 @@ deletePost: function(postId) {
 					if (Conversation.posts[i].id == postId) {
 						Conversation.posts[i].deleteMember = esoTalk.user;
 						Conversation.posts[i].body = "";
-						oldHeight = $("p" + postId).offsetHeight;
+						oldHeight = getById("p" + postId).offsetHeight;
 						Conversation.displayPosts();
-						Conversation.animateDeletePost($("p" + postId), oldHeight);
+						Conversation.animateDeletePost(getById("p" + postId), oldHeight);
 						break;
 					}
 				}
@@ -1330,9 +1330,9 @@ restorePost: function(postId) {
 		"success": function() {
 			if (!this.messages) {
 				for (var i in this.result) Conversation.posts[i] = this.result[i];
-				var oldHeight = $("p" + postId).offsetHeight;
+				var oldHeight = getById("p" + postId).offsetHeight;
 				Conversation.displayPosts();
-				Conversation.animateNewPost($("p" + postId));
+				Conversation.animateNewPost(getById("p" + postId));
 			}
 		},
 		"post": "action=restorePost&postId=" + postId
@@ -1351,9 +1351,9 @@ showDeletedPost: function(postId) {
 				for (var i in Conversation.posts) {
 					if (Conversation.posts[i].id == postId) {
 						Conversation.posts[i].body = this.result;
-						oldHeight = $("p" + postId).offsetHeight;
+						oldHeight = getById("p" + postId).offsetHeight;
 						Conversation.displayPosts();
-						Conversation.animateDeletePost($("p" + postId), oldHeight);
+						Conversation.animateDeletePost(getById("p" + postId), oldHeight);
 						break;
 					}
 				}
@@ -1368,9 +1368,9 @@ hideDeletedPost: function(postId) {
 	for (var i in Conversation.posts) {
 		if (Conversation.posts[i].id == postId) {
 			Conversation.posts[i].body = "";
-			oldHeight = $("p" + postId).offsetHeight;
+			oldHeight = getById("p" + postId).offsetHeight;
 			Conversation.displayPosts();
-			Conversation.animateDeletePost($("p" + postId), oldHeight);
+			Conversation.animateDeletePost(getById("p" + postId), oldHeight);
 			break;
 		}
 	}
@@ -1380,8 +1380,8 @@ hideDeletedPost: function(postId) {
 editPost: function(postId) {
 	
 	// If we're already editing this post, don't do anything.
-	if ($("p" + postId).editing) return;
-	$("p" + postId).editing = true;
+	if (getById("p" + postId).editing) return;
+	getById("p" + postId).editing = true;
 	
 	// Get the editing controls and textarea templates with an ajax request
 	Ajax.request({
@@ -1390,21 +1390,21 @@ editPost: function(postId) {
 		"success": function() {
 			if (this.messages) return;
 			Conversation.editingPosts++;
-			var controls = getElementsByClassName($("p" + postId), "controls")[0];
-			var body = getElementsByClassName($("p" + postId), "body")[0];
+			var controls = getElementsByClassName(getById("p" + postId), "controls")[0];
+			var body = getElementsByClassName(getById("p" + postId), "body")[0];
 			controls.old = controls.innerHTML;
 			body.old = body.innerHTML;
-			var startHeight = $("p" + postId).offsetHeight;
+			var startHeight = getById("p" + postId).offsetHeight;
 			// Change up the html
 			body.className += " edit";
 			controls.innerHTML = this.result.controls;
 			body.innerHTML = this.result.body;
-			Conversation.animateEditPost($("p" + postId), startHeight);
+			Conversation.animateEditPost(getById("p" + postId), startHeight);
 			// Scroll
-			var scrollTo = getOffsetTop($("p" + postId)) + $("p" + postId).offsetHeight - getClientDimensions()[1] + 10;
+			var scrollTo = getOffsetTop(getById("p" + postId)) + getById("p" + postId).offsetHeight - getClientDimensions()[1] + 10;
 			if (getScrollTop() < scrollTo) Conversation.scrollTo(scrollTo);
 			// Regsiter the Ctrl+Enter shortcut.
-			$("p" + postId + "-textarea").onkeypress = function onkeypress(e) {
+			getById("p" + postId + "-textarea").onkeypress = function onkeypress(e) {
 				if (!e) e = window.event;
 				if (e.ctrlKey && e.keyCode == 13) {
 					Conversation.saveEditPost(postId, this.value);
@@ -1419,7 +1419,7 @@ editPost: function(postId) {
 saveEditPost: function(postId, content) {
 
 	// Disable the buttons
-	var buttons = getElementsByClassName(getElementsByClassName($("p" + postId), "editButtons")[0], "button");
+	var buttons = getElementsByClassName(getElementsByClassName(getById("p" + postId), "editButtons")[0], "button");
 	for (var i in buttons) disable(buttons[i]);
 	
 	// Make the ajax request
@@ -1428,7 +1428,7 @@ saveEditPost: function(postId, content) {
 		"success": function() {
 			if (!this.messages) {
 				// Success! Revert back to normal
-				getElementsByClassName($("p" + postId), "body")[0].old = this.result.content;
+				getElementsByClassName(getById("p" + postId), "body")[0].old = this.result.content;
 				Conversation.cancelEdit(postId);
 				// Find the post we just edited and change its content to the new content.
 				for (var i in Conversation.posts) {
@@ -1447,22 +1447,22 @@ saveEditPost: function(postId, content) {
 // Cancel editing a post
 cancelEdit: function(postId) {
 	Conversation.editingPosts--;
-	$("p" + postId).editing = false;
-	var controls = getElementsByClassName($("p" + postId), "controls")[0];
-	var body = getElementsByClassName($("p" + postId), "body")[0];
+	getById("p" + postId).editing = false;
+	var controls = getElementsByClassName(getById("p" + postId), "controls")[0];
+	var body = getElementsByClassName(getById("p" + postId), "body")[0];
 	body.className = body.className.replace(" edit", "");
-	var startHeight = $("p" + postId).offsetHeight;
+	var startHeight = getById("p" + postId).offsetHeight;
 	controls.innerHTML = controls.old;
 	body.innerHTML = body.old;
-	Conversation.animateEditPost($("p" + postId), startHeight);
+	Conversation.animateEditPost(getById("p" + postId), startHeight);
 	Conversation.setReloadTimeout(Conversation.autoReloadInterval);
 },
 
 // Toggle sticky
 toggleSticky: function() {
-	var label = getElementsByClassName($("cLabels"), "sticky")[0];
+	var label = getElementsByClassName(getById("cLabels"), "sticky")[0];
 	toggle(label);
-	$("stickyLink").innerHTML = esoTalk.language[label.style.display == "none" ? "Sticky" : "Unsticky"];
+	getById("stickyLink").innerHTML = esoTalk.language[label.style.display == "none" ? "Sticky" : "Unsticky"];
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"post": "action=toggleSticky&id=" + Conversation.id
@@ -1471,9 +1471,9 @@ toggleSticky: function() {
 
 // Toggle lock
 toggleLock: function() {
-	label = getElementsByClassName($("cLabels"), "locked")[0];
+	label = getElementsByClassName(getById("cLabels"), "locked")[0];
 	toggle(label);
-	$("lockLink").innerHTML = esoTalk.language[label.style.display == "none" ? "Lock" : "Unlock"];
+	getById("lockLink").innerHTML = esoTalk.language[label.style.display == "none" ? "Lock" : "Unlock"];
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"post": "action=toggleLock&id=" + Conversation.id
@@ -1486,12 +1486,12 @@ addMember: function(name) {
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"success": function() {
-			$("addMember").value = "";
-			disable($("addMemberSubmit"));
+			getById("addMember").value = "";
+			disable(getById("addMemberSubmit"));
 			if (!this.messages) {
 				// Update the list/labels
-				$("allowedList").innerHTML = this.result.list;
-				show(getElementsByClassName($("cLabels"), "private")[0]);
+				getById("allowedList").innerHTML = this.result.list;
+				show(getElementsByClassName(getById("cLabels"), "private")[0]);
 			}
 		}, 
 		"post": "action=addMember&member=" + encodeURIComponent(name) + (Conversation.id ? "&id=" + Conversation.id : "")
@@ -1503,8 +1503,8 @@ removeMember: function(name) {
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"success": function() {
-			$("allowedList").innerHTML = this.result.list;
-			if (!this.result.private) hide(getElementsByClassName($("cLabels"), "private")[0]);
+			getById("allowedList").innerHTML = this.result.list;
+			if (!this.result.private) hide(getElementsByClassName(getById("cLabels"), "private")[0]);
 		},
 		"post": "action=removeMember&member=" + encodeURIComponent(name) + (Conversation.id ? "&id=" + Conversation.id : "")
 	});
@@ -1515,7 +1515,7 @@ saveTags: function(tags) {
 	if (!Conversation.id) return false;
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
-		"success": function() {$("cTags").value = this.result;},
+		"success": function() {getById("cTags").value = this.result;},
 		"post": "action=saveTags&id=" + Conversation.id + "&tags=" + encodeURIComponent(tags)
 	});
 },
@@ -1527,7 +1527,7 @@ saveTitle: function(title) {
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"success": function() {
 			document.title = document.title.replace(Conversation.title, this.result);
-			$("cTitle").value = Conversation.title = this.result;
+			getById("cTitle").value = Conversation.title = this.result;
 		},
 		"post": "action=saveTitle&id=" + Conversation.id + "&title=" + encodeURIComponent(title)
 	});
@@ -1549,17 +1549,17 @@ changeMemberGroup: function(memberId, group) {
 },
 
 // Formatting buttons
-bold: function(id) {Conversation.wrapText($(id + "-textarea"), "<b>", "</b>");},
-italic: function(id) {Conversation.wrapText($(id + "-textarea"), "<i>", "</i>");},
-strikethrough: function(id) {Conversation.wrapText($(id + "-textarea"), "<s>", "</s>");},
-header: function(id) {Conversation.wrapText($(id + "-textarea"), "<h1>", "</h1>");},
-link: function(id) {Conversation.wrapText($(id + "-textarea"), "<a href='http://example.com'>", "</a>", "http://example.com", "link text");},
-image: function(id) {Conversation.wrapText($(id + "-textarea"), "<img src='", "'>", "", "http://example.com/image.jpg");},
-fixed: function(id) {Conversation.wrapText($(id + "-textarea"), "<pre>", "</pre>");},
+bold: function(id) {Conversation.wrapText(getById(id + "-textarea"), "<b>", "</b>");},
+italic: function(id) {Conversation.wrapText(getById(id + "-textarea"), "<i>", "</i>");},
+strikethrough: function(id) {Conversation.wrapText(getById(id + "-textarea"), "<s>", "</s>");},
+header: function(id) {Conversation.wrapText(getById(id + "-textarea"), "<h1>", "</h1>");},
+link: function(id) {Conversation.wrapText(getById(id + "-textarea"), "<a href='http://example.com'>", "</a>", "http://example.com", "link text");},
+image: function(id) {Conversation.wrapText(getById(id + "-textarea"), "<img src='", "'>", "", "http://example.com/image.jpg");},
+fixed: function(id) {Conversation.wrapText(getById(id + "-textarea"), "<pre>", "</pre>");},
 
 // Quotes
 quote: function(id, name, quote) {
-	Conversation.wrapText($(id + "-textarea"), "<blockquote><cite>" + (name ? name : "Name") + "</cite> " + (quote ? quote : ""), "</blockquote>", (!name ? "Name" : null));
+	Conversation.wrapText(getById(id + "-textarea"), "<blockquote><cite>" + (name ? name : "Name") + "</cite> " + (quote ? quote : ""), "</blockquote>", (!name ? "Name" : null));
 },
 // Quote a post
 quotePost: function(postId) {
@@ -1568,7 +1568,7 @@ quotePost: function(postId) {
 		"success": function() {
 			var top = getScrollTop();
 			// Quote this post's author and content
-			Conversation.insertText($("reply-textarea"), "<blockquote><cite>" + this.result.member + "</cite> " + this.result.content + "</blockquote>\n");
+			Conversation.insertText(getById("reply-textarea"), "<blockquote><cite>" + this.result.member + "</cite> " + this.result.content + "</blockquote>\n");
 			// Scroll to the reply box if the user isn't holding down shift.
 			window.scroll(0, top);
 			if (!Conversation.multiQuote) Conversation.scrollTo("reply");
@@ -1583,7 +1583,7 @@ insertText: function(textarea, text) {
 	textarea.value += text;
 	textarea.focus();
 	// Trigger the textarea's keyup to emulate typing
-	$("reply-textarea").onkeyup();
+	getById("reply-textarea").onkeyup();
 },
 
 // Add text to the reply area, with the options of wrapping it around a selection and selecting a part of it when it's inserted
@@ -1651,7 +1651,7 @@ wrapText: function(textarea, tagStart, tagEnd, selectArgument, defaultArgumentVa
 	}
 
 	// Trigger the textarea's keyup to emulate typing
-	$("reply-textarea").onkeyup();
+	getById("reply-textarea").onkeyup();
 },
 
 // Toggle preview on an editing area
@@ -1660,24 +1660,24 @@ togglePreview: function(id, preview) {
 	// If the preview box is checked...
 	if (preview) {
 		// Keep the minimum height - won't work in ie :(
-		$(id + "-preview").style.minHeight = $(id + "-textarea").offsetHeight + 4 + "px";
+		getById(id + "-preview").style.minHeight = getById(id + "-textarea").offsetHeight + 4 + "px";
 		// Hide the formatting buttons and the textarea; show the preview area
-		hide(getElementsByClassName($(id), "formattingButtons")[0]); hide($(id + "-textarea"));
-		$(id + "-preview").innerHTML = "";
-		show($(id + "-preview"));
+		hide(getElementsByClassName(getById(id), "formattingButtons")[0]); hide(getById(id + "-textarea"));
+		getById(id + "-preview").innerHTML = "";
+		show(getById(id + "-preview"));
 		// Get the formatted post and show it
 		Ajax.request({
 			"url": esoTalk.baseURL + "ajax.php?controller=conversation",
-			"success": function() {$(id + "-preview").innerHTML = this.result;},
-			"post": "action=getPostFormatted&content=" + encodeURIComponent($(id + "-textarea").value)
+			"success": function() {getById(id + "-preview").innerHTML = this.result;},
+			"post": "action=getPostFormatted&content=" + encodeURIComponent(getById(id + "-textarea").value)
 		});
 	}
 	
 	// The preview box isn't checked
 	else {
 		// Show the formatting buttons and the textarea; hide the preview area
-		show(getElementsByClassName($(id), "formattingButtons")[0]); show($(id + "-textarea"));
-		hide($(id + "-preview"));
+		show(getElementsByClassName(getById(id), "formattingButtons")[0]); show(getById(id + "-textarea"));
+		hide(getById(id + "-preview"));
 	}
 }
 
@@ -1697,23 +1697,23 @@ checkForNewResultsTimeout: null,
 init: function() {
 
 	// Add an onclick handler to the search button
-	$("submit").getElementsByTagName("input")[0].onclick = function onclick() {
-		Search.search($("searchText").value);
+	getById("submit").getElementsByTagName("input")[0].onclick = function onclick() {
+		Search.search(getById("searchText").value);
 		return false;
 	};
 	// Add an onkeydown handler for when you press enter/escape in the search input
-	$("searchText").onkeydown = function onkeydown(e) {
+	getById("searchText").onkeydown = function onkeydown(e) {
 		if (!e) e = window.event;
 		if (e.keyCode == 13) { // Enter
-			Search.search($("searchText").value);
+			Search.search(getById("searchText").value);
 			return false;
 		} else if (e.keyCode == 27) { // Escape
-			if ($("searchText").value != "") setTimeout(function(){Search.search("");}, 1);
+			if (getById("searchText").value != "") setTimeout(function(){Search.search("");}, 1);
 			return false;
 		}
 	};
 	// Add an onclick handler to the reset link
-	$("reset").onclick = function onclick() {
+	getById("reset").onclick = function onclick() {
 		Search.search("");
 		return false;
 	};
@@ -1730,12 +1730,12 @@ init: function() {
 	Search.resetCheckForNewResultsTimeout();
 	
 	// Add handlers to all the tags and gambits
-	var t = $("tags").getElementsByTagName("a");
+	var t = getById("tags").getElementsByTagName("a");
 	for (var i = 0; i < t.length; i++) {
 		t[i].onclick = function onclick() {Search.tag(Search.desanitize(this.innerHTML)); return false;};
 		t[i].ondblclick = function ondblclick() {Search.search((Search.negativeGambit ? "!" : "") + esoTalk.language["tag:"] + Search.desanitize(this.innerHTML)); return false;};
 	}
-	var g = $("gambits").getElementsByTagName("a");
+	var g = getById("gambits").getElementsByTagName("a");
 	for (var i = 0; i < g.length; i++) {
 		g[i].onclick = function onclick() {Search.gambit(Search.desanitize(this.innerHTML)); return false;};
 		g[i].ondblclick = function ondblclick() {Search.search((Search.negativeGambit ? "!" : "") + Search.desanitize(this.innerHTML)); return false;};
@@ -1774,7 +1774,7 @@ desanitize: function(value) {
 
 // Perform a search
 search: function(query, hideLoading) {
-	Search.currentSearch = $("searchText").value = query;
+	Search.currentSearch = getById("searchText").value = query;
 	window.location.hash = "search:" + (query ? encodeURIComponent(query) : "");
 	Search.resetUpdateCurrentResultsTimeout();
 	Search.resetCheckForNewResultsTimeout();
@@ -1785,7 +1785,7 @@ search: function(query, hideLoading) {
 		"background": hideLoading,
 		"success": function() {
 			if (this.messages) return;
-			$("searchResults").innerHTML = this.result;
+			getById("searchResults").innerHTML = this.result;
 			Messages.hideMessage("waitToSearch");
 		}
 	});
@@ -1793,7 +1793,7 @@ search: function(query, hideLoading) {
 
 checkForNewResults: function() {
 	var conversationIds = "";
-	var rows = $("conversations").getElementsByTagName("tr");
+	var rows = getById("conversations").getElementsByTagName("tr");
 	for (var i = 0; i < rows.length; i++) conversationIds += rows[i].id.substr(1) + ",";
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=search",
@@ -1801,8 +1801,8 @@ checkForNewResults: function() {
 		"background": true,
 		"success": function() {
 			if (!this.result.newActivity) return;
-			$("newResults").style.display = "table-row";
-			var inside = $("newResults").getElementsByTagName("div")[0];
+			getById("newResults").style.display = "table-row";
+			var inside = getById("newResults").getElementsByTagName("div")[0];
 			var outside = createOverflowDiv(inside);
 			inside.style.position = "relative";
 			inside.style.top = -inside.offsetHeight + "px";
@@ -1819,7 +1819,7 @@ checkForNewResults: function() {
 
 updateCurrentResults: function() {
 	var conversationIds = "";
-	var rows = $("conversations").getElementsByTagName("tr");
+	var rows = getById("conversations").getElementsByTagName("tr");
 	var count = Math.min(rows.length, 20);
 	for (var i = 0; i < count; i++) conversationIds += rows[i].id.substr(1) + ",";
 	if (!conversationIds) return;
@@ -1830,8 +1830,8 @@ updateCurrentResults: function() {
 		"success": function() {
 			if (!this.result) return;
 			for (var i in this.result.conversations) {
-				if (!$("c" + i)) continue;
-				var row = $("c" + i);
+				if (!getById("c" + i)) continue;
+				var row = getById("c" + i);
 				var data = this.result.conversations[i];
 				if (data.postCount > 1) {
 					getElementsByClassName(row, "lastPostMember")[0].innerHTML = data.lastPostMember;
@@ -1847,7 +1847,7 @@ updateCurrentResults: function() {
 				}
 			}
 			for (var i in this.result.statistics) {
-				if ($("statistic-" + i)) $("statistic-" + i).innerHTML = this.result.statistics[i];
+				if (getById("statistic-" + i)) getById("statistic-" + i).innerHTML = this.result.statistics[i];
 			}
 		}
 	});
@@ -1855,7 +1855,7 @@ updateCurrentResults: function() {
 
 // View more search results - just search with the "more results" gambit.
 viewMore: function() {
-	Search.search($("searchText").value + ($("searchText").value ? " + " : "") + esoTalk.language["more results"]);
+	Search.search(getById("searchText").value + (getById("searchText").value ? " + " : "") + esoTalk.language["more results"]);
 },
 
 // Show new activity - an alias for reperforming the current search.
@@ -1867,7 +1867,7 @@ showNewActivity: function() {
 // Add (or take away) a gambit from the search input.
 gambit: function(gambit) {
 	// Get the initial length of the search text.
-	var initialLength = $("searchText").value.length;
+	var initialLength = getById("searchText").value.length;
 	// Make a regular expression to find any instances of the gambit already in there.
 	var safe = gambit.replace(/([?^():\[\]])/g, "\\$1");
 	var regexp = new RegExp(this.negativeGambit
@@ -1875,12 +1875,12 @@ gambit: function(gambit) {
 		: "( ?\\+ *" + safe + " *$|^ *" + safe + " *\\+ ?| ?\\+ *" + safe + "|^ *" + safe + " *$)"
 	, "i");
 	// If there is an instance, take it out.
-	if ($("searchText").value.match(regexp)) $("searchText").value = $("searchText").value.replace(regexp, "");
+	if (getById("searchText").value.match(regexp)) getById("searchText").value = getById("searchText").value.replace(regexp, "");
 	// Otherwise, insert the gambit with a +, -, or ! before it.
 	else {
-		var insert = ($("searchText").value ? (this.negativeGambit ? " - " : " + ") : (this.negativeGambit ? "!" : "")) + gambit;
-		$("searchText").focus();
-		$("searchText").value += insert;
+		var insert = (getById("searchText").value ? (this.negativeGambit ? " - " : " + ") : (this.negativeGambit ? "!" : "")) + gambit;
+		getById("searchText").focus();
+		getById("searchText").value += insert;
 		// If there is an instance of "?" or ":member" in the gambit, we want to select it so the user can type over it.
 		var placeholderIndex, placeholder;
 		if (insert.indexOf("?") != -1) {
@@ -1892,13 +1892,13 @@ gambit: function(gambit) {
 		}
 		if (placeholderIndex) {
 			// IE - move the cursor position relatively.
-			if (typeof $("searchText").setSelectionRange == "undefined") {
+			if (typeof getById("searchText").setSelectionRange == "undefined") {
 				var range = document.selection.createRange();
 				range.moveStart("character", -insert.length + placeholderIndex);
 				range.moveEnd("character", -insert.length + placeholderIndex + placeholder.length);
 				range.select();
 			// Good browsers - move the cursor position easily.
-			} else $("searchText").setSelectionRange(initialLength + placeholderIndex, initialLength + placeholderIndex + placeholder.length);
+			} else getById("searchText").setSelectionRange(initialLength + placeholderIndex, initialLength + placeholderIndex + placeholder.length);
 		}
 	}
 },
@@ -1923,10 +1923,10 @@ timeouts: {},
 init: function() {
 	var disableButton = false;
 	for (var i in this.fieldsValidated) {
-		$(i).onkeydown = Join.validateField;
+		getById(i).onkeydown = Join.validateField;
 		if (!this.fieldsValidated[i]) disableButton = true;
 	}
-	if (disableButton) disable($("joinSubmit"));
+	if (disableButton) disable(getById("joinSubmit"));
 },
 
 // Validate a field with ajax
@@ -1937,22 +1937,22 @@ validateField: function() {
 		Ajax.request({
 			"url": esoTalk.baseURL + "ajax.php?controller=join",
 			"success": function() {
-				message = $(field.id + "-message");
+				message = getById(field.id + "-message");
 				// Change the message
 				message.innerHTML = this.result.message;
 				Join.fieldsValidated[field.id] = this.result.validated;
 				// Is the form completely validated? If so, enable the submit button
 				formCompleted = true;
 				for (var j in Join.fieldsValidated) if (!Join.fieldsValidated[j]) formCompleted = false;
-				if (formCompleted) enable($("joinSubmit"));
-				else disable($("joinSubmit"));
+				if (formCompleted) enable(getById("joinSubmit"));
+				else disable(getById("joinSubmit"));
 			},
 			"post": "action=validate&field=" + field.id + "&value=" + encodeURIComponent(field.value) +
-			(field.id == "confirm" ? "&password=" + encodeURIComponent($("password").value) : "")
+			(field.id == "confirm" ? "&password=" + encodeURIComponent(getById("password").value) : "")
 		});
 			
 		// If this is the password field, validate the confirm password field too
-		if (field.id == "password") $("confirm").onkeydown();
+		if (field.id == "password") getById("confirm").onkeydown();
 	}, 500);			
 }
 

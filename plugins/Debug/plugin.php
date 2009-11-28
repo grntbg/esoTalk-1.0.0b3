@@ -161,7 +161,7 @@ function renderDebug($esoTalk)
 <h2>{$language["Debug information"]} <small>" . sprintf($language["Page loaded in"], $time) . "</small> <small style='float:right'><input type='checkbox' class='checkbox' id='debugUpdateBackground' value='1' checked='checked' onchange='Ajax.debugUpdateBackground=this.checked'/> <label for='debugUpdateBackground' class='checkbox'>{$language["Update debug information for background AJAX requests"]}</label></small></h2>";
 	
 	// MySQL queries.
-	echo "<h3><a href='#' onclick='toggle($(\"debugQueries\"), {animation:\"verticalSlide\"});return false'>{$language["MySQL queries"]} (<span id='debugQueriesCount'>" . count($_SESSION["queries"]) . "</span>)</a></h3>
+	echo "<h3><a href='#' onclick='toggle(getById(\"debugQueries\"), {animation:\"verticalSlide\"});return false'>{$language["MySQL queries"]} (<span id='debugQueriesCount'>" . count($_SESSION["queries"]) . "</span>)</a></h3>
 	<ul id='debugQueries' class='fixed'>";
 	if (!count($_SESSION["queries"])) echo "<li></li>";
 	else foreach ($_SESSION["queries"] as $query) echo "<li>" . sanitize($query[0]) . " <small>(" . $query[1] . " {$language["seconds"]})</small></li>";
@@ -169,7 +169,7 @@ function renderDebug($esoTalk)
 	
 	// POST + GET + FILES information.
 	echo "</ul>
-	<h3><a href='#' onclick='toggle($(\"debugPostGetFiles\"), {animation:\"verticalSlide\"});return false'>{$language["POST + GET + FILES information"]}</a></h3>
+	<h3><a href='#' onclick='toggle(getById(\"debugPostGetFiles\"), {animation:\"verticalSlide\"});return false'>{$language["POST + GET + FILES information"]}</a></h3>
 	<div id='debugPostGetFiles'>
 	<p style='white-space:pre' class='fixed' id='debugPost'>\$_POST = ";
 	echo sanitize(print_r($_POST, true));
@@ -181,7 +181,7 @@ function renderDebug($esoTalk)
 	</div>";
 	
 	// SESSION + COOKIE information.
-	echo "<h3><a href='#' onclick='toggle($(\"debugSessionCookie\"), {animation:\"verticalSlide\"});return false'>{$language["SESSION + COOKIE information"]}</a></h3>
+	echo "<h3><a href='#' onclick='toggle(getById(\"debugSessionCookie\"), {animation:\"verticalSlide\"});return false'>{$language["SESSION + COOKIE information"]}</a></h3>
 	<div id='debugSessionCookie'><p style='white-space:pre' class='fixed' id='debugSession'>\$_SESSION = ";
 	echo sanitize(print_r($_SESSION, true));
 	echo "</p><p style='white-space:pre' class='fixed' id='debugCookie'>\$_COOKIE = ";
@@ -192,7 +192,7 @@ function renderDebug($esoTalk)
 	// Hide all panels by default.
 	echo "<script type='text/javascript'>
 	// <![CDATA[
-	hide($(\"debugQueries\")); hide($(\"debugPostGetFiles\")); hide($(\"debugSessionCookie\"));
+	hide(getById(\"debugQueries\")); hide(getById(\"debugPostGetFiles\")); hide(getById(\"debugSessionCookie\"));
 	// ]]>
 	</script>";
 }

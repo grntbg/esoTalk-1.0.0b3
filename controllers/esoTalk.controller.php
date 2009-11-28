@@ -96,9 +96,9 @@ function init()
 <input id='rememberMe' name='login[rememberMe]' type='checkbox' class='checkbox'/> <label for='rememberMe'>{$language["Remember me"]}</label>
 " . $this->skin->button(array("value" => $language["Log in"])) . "
 </div></form><script type='text/javascript'>" .
-(empty($_POST["login"]["name"]) ? "makePlaceholder($('loginName'), '{$language["Username"]}');" : "") . "
-makePlaceholder($('loginPassword'), '********');" . 
-(!empty($_POST["login"]["name"]) ? "$('loginPassword').focus()" : "") . "
+(empty($_POST["login"]["name"]) ? "makePlaceholder(getById('loginName'), '{$language["Username"]}');" : "") . "
+makePlaceholder(getById('loginPassword'), '********');" . 
+(!empty($_POST["login"]["name"]) ? "getById('loginPassword').focus()" : "") . "
 </script>", 100);
 			$this->addToBar("left", "<a href='" . makeLink("join") . "'>{$language["Join this forum"]}</a>", 200);
 			$this->addToBar("left", "<a href='" . makeLink("forgot-password") . "'>{$language["Forgot your password"]}</a>", 300);
@@ -121,7 +121,7 @@ makePlaceholder($('loginPassword'), '********');" .
 		$this->addToFooter("<a href='http://esotalk.com'>{$language["Donate to esoTalk"]}</a>");
 		
 		// Set up some default JavaScript files and language definitions.
-		$this->addScript("js/esotalk.js", 100);
+		$this->addScript("js/esotalk.js", -1);
 		$this->addLanguageToJS("ajaxRequestPending", "ajaxDisconnected");
 				
 	}
@@ -137,10 +137,12 @@ function ajax()
 	if ($return = $this->callHook("ajax")) return $return;
 	
 	switch (@$_POST["action"]) {
+		
 		// Star/unstar a conversation.
 		case "star":
 			if (!$this->validateToken(@$_POST["token"])) return;
 			$this->star((int)$_POST["conversationId"]);
+			
 	}
 }
 

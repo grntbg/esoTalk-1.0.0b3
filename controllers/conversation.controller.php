@@ -77,8 +77,10 @@ function init()
 		// Add a reply to an existing conversation.
 		else {
 			$id = $this->addReply(@$_POST["content"], isset($_POST["saveDraft"]));
+			
 			// If there was an error posting the reply, set the "draft" content so the user won't lose their post.
 			if (!$id) $this->conversation["draft"] = $_POST["content"];
+			
 			// Otherwise, redirect so that the new reply is visible.
 			else redirect($this->conversation["id"], $this->conversation["slug"], "?start=" . max(0, $this->conversation["postCount"] - $config["postsPerPage"]), "#p$id");
 		}
@@ -303,13 +305,16 @@ function ajax()
 		case "getPosts":
 		case "updateLastRead":
 			if (!$this->conversation = $this->getConversation((int)@$_POST["id"])) return;
+			
 			// Update the user's lastRead if specified.
 			if (isset($_POST["updateLastRead"])) $this->updateLastRead($_POST["updateLastRead"]);
+			
 			// Work out the range of the posts that we are getting, and get them.
 			if (!isset($_POST["start"]) and !isset($_POST["end"])) return;
 			$start = min((int)@$_POST["start"], (int)@$_POST["end"]);
 			$end = max((int)@$_POST["start"], (int)@$_POST["end"]);
 			$posts = $this->getPosts(array("startFrom" => $start, "limit" => $end - $start + 1), true);
+			
 			// If there are posts, update the user's last action.
 			if (count($posts)) $this->updateLastAction();
 			return $posts;
@@ -321,6 +326,7 @@ function ajax()
 			if ($this->conversation["lastActionTime"] > @$_POST["lastActionTime"]) {
 				$this->updateLastAction();
 				$posts = $this->getPosts(array("lastActionTime" => @$_POST["lastActionTime"]), true);
+				
 				// If the user's browser will automatically show the new posts (as opposed to showing the "unread" part
 				// of the pagination bar), work out how many new posts there are an update the user's lastRead to the last
 				// visible post.
@@ -342,6 +348,7 @@ function ajax()
 			if (!$this->esoTalk->validateToken(@$_POST["token"])) return;
 			if (!$this->conversation = $this->getConversation((int)@$_POST["id"])) return;
 			if (!($id = $this->addReply(@$_POST["content"]))) return;
+			
 			// We'll need to return any posts on the last page which aren't in the JavaScript cache;
 			// the most recent post that is in the JavaScript cache is specified in $_GET["haveDataUpTo"].
 			if (isset($_POST["haveDataUpTo"])) {
@@ -393,6 +400,7 @@ function ajax()
 			if (!$this->esoTalk->validateToken(@$_POST["token"])) return;
 			$postId = (int)@$_POST["postId"];
 			if (!$this->conversation = $this->getConversation("(SELECT conversationId FROM {$config["tablePrefix"]}posts WHERE postId=$postId)")) return;
+			
 			// After restoring the post, return its details from the database.
 			if ($this->restorePost($postId)) return $this->getPosts(array("postIds" => $postId));
 			break;
@@ -409,9 +417,11 @@ function ajax()
 		case "getEditPost":
 			$postId = (int)@$_POST["postId"];
 			if (!$this->conversation = $this->getConversation("(SELECT conversationId FROM {$config["tablePrefix"]}posts WHERE postId=$postId)")) return;
+			
 			// Get the post details from the database so we can check if the user has permission to edit it.
 			list($memberId, $account, $deleteMember, $content) = $this->esoTalk->db->fetchRow("SELECT p.memberId, account, deleteMember, content FROM {$config["tablePrefix"]}posts p INNER JOIN {$config["tablePrefix"]}members USING (memberId) WHERE postId=$postId");
 			if (($error = $this->canEditPost($postId, $memberId, $account, $deleteMember)) !== true) $this->esoTalk->message($error);
+			
 			// Return an array containing the formatting controls and the editing textarea/buttons.
 			else return array(
 				"controls" => implode(" ", $this->getEditControls("p$postId")),
@@ -423,6 +433,7 @@ function ajax()
 		case "showDeletedPost":
 			$postId = (int)@$_POST["postId"];
 			if (!$this->conversation = $this->getConversation("(SELECT conversationId FROM {$config["tablePrefix"]}posts WHERE postId=$postId)")) return;
+			
 			// Get the post details from the database so we can check if the user has permission to view it.
 			list($memberId, $account, $deleteMember, $content) = $this->esoTalk->db->fetchRow("SELECT p.memberId, account, deleteMember, content FROM {$config["tablePrefix"]}posts p INNER JOIN {$config["tablePrefix"]}members USING (memberId) WHERE postId=$postId");
 			if (($message = $this->canEditPost($postId, $memberId, $account, $deleteMember)) !== true) $this->esoTalk->message($message);
@@ -895,7 +906,7 @@ function getEditArea($postId, $content)
 </div>
 <div class='editButtons'>
 " . $this->esoTalk->skin->button(array("name" => "cancel", "class" => "big", "value" => $language["Cancel"], "onclick" => "Conversation.cancelEdit($postId);return false", "tabindex" => "-1")) . "
-" . $this->esoTalk->skin->button(array("name" => "save", "class" => "big submit", "value" => $language["Save post"], "onclick" => "Conversation.saveEditPost($postId,\$(\"p$postId-textarea\").value);return false", "accesskey" => "s")) . "
+" . $this->esoTalk->skin->button(array("name" => "save", "class" => "big submit", "value" => $language["Save post"], "onclick" => "Conversation.saveEditPost($postId,\getById(\"p$postId-textarea\").value);return false", "accesskey" => "s")) . "
 </div>
 </form>";
 
@@ -1170,6 +1181,7 @@ function addMember($name)
 
 	// If the conversation exists, add this member to the database as allowed.
 	if ($this->conversation["id"]) {
+		
 		// Email the member(s) - we have to do this before we put them in the db because it will only email them if they don't already have a record for this conversation in the status table.
 		$this->emailPrivateAdd($memberId);
 
@@ -1188,6 +1200,7 @@ function addMember($name)
 	if (!is_array($this->conversation["membersAllowed"])) $this->conversation["membersAllowed"] = array();
 	if (!array_key_exists($memberId, $this->conversation["membersAllowed"]))
 		$this->conversation["membersAllowed"][$memberId] = $memberName;
+		
 	// Add the private label to the conversation.
 	if (!in_array("private", $this->conversation["labels"])) $this->conversation["labels"][] = "private";
 	$this->conversation["private"] = true;
@@ -1216,11 +1229,13 @@ function removeMember($memberId)
 	// Update the membersAllowed and labels arrays (which may in turn update the $_SESSION["membersAllowed"] array.)
 	if (is_array($this->conversation["membersAllowed"]) and array_key_exists($memberId, $this->conversation["membersAllowed"]))
 		unset($this->conversation["membersAllowed"][$memberId]);
+		
 	// If there are no members left allowed in the conversation, then everyone can view the conversation.
 	if (!is_array($this->conversation["membersAllowed"]) or !count($this->conversation["membersAllowed"])) {
 		$this->conversation["membersAllowed"] = "Everyone";
 		$this->conversation["private"] = false;
 		if (($k = array_search("private", $this->conversation["labels"])) !== false) unset($this->conversation["labels"][$k]);
+		
 		// Turn off conversation's private field.
 		if ($this->conversation["id"])  {
 			$query = "UPDATE {$config["tablePrefix"]}conversations SET private=0 WHERE conversationId={$this->conversation["id"]}";
@@ -1242,6 +1257,7 @@ function emailPrivateAdd($memberIds, $emailAll = false)
 	global $config;
 	$memberIds = (array)$memberIds;
 	if (!count($memberIds)) return false;
+	
 	// Take the accounts mentioned in the list of members so we can use them separately in the query.
 	$accounts = array_intersect(array("Member", "Moderator", "Administrator"), $memberIds);
 	$memberIds = array_diff($memberIds, array("Member", "Moderator", "Administrator"));
@@ -1281,10 +1297,12 @@ function htmlMembersAllowedList($membersAllowed)
 		// Loop through each member.
 		foreach ($membersAllowed as $memberId => $name) {
 			if ($memberId === "Administrator" or $memberId === "Moderator" or $memberId === "Member") $name = $language[$memberId . "-plural"];
+			
 			// If the user can edit the list, output a link for this member.
 			// However, if there is more than one member, the conversation starter can't be removed.
 			if ($this->canEditMembersAllowed() and ($count == 1 or $memberId != $this->conversation["startMember"]))
 				$html .= "<a href='" . makeLink($this->conversation["id"], $this->conversation["slug"], "?removeMember=$memberId&token={$_SESSION["token"]}") . "' class='d' onclick='Conversation.removeMember(\"$memberId\");return false'>$name</a>, ";
+				
 			// Otherwise, plain text will do.
 			else $html .= "$name, ";
 		}

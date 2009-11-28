@@ -37,6 +37,8 @@ foreach ($this->gambitCloud as $k => $v) {
 </div>
 
 <script type='text/javascript'>
+// <![CDATA[
 Search.currentSearch = '<?php if (isset($_SESSION["search"])) echo addslashes(desanitize($_SESSION["search"])); ?>';
 Search.init();
+// ]]>
 </script>
