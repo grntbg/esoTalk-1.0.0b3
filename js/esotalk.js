@@ -127,10 +127,12 @@ function animate(element, options) {
 			overflowDiv.animation = new Animation(function(values, final) {
 				overflowDiv.style[options["animation"] == "verticalSlide" ? "height" : "width"] = Math.round(values[0]) + "px";
 				overflowDiv.style.opacity = values[1];
-				if (final && values[0] == 0) {
-					overflowDiv.style.display = "none";
+				if (final) {
 					overflowDiv.style[options["animation"] == "verticalSlide" ? "height" : "width"] = "";
-					if (options["animation"] == "horizontalSlide") element.style.width = element.oldWidth;
+					if (!element.showing) {
+						overflowDiv.style.display = "none";
+						if (options["animation"] == "horizontalSlide") element.style.width = element.oldWidth;
+					}
 				}
 			}, {begin: [initLength, initOpacity], end: [element.showing ? finalLength : 0, element.showing ? 1 : 0]});
 			overflowDiv.animation.start();
@@ -1803,16 +1805,7 @@ checkForNewResults: function() {
 		"success": function() {
 			if (!this.result.newActivity) return;
 			getById("newResults").style.display = "table-row";
-			var inside = getById("newResults").getElementsByTagName("div")[0];
-			var outside = createOverflowDiv(inside);
-			inside.style.position = "relative";
-			inside.style.top = -inside.offsetHeight + "px";
-			(new Animation(function(values, final) {
-				inside.style.opacity = values[1];
-				inside.style.top = values[0] + "px";
-				outside.style.height = inside.offsetHeight + values[0] + "px";
-				if (final) outside.style.height = inside.style.top = "";
-			}, {begin: [parseFloat(inside.style.top), 0], end: [0, 1]})).start();
+			show(getById("newResults").getElementsByTagName("div")[0], {animation: "verticalSlide"});
 			clearInterval(Search.checkForNewResultsTimeout);
 		}
 	});

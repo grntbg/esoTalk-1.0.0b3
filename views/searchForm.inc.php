@@ -2,7 +2,7 @@
 // Copyright 2009 Simon Zerner, Toby Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
-// Search form include
+// Search form: displays the search form (with a "Start a conversation" button if on the search view.)
 
 if (!defined("IN_ESOTALK")) exit;
 ?>

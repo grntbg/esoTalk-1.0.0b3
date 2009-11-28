@@ -95,7 +95,7 @@ a.s5 {font-size:90%}
 .msg code {background:none}
 
 /* Stars */ 
-.star1, .star0 {cursor:default; display:block; font-size:600%; font-weight:normal; height:0.4em; line-height:0.8; overflow:hidden}
+.star1, .star0 {cursor:default; display:block; font-size:600%; font-weight:normal; height:0.4em; line-height:0.8; overflow:hidden; width:0.4em}
 a.star1, a.star0 {cursor:pointer}
 .star0 {color:#ccc}
 a.star0:hover {color:#fe7}
@@ -127,10 +127,9 @@ a.star0:active, a.star1:active {color:#e4b600}
 .c strong a {color:#000; margin:0}
 .c a {margin-left:10px}
 .c .author a, .c .lastPost a {color:#000; margin:0}
-.c .avatar {float:left; line-height:32px; margin:-3px 10px -1px 0; text-align:center; width:32px}
-.c .avatar img {vertical-align:middle}
-.c td.star a {margin-left:0}
-.c td.star {text-align:center; width:4em}
+.c td.avatar {padding:4px 10px 4px 6px; width:32px}
+.c td.avatar img {vertical-align:middle}
+.c td.star {width:3.5em}
 .c .posts {padding:5px 10px; text-align:center}
 .c td.posts {font-size:175%}
 .c td.p1 {color:#000}

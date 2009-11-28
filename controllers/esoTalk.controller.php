@@ -268,7 +268,7 @@ function getStatistics()
 // Check for updates to the esoTalk software.
 function checkForUpdates()
 {
-	if ($this->ajax) return;
+	if (defined("AJAX_REQUEST")) return;
 	
 	// Write this as the latest update check time, so that another update check will not be performed for 24 hours.
 	writeConfigFile("config/lastUpdateCheck.php", '$lastUpdateCheck', time());
@@ -493,8 +493,8 @@ function htmlStar($conversationId, $starred)
 {
 	global $language;
 	
-	// If the user is not logged in, return an unclickable star.
-	if (!$this->user) return "<span class='star0'>{$language["*"]}</span>";
+	// If the user is not logged in, return a blank star.
+	if (!$this->user) return "<span class='star0'>&nbsp;</span>";
 	
 	// Otherwise, return a clickable star, depending on the starred state.
 	else {
