@@ -1912,14 +1912,13 @@ tag: function(tag) {
 
 
 
-// Join JavaScript
-
+// "Join this forum" JavaScript.
 var Join = {
 
-fieldsValidated: {},
+fieldsValidated: {}, // An array of fields and if they've been validated.
 timeouts: {},
 
-// Disable the join button, get the fields ready for validation
+// Initialize: disable the join button and set up the fields so they will automatically validate when typed in.
 init: function() {
 	var disableButton = false;
 	for (var i in this.fieldsValidated) {
@@ -1929,29 +1928,36 @@ init: function() {
 	if (disableButton) disable(getById("joinSubmit"));
 },
 
-// Validate a field with ajax
+// Validate a field with AJAX.
 validateField: function() {
 	var field = this;
 	clearTimeout(Join.timeouts[field.id]);
+	
+	// Set a timeout so that the validation will only take place after the user has finished typing.
 	Join.timeouts[field.id] = setTimeout(function() {
 		Ajax.request({
 			"url": esoTalk.baseURL + "ajax.php?controller=join",
 			"success": function() {
-				message = getById(field.id + "-message");
-				// Change the message
-				message.innerHTML = this.result.message;
 				Join.fieldsValidated[field.id] = this.result.validated;
-				// Is the form completely validated? If so, enable the submit button
-				formCompleted = true;
-				for (var j in Join.fieldsValidated) if (!Join.fieldsValidated[j]) formCompleted = false;
+
+				// Change the message next to the field.
+				message = getById(field.id + "-message");
+				message.innerHTML = this.result.message;
+				
+				// Are all fields in the form validated? If so, enable the submit button.
+				var formCompleted = true;
+				for (var j in Join.fieldsValidated) {
+					if (!Join.fieldsValidated[j]) formCompleted = false;
+				}
 				if (formCompleted) enable(getById("joinSubmit"));
 				else disable(getById("joinSubmit"));
 			},
 			"post": "action=validate&field=" + field.id + "&value=" + encodeURIComponent(field.value) +
+			// If we're validating the confirm password field, we'll need to know the password as well.
 			(field.id == "confirm" ? "&password=" + encodeURIComponent(getById("password").value) : "")
 		});
 			
-		// If this is the password field, validate the confirm password field too
+		// If we're validating the password field, validate the confirm password field too.
 		if (field.id == "password") getById("confirm").onkeydown();
 	}, 500);			
 }
