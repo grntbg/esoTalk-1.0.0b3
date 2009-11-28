@@ -131,7 +131,7 @@ function upgrade_100b1()
 	if (!$this->numRows("SHOW COLUMNS FROM {$config["tablePrefix"]}members LIKE 'cookieIP'"))
 		$this->query("ALTER TABLE {$config["tablePrefix"]}members ADD COLUMN cookieIP int default NULL AFTER resetPassword");	
 		
-	// Rename avatarFormat to avatarExtension in the members table.
+	// Rename avatarExtension to avatarFormat in the members table.
 	if ($this->numRows("SHOW COLUMNS FROM {$config["tablePrefix"]}members LIKE 'avatarExtension'"))
 		$this->query("ALTER TABLE {$config["tablePrefix"]}members CHANGE COLUMN avatarExtension avatarFormat enum('jpg','png','gif') default NULL");
 	

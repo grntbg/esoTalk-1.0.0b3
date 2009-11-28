@@ -20,7 +20,7 @@ foreach ($this->form as $id => $fieldset):
 			if ($k === "legend") continue;
 			if (is_array($field)):
 				echo "<li>{$field["html"]} <div id='{$field["id"]}-message'>";
-				if (@$field["message"]) echo $this->esoTalk->htmlMessage($field["message"]);
+				if (!empty($field["message"])) echo $this->esoTalk->htmlMessage($field["message"]);
 				echo "</div></li>";
  			else: echo $field; endif;
 		endforeach;

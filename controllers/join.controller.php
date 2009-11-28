@@ -130,13 +130,14 @@ function addMember()
 		
 		// If this field is required, or if data has been entered (regardless of whether it's required), validate it
 		// using the field's validation callback function.
-		if ((!empty($field["required"]) or $this->fields[$k]["input"])
+		if ((!empty($field["required"]) or $this->fields[$k]["input"]) and !empty($field["validate"])
 			and ($msg = @call_user_func_array($field["validate"], array(&$this->fields[$k]["input"])))) {
 			
 			// If there was a validation error, set the field's message.
 			$validationError = true;
 			$this->fields[$k]["message"] = $msg;
 			$this->fields[$k]["error"] = true;
+			
 		} else $this->fields[$k]["success"] = true;
 	}
 	

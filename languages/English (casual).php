@@ -56,6 +56,8 @@ $language = array(
 // "author" => "by %s",
 // "version" => "version %s",
 // "profile" => "%s's profile",
+// "Change my password or email" => "Change my password or email",
+// "My current password" => "My current password",
 // Deleted: "helpesoTalk"
 // Deleted: "Name"
 // Deleted: "ago"
@@ -80,6 +82,9 @@ $language = array(
 // Deleted: "1 second ago"
 // Deleted: "1 week ago"
 // Deleted: "1 year ago"
+// Deleted: "Change your password or email"
+// Deleted: "Your current password"
+// Deleted: "My profile"
 // Changed: "loginRequired" => array("class" => "warning", "message" => "You need to <a href='" . curLink() . "#' onclick='showLogin();return false'>log in</a> or <a href='" . makeLink("join") . "'>create an account</a> to do anything on this forum."),
 // Changed: "ajaxDisconnected" => "Unable to communicate with the server. Wait a few seconds and <a href='javascript:Ajax.resumeAfterDisconnection()'>try again</a>, or <a href='' onclick='window.location.reload();return false'>refresh the page</a>.",
 // Changed: "downloadPlugins" => array("class" => "info", "message" => "You can download more plugins from the <a href='%s'>esoTalk website</a>."),
@@ -213,7 +218,7 @@ $language = array(
 "members online" => "<a href='" . makeLink("online") . "'>members online</a>",
 "Moderator" => "Moderator",
 "Moderator-plural" => "Moderators",
-"My profile" => "My profile",
+"My current password" => "My current password",
 "My settings" => "My settings",
 "MySQL queries" => "MySQL queries",
 "Never" => "Never",
@@ -258,7 +263,7 @@ $language = array(
 "See the private conversations I've had" => "See the private conversations I've had with %s",
 "SESSION + COOKIE information" => "SESSION + COOKIE information",
 "settings" => "settings",
-"Change your password or email" => "Change your password or email",
+"Change my password or email" => "Change my password or email",
 "show" => "show",
 "Show another one" => "Show another one",
 "show conversations participated in" => "let's see!",
@@ -292,7 +297,6 @@ $language = array(
 "Viewing" => "Viewing:",
 "viewingPosts" => "<b>%s-%s</b> of %s posts",
 "Who's online" => "Who's online?",
-"Your current password" => "Your current password",
 
 "emails" => array(
 

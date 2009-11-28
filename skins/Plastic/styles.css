@@ -312,6 +312,9 @@ input.checkbox, input.radio {padding:0; margin:0 2px 0 5px; vertical-align:-2px}
 label.checkbox, label.radio {cursor:pointer}
 fieldset {border:1px solid #ccc; margin:5px 0 10px 0; padding:0 15px 15px}
 legend {color:#000; font-size:140%; font-weight:bold; padding:5px 10px 10px}
+fieldset legend a {color:#000}
+fieldset.hidden {border-width:1px 0 0; padding:0 16px 0}
+fieldset.hidden legend a {color:#666}
 
 /* Structured forms */
 .form label {float:left; line-height:1.5; margin:0 1em 1px 0; text-align:right; width:12em}

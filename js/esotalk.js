@@ -421,11 +421,8 @@ doRequest: function(request) {
 				esoTalk.token = request.json.token;
 				var links = document.getElementsByTagName("a");
 				for (var i = 0; i < links.length; i++) {
-					if (links[i].href.indexOf("token=") != -1) {
-						alert(links[i].href);
+					if (links[i].href.indexOf("token=") != -1)
 						links[i].href = links[i].href.replace(/token=[^&]+/i, "token=" + esoTalk.token);
-						alert(links[i].href);
-					}
 				}
 				var inputs = document.getElementsByTagName("input");
 				for (var i = 0; i < inputs.length; i++) {
@@ -1960,6 +1957,50 @@ validateField: function() {
 		// If we're validating the password field, validate the confirm password field too.
 		if (field.id == "password") getById("confirm").onkeydown();
 	}, 500);			
+}
+
+};
+
+
+// Settings JavaScript.
+var Settings = {
+
+// Change the user's color.
+changeColor: function(color) {
+	
+	// If the user's color is already set to this, we don't need to do anything!
+	if ((new RegExp("c" + color + "$")).test(getById("preview").className)) return;
+	
+	// Make an AJAX request to change the color.
+	Ajax.request({
+		"url": esoTalk.baseURL + "ajax.php?controller=settings",
+		"success": function() {
+			if (this.messages) return;
+			
+			// Loop through the colors in the palette and "unselect" them.
+			var colors = getById("palette").getElementsByTagName("a");
+			for (var i = 0, c; c = colors[i]; i++) c.className = c.className.replace("selected", "");
+			
+			// Change the classes of the selected color and the preview post.
+			getById("color-" + color).className += " selected";
+			getById("preview").className = getById("preview").className.replace(/c\d+/, "c" + color);
+			
+		},
+		"post": "action=changeColor&color=" + color,
+		"background": false
+	});
+},
+
+// Toggle the visibility of a fieldset. The fieldset contents must have id='{id}Form'.
+toggleFieldset: function(id) {
+	toggle(getById(id + "Form"), {animation: "verticalSlide"});
+	getById(id).className = getById(id + "Form").showing ? "" : "hidden";
+},
+
+// Hide a fieldset (without animation). The fieldset contents must have id='{id}Form'.
+hideFieldset: function(id) {
+	hide(getById(id + "Form"));
+	getById(id).className = "hidden";
 }
 
 };
