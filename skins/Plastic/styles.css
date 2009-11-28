@@ -259,7 +259,7 @@ blockquote p {margin-bottom:.75em}
 #palette a {display:block; height:35px; margin-top:2px}
 #palette a.selected {height:40px; margin-top:0}
 
-/* Manage plugins */
+/* Plugins */
 #plugins .controls {float:right}
 #plugins .controls a, #plugins small {margin-left:10px}
 #plugins ul {list-style:none; margin:0; padding:0}
@@ -272,14 +272,14 @@ blockquote p {margin-bottom:.75em}
 #plugins li input.checkbox {margin:2px 7px 2px 0}
 #plugins li li {border:0; padding:0}
 
-/* Manage skins */
+/* Skins */
 #skins ul {list-style:none; margin:0; padding:0}
 #skins li {float:left; margin-right:1px; width:297px}
 #skins a {color:#000; display:block; padding:10px}
 #skins a:hover {text-decoration:none}
-#skins a strong {font-weight:normal}
-#skins li.enabled a strong {font-weight:bold}
-#skins small {margin-left:5px}
+#skins strong {font-weight:normal; font-size:120%}
+#skins li.enabled strong {font-weight:bold}
+#skins small {margin-left:10px}
 #skins .preview {background:#eee; border:1px solid #ddd; color:#ddd; display:block; font-size:20px; height:153px; margin-bottom:5px; overflow:hidden; text-align:center; width:275px}
 #skins .preview span {display:block; margin-top:65px}
 
