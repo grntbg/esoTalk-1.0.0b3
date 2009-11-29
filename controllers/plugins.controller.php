@@ -98,7 +98,7 @@ function togglePlugin($plugin)
 	}
 	
 	// Write the config/plugins.php file.
-	if (!writeConfigFile("config/plugins.php", '$config["loadedPlugins"]', (array)$config["loadedPlugins"])) {
+	if (!writeConfigFile("config/plugins.php", '$config["loadedPlugins"]', array_values((array)$config["loadedPlugins"]))) {
 		$this->esoTalk->message("notWritable", false, "config/plugins.php");
 		return false;
 	}
