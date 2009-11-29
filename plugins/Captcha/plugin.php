@@ -21,8 +21,7 @@ function init()
 {
 	parent::init();
 	
-	// Check for the gd plugin.
-	if (!extension_loaded("gd") and !extension_loaded("gd2")) return false;
+	if ($this->checkEnvironment()) return;
 	
 	// Add language definitions and messages.
 	$this->esoTalk->addLanguage("Are you human", "Are you human?");
@@ -32,6 +31,24 @@ function init()
 	
 	// Add a hook to the join controller so we can add captcha to the form!
 	if ($this->esoTalk->action == "join") $this->esoTalk->controller->addHook("init", array($this, "initCaptchaForm"));
+}
+
+// Check the server environment for errors.
+function checkEnvironment()
+{
+	global $messages;
+	$this->esoTalk->addMessage("gdNotInstalled", "warning", "GD is not installed.");
+	$this->esoTalk->addMessage("gdNoSupportOpenType", "warning", "Your version of GD does not support OpenType font rendering.");
+	
+	// Check for the gd plugin and support for OpenType font rendering.
+	if (!extension_loaded("gd") and !extension_loaded("gd2")) return "gdNotInstalled";
+	if (!function_exists("imagettftext")) return "gdNoSupportOpenType";
+}
+
+// When enabling the plugin, return any server environment errors.
+function enable()
+{
+	return $this->checkEnvironment();
 }
 
 // Add the captcha fieldset and input to the join form.
@@ -57,6 +74,9 @@ function validateCaptcha($input)
 function settings()
 {
 	global $config, $language;
+	
+	// If there's something wrong with the server environment, output an error.
+	if ($msg = $this->checkEnvironment()) return $this->esoTalk->htmlMessage($msg);
 	
 	// Add language definitions.
 	$this->esoTalk->addLanguage("Sample captcha image", "Sample captcha image");

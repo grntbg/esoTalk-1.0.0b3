@@ -43,6 +43,9 @@ $language = array(
 // "Type the letters you see" => "Type the letters you see in the image",
 // "Can't make it out" => "Can't make it out? <a href='%s'>Try another one!</a>",
 // "captchaError" => array("class" => "warning", "message" => "Oops, you got it wrong! Try again with this combination."),
+// "gdNotInstalled" => array("class" => "warning", "message" => "GD is not installed."),
+// "gdNoSupportOpenType" => array("class" => "warning", "message" => "Your version of GD does not support OpenType font rendering."),
+// "pluginCannotBeEnabled" => array("class" => "warning", "message" => "The plugin <em>%s</em> cannot be enabled: %s"),
 // "Sample captcha image" => "Sample captcha image",
 // "Show another one" => "Show another one",
 // "Number of characters" => "Number of characters",
@@ -101,16 +104,6 @@ $language = array(
 // Changed key: "check them out" -> "show conversations started"
 // Changed key: "let's see" -> "show conversations participated in"
 // Changed key: "Upload an plugin" -> "Upload a plugin"
-
-// Added in 1.0.0a5
-// "Never" => "Never",
-// "RSS" => "RSS",
-// "forumDescription" => "%s is a web-forum discussing %s.",
-// Deleted: "Feed"
-// Deleted: gambits["quoted:"]
-// Deleted: "Powered by esoTalk"
-// Changed: "viewMore" => array("class" => "info", "message" => "Your search found more than {$config["results"]} conversations. <a href='%s' onclick='Search.viewMore();return false'>View more</a>")
-// Changed: "notWritable" => array("class" => "warning", "message" => "'%s' is not writeable. Please make sure it exists and chmod it to 777.")
 
 "*" => "*",
 "dateFormat" => "j F Y, g:i a T", // see http://au.php.net/manual/en/function.date.php for details
@@ -453,6 +446,7 @@ Enter the password for <strong>%s</strong>: %s"),
 "noPluginsInstalled" => array("class" => "warning", "message" => "No plugins are currently installed."),
 "invalidPlugin" => array("class" => "warning", "message" => "The plugin you uploaded is not valid."),
 "pluginAdded" => array("class" => "success", "message" => "The plugin was successfully added!"),
+"pluginCannotBeEnabled" => array("class" => "warning", "message" => "The plugin <em>%s</em> cannot be enabled: %s"),
 "noSkinsInstalled" => array("class" => "warning", "message" => "No skins are currently installed."),
 "invalidSkin" => array("class" => "warning", "message" => "The skin you uploaded is not valid."),
 "skinAdded" => array("class" => "success", "message" => "The skin was successfully added!"),
@@ -461,6 +455,8 @@ Enter the password for <strong>%s</strong>: %s"),
 "updatesAvailable" => array("class" => "info", "message" => "A new version of esoTalk (<strong>%s</strong>) is available for download. You have version {$versions["esoTalk"]}. <strong><a href='http://get.esotalk.com/'>Get it now</a></strong>!"),
 "noMembersOnline" => array("class" => "warning", "message" => "No members are currently online."),
 "captchaError" => array("class" => "warning", "message" => "Oops, you got it wrong! Try again with this combination."),
+"gdNotInstalled" => array("class" => "warning", "message" => "GD is not installed."),
+"gdNoSupportOpenType" => array("class" => "warning", "message" => "Your version of GD does not support OpenType font rendering."),
 );
 
 ?>

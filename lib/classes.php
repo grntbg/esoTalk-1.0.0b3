@@ -101,7 +101,9 @@ function init()
 }
 
 function settings() {}
+function saveSettings() {}
 function upgrade() {}
+function enable() {}
 
 }
 

@@ -43,7 +43,8 @@ function init()
 					"version" => $plugin->version,
 					"description" => $plugin->description,
 					"author" => $plugin->author,
-					"settings" => $plugin->settings()
+					"settings" => $plugin->settings(),
+					"plugin" => $plugin
 				);
 			}
 			
@@ -74,15 +75,21 @@ function ajax()
 // Toggle a plugin.
 function togglePlugin($plugin)
 {
-	if (!$plugin) return false;
-	global $config;
+	if (!$plugin or !array_key_exists($plugin, $this->plugins)) return false;
+	global $config, $messages;
 	
 	// If the plugin is currently enabled, take it out of the loaded plugins array.
 	$k = array_search($plugin, $config["loadedPlugins"]);
 	if ($k !== false) unset($config["loadedPlugins"][$k]);
 	
 	// Otherwise, if it's not enabled, add it to the array.
-	elseif ($k === false) $config["loadedPlugins"][] = $plugin;
+	elseif ($k === false) {
+		$config["loadedPlugins"][] = $plugin;
+		if ($msg = $this->plugins[$plugin]["plugin"]->enable()) {
+			$this->esoTalk->message("pluginCannotBeEnabled", false, array($this->plugins[$plugin]["name"], $messages[$msg]["message"]));
+			return false;
+		}
+	}
 	
 	// Strip out duplicate and non-existing plugins from the array.
 	$config["loadedPlugins"] = array_unique($config["loadedPlugins"]);

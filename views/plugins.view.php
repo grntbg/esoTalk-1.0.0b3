@@ -21,17 +21,18 @@ function toggleEnabled(id, enabled) {
 		"url": esoTalk.baseURL + "ajax.php?controller=plugins",
 		"post": "action=toggle&id=" + encodeURIComponent(id) + "&enabled=" + (enabled ? "1" : "0"),
 		"success": function() {
-			document.getElementById("ext-" + id).className = "plugin" + (enabled ? " enabled" : "");
+			if (this.messages) getById("plugin-" + id + "-checkbox").checked = !enabled;
+			else getById("plugin-" + id).className = "plugin" + (enabled ? " enabled" : "");
 		}
 	});
 }
 // Toggle the visibility of a plugin's settings.
 function toggleSettings(id) {
 	for (var i in plugins) {
-		if (plugins[i] != id && getById("ext-" + plugins[i] + "-settings") && getById("ext-" + plugins[i] + "-settings").showing)
-			hide(getById("ext-" + plugins[i] + "-settings"), {animation: "verticalSlide"});
+		if (plugins[i] != id && getById("plugin-" + plugins[i] + "-settings") && getById("plugin-" + plugins[i] + "-settings").showing)
+			hide(getById("plugin-" + plugins[i] + "-settings"), {animation: "verticalSlide"});
 	}
-	toggle(getById("ext-" + id + "-settings"), {animation: "verticalSlide"});
+	toggle(getById("plugin-" + id + "-settings"), {animation: "verticalSlide"});
 }
 var plugins = [];
 // ]]>
@@ -41,18 +42,18 @@ var plugins = [];
 	
 <?php // Loop through each plugin and output its information.
 foreach ($this->plugins as $k => $plugin): ?>
-<li id='ext-<?php echo $k; ?>' class='plugin<?php if ($plugin["loaded"]): ?> enabled<?php endif; ?>'>
+<li id='plugin-<?php echo $k; ?>' class='plugin<?php if ($plugin["loaded"]): ?> enabled<?php endif; ?>'>
 <div class='controls'>
 <?php if (!empty($plugin["settings"])): ?><a href='javascript:toggleSettings("<?php echo $k; ?>");void(0)'><?php echo $language["settings"]; ?></a><?php endif; ?>
 </div>
-<input type='checkbox' class='checkbox'<?php if ($plugin["loaded"]): ?> checked='checked'<?php endif; ?> id='ext-<?php echo $k; ?>-checkbox' name='plugins[<?php echo $k; ?>]' value='1' onclick='toggleEnabled("<?php echo $k; ?>", this.checked);'/>
+<input type='checkbox' class='checkbox'<?php if ($plugin["loaded"]): ?> checked='checked'<?php endif; ?> id='plugin-<?php echo $k; ?>-checkbox' name='plugins[<?php echo $k; ?>]' value='1' onclick='toggleEnabled("<?php echo $k; ?>", this.checked);'/>
 <noscript><div style='display:inline'><a href='<?php echo makeLink("plugins", "?toggle=$k", "&token={$_SESSION["token"]}"); ?>'><?php echo $plugin["loaded"] ? "Deactivate" : "Activate"; ?></a></div></noscript>	
-<label for='ext-<?php echo $k; ?>-checkbox' class='checkbox'><strong><?php echo $plugin["name"]; ?></strong></label>
+<label for='plugin-<?php echo $k; ?>-checkbox' class='checkbox'><strong><?php echo $plugin["name"]; ?></strong></label>
 <small><?php printf($language["version"], $plugin["version"]); ?> <?php printf($language["author"], $plugin["author"]); ?></small> <small><?php echo $plugin["description"]; ?></small>
 
 <?php // Output plugin settings.
 if (!empty($plugin["settings"])): ?>
-<div id='ext-<?php echo $k; ?>-settings' class='settings'>
+<div id='plugin-<?php echo $k; ?>-settings' class='settings'>
 <form action='<?php echo makeLink("plugins"); ?>' method='post'>
 <input type='hidden' name='plugin' value='<?php echo $k; ?>'/>
 <input type='hidden' name='token' value='<?php echo $_SESSION["token"]; ?>'/>
@@ -63,8 +64,8 @@ if (!empty($plugin["settings"])): ?>
 <script type='text/javascript'>// <![CDATA[
 plugins.push("<?php echo $k; ?>");
 <?php if (!empty($plugin["settings"])):
-	if (@$_POST["plugin"] != $k): ?>hide(getById("ext-<?php echo $k; ?>-settings"));<?php
-	else: ?>getById("ext-<?php echo $k; ?>-settings").showing = true;<?php endif;
+	if (@$_POST["plugin"] != $k): ?>hide(getById("plugin-<?php echo $k; ?>-settings"));<?php
+	else: ?>getById("plugin-<?php echo $k; ?>-settings").showing = true;<?php endif;
 endif; ?> 
 // ]]></script>
 </li>
