@@ -36,11 +36,12 @@ function init()
 	$this->conversation["membersAllowed"] =& $this->getMembersAllowed();
 
 	// Add essential variables and language definitions to be accessible through JavaScript. 
-	$this->esoTalk->addLanguageToJS("Starred", "Unstarred", "Lock", "Unlock", "Sticky", "Unsticky", "Moderator", "Moderator-plural", "Administrator", "Administrator-plural", "Member", "Member-plural", "Suspended", "confirmLeave", "confirmDiscard", "confirmDeleteConversation");
+	$this->esoTalk->addLanguageToJS("Starred", "Unstarred", "Lock", "Unlock", "Sticky", "Unsticky", "Moderator", "Moderator-plural", "Administrator", "Administrator-plural", "Member", "Member-plural", "Suspended", "confirmLeave", "confirmDiscard", "confirmDeleteConversation", "Never", "Just now", "year ago", "years ago", "month ago", "months ago", "week ago", "weeks ago", "day ago", "days ago", "hour ago", "hours ago", "minute ago", "minutes ago", "second ago", "seconds ago");
 	$this->esoTalk->addVarToJS("postsPerPage", $config["postsPerPage"]);
 	$this->esoTalk->addVarToJS("autoReloadIntervalStart", $config["autoReloadIntervalStart"]);
 	$this->esoTalk->addVarToJS("autoReloadIntervalMultiplier", $config["autoReloadIntervalMultiplier"]);	
 	$this->esoTalk->addVarToJS("autoReloadIntervalLimit", $config["autoReloadIntervalLimit"]);
+	$this->esoTalk->addVarToJS("time", time());
 	
 	// Work out the title of the page.
 	$this->title = $this->conversation["id"] ? $this->conversation["title"] : $language["Start a conversation"];
@@ -328,19 +329,20 @@ function ajax()
 				$posts = $this->getPosts(array("lastActionTime" => @$_POST["lastActionTime"]), true);
 				
 				// If the user's browser will automatically show the new posts (as opposed to showing the "unread" part
-				// of the pagination bar), work out how many new posts there are an update the user's lastRead to the last
-				// visible post.
+				// of the pagination bar), work out how many new posts there are an update the user's lastRead to the
+				// last visible post.
 				if (isset($_POST["oldPostCount"])) {
-					if ($this->conversation["postCount"] - @$_POST["oldPostCount"] > $config["postsPerPage"])
+					if ($this->conversation["postCount"] - $_POST["oldPostCount"] > $config["postsPerPage"])
 						$this->updateLastRead($_POST["oldPostCount"] + $config["postsPerPage"]);
 					else $this->updateLastRead($this->conversation["postCount"]);
 				}
 				return array(
 					"postCount" => $this->conversation["postCount"],
 					"newPosts" => $posts,
-					"lastActionTime" => $this->conversation["lastActionTime"]
+					"lastActionTime" => $this->conversation["lastActionTime"],
+					"time" => time()
 				);
-			}
+			} else return array("time" => time());
 			break;
 		
 		// Add a reply.
@@ -355,7 +357,12 @@ function ajax()
 				$startFrom = max($this->conversation["postCount"] - $config["postsPerPage"], $_POST["haveDataUpTo"]);
 				$posts = $this->getPosts(array("startFrom" => $startFrom, "limit" => $this->conversation["postCount"] - $startFrom), true);
 			}
-			return array("postCount" => $this->conversation["postCount"], "posts" => $posts, "replyId" => $id, "lastActionTime" => time());
+			return array(
+				"postCount" => $this->conversation["postCount"],
+				"posts" => $posts,
+				"replyId" => $id,
+				"lastActionTime" => time()
+			);
 			break;
 
 		// Start a conversation.
@@ -687,8 +694,8 @@ function getPosts($criteria = array(), $display = false)
 			"memberId" => $post["memberId"],
 			"name" => $post["name"],
 			"date" => date($language["dateFormat"], $post["time"]),
-			"relativeTime" => relativeTime($post["time"]),
-			"editTime" => $post["editTime"] ? relativeTime($post["editTime"]) : null,
+			"time" => $post["time"],
+			"editTime" => $post["editTime"],
 			"canEdit" => $this->canEditPost($post["id"], $post["memberId"], $post["account"], $post["deleteMember"]) === true,
 			"info" => array(),
 			"controls" => array()

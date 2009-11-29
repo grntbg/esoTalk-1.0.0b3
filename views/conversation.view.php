@@ -185,7 +185,7 @@ if (!empty($post["deleteMember"])): ?>
 <hr/><div class='p deleted' id='p<?php echo $post["id"]; ?>'><div class='hdr'>
 <div class='pInfo'>
 <h3><?php echo $post["name"]; ?></h3>
-<span title='<?php echo $post["date"]; ?>'><a href='<?php echo str_replace("%s", $post["id"], $permalink); ?>'><?php echo $post["relativeTime"]; ?></a></span>
+<span title='<?php echo $post["date"]; ?>'><a href='<?php echo str_replace("%s", $post["id"], $permalink); ?>'><?php echo relativeTime($post["time"]); ?></a></span>
 <span><?php printf($deletedBy, $post["deleteMember"]); ?></span>
 </div>
 <div class='controls'>
@@ -209,8 +209,8 @@ if (!isset($this->conversation["posts"][$k - 1]["memberId"]) or $this->conversat
 <div class='hdr'>
 <div class='pInfo'>
 <h3><?php echo str_replace(array("%d", "%s"), array($post["memberId"], $post["name"]), $memberLink); ?></h3>
-<span title='<?php echo $post["date"]; ?>'><a href='<?php echo str_replace("%s", $post["id"], $permalink); ?>'><?php echo $post["relativeTime"]; ?></a></span>
-<?php if ($post["editTime"]): ?><span><?php printf($editedBy, $post["editMember"], $post["editTime"]); ?></span>
+<span title='<?php echo $post["date"]; ?>'><a href='<?php echo str_replace("%s", $post["id"], $permalink); ?>'><?php echo relativeTime($post["time"]); ?></a></span>
+<?php if ($post["editTime"]): ?><span><?php printf($editedBy, $post["editMember"], relativeTime($post["editTime"])); ?></span>
 <?php endif; if (!empty($post["accounts"])): ?><form action='<?php echo curLink(); ?>' method='post'><div style='display:inline'><select onchange='Conversation.changeMemberGroup(<?php echo $post["memberId"]; ?>,this.value)' name='group'>
 	<?php foreach ($post["accounts"] as $group): ?><option value='<?php echo $group; ?>'<?php if ($group == $post["account"]) echo " selected='selected'"; ?>><?php echo $language[$group]; ?></option><?php endforeach; ?></select></div> <noscript><div style='display:inline'><input name='saveGroup' type='submit' value='Save' class='save'/><input type='hidden' name='member' value='<?php echo $post["memberId"]; ?>'/></div></noscript></form>
 <?php elseif ($post["account"] != "Member"): ?><span><?php echo $language[$post["account"]]; ?></span>

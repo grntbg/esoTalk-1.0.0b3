@@ -283,6 +283,55 @@ function toggleStar(conversationId, star) {
 	if (getById("c" + conversationId)) getById("c" + conversationId).className = star.className == "star1" ? "starred" : "";
 };
 
+// Work out the relative difference between the current time and a given timestamp.
+// Returns a human-friendly string, ex. '1 hour ago'.
+function relativeTime(then)
+{	
+	// If there is no then, we can only assume that whatever it is never happened...
+	if (!then) return esoTalk.language["Never"];
+	
+	// Work out how many seconds it has been since then.
+	var ago = esoTalk.time - then;
+	
+	// If then happened less than 1 second ago (or is yet to happen,) say "Just now".
+	if (ago < 1) return esoTalk.language["Just now"];
+
+	// 31536000 seconds = 1 year
+	if (ago >= 31536000) {
+		var years = Math.floor(ago / 31536000);
+		return esoTalk.language[(years == 1 ? "year" : "years") + " ago"].replace("%d", years);
+	}
+	// 2626560 seconds = 1 month
+	else if (ago >= 2626560) {
+		var months = Math.floor(ago / 2626560);
+		return esoTalk.language[(months == 1 ? "month" : "months") + " ago"].replace("%d", months);
+	}
+	// 604800 seconds = 1 week
+	else if (ago >= 604800) {
+		var weeks = Math.floor(ago / 604800);
+		return esoTalk.language[(weeks == 1 ? "week" : "weeks") + " ago"].replace("%d", weeks);
+	}
+	// 86400 seconds = 1 day
+	else if (ago >= 86400) {
+		var days = Math.floor(ago / 86400);
+		return esoTalk.language[(days == 1 ? "day" : "days") + " ago"].replace("%d", days);
+	}
+	// 3600 seconds = 1 hour
+	else if (ago >= 3600) {
+		var hours = Math.floor(ago / 3600);
+		return esoTalk.language[(hours == 1 ? "hour" : "hours") + " ago"].replace("%d", hours);
+	}
+	// 60 seconds = 1 minute
+	else if (ago >= 60) {
+		var minutes = Math.floor(ago / 60);
+		return esoTalk.language[(minutes == 1 ? "minute" : "minutes") + " ago"].replace("%d", minutes);
+	}
+	// 1 second = 1 second. Duh.
+	else if (ago >= 1) {
+		var seconds = Math.floor(ago / 1);
+		return esoTalk.language[(seconds == 1 ? "second" : "seconds") + " ago"].replace("%d", seconds);
+	}
+}
 
 
 // Messages system.
@@ -634,6 +683,8 @@ init: function() {
 		this.lastRead = esoTalk.conversation.lastRead;
 		this.autoReloadInterval = esoTalk.conversation.autoReloadInterval;
 	}
+	
+	setInterval(function() {esoTalk.time++}, 1000);
 
 	// Hide the save title/tags button.
 	if (getById("saveTitleTags")) getById("saveTitleTags").style.display = "none";
@@ -870,8 +921,11 @@ checkForNewPosts: function() {
 		"background": true,
 		"success": function() {
 			
+			// Update the esoTalk 'clock'.
+			esoTalk.time = this.result.time;
+			
 			// If there are no updated or new posts, set a longer timeout to check again.
-			if (!this.result) {
+			if (!this.result.newPosts) {
 				Conversation.setReloadTimeout(Conversation.autoReloadInterval *= esoTalk.autoReloadIntervalMultiplier);
 				return;
 			}
@@ -944,7 +998,7 @@ displayPosts: function(scrollTo) {
 			html.push("<hr/><div class='p deleted' id='p", post.id, "'><div class='hdr'>",
 				"<div class='pInfo'>",
 				"<h3>" + post.name + "</h3> ",
-				"<span title='", post.date, "'><a href='", makePermalink(post.id), "'>", post.relativeTime, "</a></span> ",
+				"<span title='", post.date, "'><a href='", makePermalink(post.id), "'>", relativeTime(post.time), "</a></span> ",
 				"<span>", makeDeletedBy(post.deleteMember), "</span> ",
 				"</div>",
 				"<div class='controls'>");
@@ -973,8 +1027,8 @@ displayPosts: function(scrollTo) {
 			"<div class='hdr'>",
 			"<div class='pInfo'>",
 			"<h3>", makeMemberLink(post.memberId, post.name), "</h3> ",
-			"<span title='", post.date, "'><a href='", makePermalink(post.id), "'>", post.relativeTime, "</a></span> ");
-		if (post.editTime) html.push("<span>", makeEditedBy(post.editMember, post.editTime), "</span> ");
+			"<span title='", post.date, "'><a href='", makePermalink(post.id), "'>", relativeTime(post.time), "</a></span> ");
+		if (post.editTime) html.push("<span>", makeEditedBy(post.editMember, relativeTime(post.editTime)), "</span> ");
 		// Output the member's account.
 		if (post.accounts.length > 0) {
 			html.push("<span><select onchange='Conversation.changeMemberGroup(", post.memberId, ",this.value)' name='group'>");
@@ -1312,7 +1366,7 @@ addReply: function() {
 			for (var i in this.result.posts) Conversation.posts[i] = this.result.posts[i];
 			oldPostCount = Conversation.postCount;
 			Conversation.postCount = this.result.postCount;
-			Conversation.lastActionTime = this.result.lastActionTime;
+			Conversation.lastActionTime = esoTalk.time = this.result.lastActionTime;
 			newPosts = Conversation.postCount - oldPostCount;
 			Conversation.scrollStart = getOffsetTop(Conversation.paginations[1].bar) - getScrollTop();
 				
