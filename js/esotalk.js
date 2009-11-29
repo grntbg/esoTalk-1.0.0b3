@@ -1,6 +1,9 @@
 // Copyright 2009 Simon Zerner, Toby Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
+// esoTalk JavaScript: contains global functions, Animation class, Messages system, Ajax system, Conversation 
+// JavaScript, Search JavaScript, Join this forum JavaScript, and My settings JavaScript.
+
 // document.getElementById shortcut.
 function getById(id) {
 	return document.getElementById(id) || null;
@@ -21,6 +24,36 @@ function getElementsByClassName(parent, className) {
 function isArray(array) {
   return Object.prototype.toString.call(array) === "[object Array]";
 };
+
+// Functions to get the scrollTop, scrollHeight/Width, and clientHeight/Width (as different browsers make this
+// difficult!)
+function getScrollTop() {
+	if (typeof window.pageYOffset == "number") return window.pageYOffset;
+	else if (typeof document.documentElement.scrollTop == "number") return document.documentElement.scrollTop;
+	else if (typeof document.body.scrollTop == "number") return document.body.scrollTop;
+	return 0;
+};
+function getScrollDimensions() {
+	if (typeof document.documentElement.scrollHeight == "number") return [document.documentElement.scrollWidth, document.documentElement.scrollHeight];
+	else if (typeof document.body.scrollHeight == "number") return [document.body.scrollWidth, document.body.scrollHeight];
+	return [0, 0];
+};
+function getClientDimensions() {
+	if (typeof window.innerHeight == "number") return [window.innerWidth, window.innerHeight];
+	else if (typeof document.documentElement.clientHeight == "number") return [document.documentElement.clientWidth, document.documentElement.clientHeight];
+	return [0, 0];
+};
+
+// Get the offsetTop of an element that is embedded in relatively positioned elements.
+function getOffsetTop(obj) {
+	var top = 0;
+	if (obj.offsetParent) {
+		do {top += obj.offsetTop}
+		while (obj = obj.offsetParent);
+	}
+	return top;
+};
+
 
 /*
 Easing Equations v1.5
@@ -95,22 +128,6 @@ Animation.prototype.finalize = function() {
 };
 
 
-// Wrap a new div around an element with overflow:hidden, so we can change the height of the element for animations.
-function createOverflowDiv(element) {
-	if (!element) return false;
-	
-	// If there's already an overflow div, use that.
-	if (element.parentNode.className.indexOf("overflowDiv") != -1) return element.parentNode;
-	
-	// Otherwise, create one, insert it before the post, and move the post inside it.
-	overflowDiv = document.createElement("div");
-	overflowDiv.style.overflow = "hidden";
-	overflowDiv.className = "overflowDiv";
-	element.parentNode.insertBefore(overflowDiv, element);
-	overflowDiv.appendChild(element);
-	return overflowDiv;
-};
-
 // Show/hide an element. An animation can be applied using options = {animation: type}.
 function toggle(element, options) {
 	if (typeof element.showing == "undefined") element.showing = element.style.display != "none";
@@ -125,6 +142,22 @@ function hide(element, options) {
 	element.style.display = "none";
 	element.showing = false;
 	animate(element, options);
+};
+
+// Wrap a new div around an element with overflow:hidden, so we can change the height of the element for animations.
+function createOverflowDiv(element) {
+	if (!element) return false;
+	
+	// If there's already an overflow div, use that.
+	if (element.parentNode.className.indexOf("overflowDiv") != -1) return element.parentNode;
+	
+	// Otherwise, create one, insert it before the post, and move the post inside it.
+	overflowDiv = document.createElement("div");
+	overflowDiv.style.overflow = "hidden";
+	overflowDiv.className = "overflowDiv";
+	element.parentNode.insertBefore(overflowDiv, element);
+	overflowDiv.appendChild(element);
+	return overflowDiv;
 };
 
 // Animate the showing/hiding of an element.
@@ -187,6 +220,13 @@ function animate(element, options) {
 	}
 }
 
+// Animate a scroll.
+var scrollAnimation;
+function animateScroll(scrollDest) {
+	if (scrollAnimation) scrollAnimation.stop();
+	(scrollAnimation = new Animation(function(top) {window.scroll(0, top);}, {begin: getScrollTop(), end: scrollDest})).start();
+}
+
 // Make an input a placeholder (grey text that disappears when you click on it.)
 function makePlaceholder(element, text) {
 	element.onfocus = function() {
@@ -232,13 +272,6 @@ function showLogin() {
 	animateScroll(0);
 }
 
-// Animate a scroll.
-var scrollAnimation;
-function animateScroll(scrollDest) {
-	if (scrollAnimation) scrollAnimation.stop();
-	(scrollAnimation = new Animation(function(top) {window.scroll(0, top);}, {begin: getScrollTop(), end: scrollDest})).start();
-}
-
 // Toggle the state of a star.
 function toggleStar(conversationId, star) {
 	Ajax.request({
@@ -250,34 +283,6 @@ function toggleStar(conversationId, star) {
 	if (getById("c" + conversationId)) getById("c" + conversationId).className = star.className == "star1" ? "starred" : "";
 };
 
-// Functions to get the scrollTop, scrollHeight/Width, and clientHeight/Width (as different browsers make this
-// difficult!)
-function getScrollTop() {
-	if (typeof window.pageYOffset == "number") return window.pageYOffset;
-	else if (typeof document.documentElement.scrollTop == "number") return document.documentElement.scrollTop;
-	else if (typeof document.body.scrollTop == "number") return document.body.scrollTop;
-	return 0;
-};
-function getScrollDimensions() {
-	if (typeof document.documentElement.scrollHeight == "number") return [document.documentElement.scrollWidth, document.documentElement.scrollHeight];
-	else if (typeof document.body.scrollHeight == "number") return [document.body.scrollWidth, document.body.scrollHeight];
-	return [0, 0];
-};
-function getClientDimensions() {
-	if (typeof window.innerHeight == "number") return [window.innerWidth, window.innerHeight];
-	else if (typeof document.documentElement.clientHeight == "number") return [document.documentElement.clientWidth, document.documentElement.clientHeight];
-	return [0, 0];
-};
-
-// Get the offsetTop of an element that is embedded in relatively positioned elements.
-function getOffsetTop(obj) {
-	var top = 0;
-	if (obj.offsetParent) {
-		do {top += obj.offsetTop}
-		while (obj = obj.offsetParent);
-	}
-	return top;
-};
 
 
 // Messages system.
@@ -382,6 +387,7 @@ clearMessages: function() {
 };
 
 
+
 // Ajax system.
 var Ajax = {
 
@@ -425,7 +431,7 @@ doRequest: function(request) {
 	request.http.open("POST", request.url, true);
 	request.http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 	
-	// If we're not loading, change the window onbeforeunload
+	// If another ajax request isn't already loading, change the window onbeforeunload.
 	// Add an onbeforeunload to prevent the user from quitting during a request, but only if it's not a background
 	// request.
 	if (!this.loading && !request.background && typeof window._onbeforeunload == "undefined") {
@@ -450,17 +456,20 @@ doRequest: function(request) {
 				}
 			}
 			
-			// First, check the status code to see if the request went OK (200). If we had problems, alert the user.
-			if (request.http.status == 0) return;
+			// Check the status code to see if the request went OK (200). If we had problems, alert the user.
+			if (request.http.status == 0) return; // Null status code.
+			// Something other than 200 - disconnect the ajax system.
 			if (request.http.status != 200) {
 				Ajax.disconnect(request);
 				return false;
-			} else if (Ajax.disconnected && !request.background) {
+			}
+			// If the ajax system is disconnected but this request was successful, reconnect.
+			else if (Ajax.disconnected && !request.background) {
 				Ajax.disconnected = false;
 				Messages.clearMessages();
 			}
 			
-			// Make the result into a nice JSON array.
+			// Make the result into a nice JSON array. If there's a syntax error, disconnect the ajax system.
 			try {request.json = eval("(" + request.http.responseText + ")");}
 			catch (e) {
 				Ajax.disconnect(request);
@@ -470,14 +479,14 @@ doRequest: function(request) {
 			request.messages = request.json.messages;
 			Ajax.beenLoggedOut = false;
 						
-			// Did we get any messages?
+			// Did we get any messages? Show them via the messages system.
 			for (var i in request.messages) {
 				Messages.showMessage(i, request.messages[i][0], request.messages[i][1], request.messages[i][2], i == "beenLoggedOut" ? true : false);
-				// If the message is the "beenLoggedOut" one (i.e. user has been logged out), we'll have to deal with it later.
+				// If the message is "beenLoggedOut" (ie. user has been logged out), we'll have to deal with it later.
 				if (i == "beenLoggedOut") Ajax.beenLoggedOut = true;
 			}
 		
-			// Display the messages.
+			// Set the request's messages variable to false if there were no messages.
 			if (request.messages.length < 1) request.messages = false;
 			
 			// Has the token changed? If so, update all hidden token inputs/links on the page.
@@ -496,6 +505,7 @@ doRequest: function(request) {
 
 			// If the user has been logged out and our "beenLoggedOut" message is displaying...
 			if (Ajax.beenLoggedOut) {
+				
 				// Show a big shadow over the page.
 				if (!getById("beenLoggedOutShadow")) {
 					var div = document.createElement("div");
@@ -509,12 +519,13 @@ doRequest: function(request) {
 					div.style.height = d[1] + "px";
 					div.style.zIndex = "8999";
 					document.body.appendChild(div);
+					
 					// If we're using IE6, we need to emulate position:fixed.
 					if (isIE6) {
 						div.style.position = "absolute";
 						div.runtimeStyle.setExpression("top", "eval(document.documentElement.scrollTop)");
-						// The fixed element will flicker when the page is scrolled. Fix this by applying a "background image" to the body.
-						// Thanks http://ie7-js.googlecode.com/svn/trunk/src/ie7-fixed.js!
+						// The fixed element will flicker when the page is scrolled. Fix this by applying a "background 
+						// image" to the body. Thanks http://ie7-js.googlecode.com/svn/trunk/src/ie7-fixed.js!
 						document.body.runtimeStyle.backgroundRepeat = "no-repeat";
 						document.body.runtimeStyle.backgroundImage = "url(x.gif)";
 						document.body.runtimeStyle.backgroundAttachment = "fixed";
@@ -526,7 +537,7 @@ doRequest: function(request) {
 				request.repeat = true;
 			}
 
-			// Everything went OK.
+			// Everything went OK. Do the next request.
 			else {
 				request.completed = true;
 				Ajax.doNextRequest();
@@ -534,22 +545,23 @@ doRequest: function(request) {
 		}
 	};
 		 
-	// Send the request data - the currently logged in user (so we can check if we're still logged in), and the request-specific post data.
+	// Send the request data - the currently logged in user (so we can check if we're still logged in), the current 
+	// token, and the request-specific post data.
 	request.http.send("loggedInAs=" + (esoTalk.user ? esoTalk.user : "") + "&token=" + esoTalk.token + "&" + (request.post ? request.post : ""));
-	// Now we're loading... If there's an element with the id "loading", show it
+	
+	// Now we're loading... If there's an element with the id "loading", show it.
 	this.loading = true;
 	if (!request.background && getById("loading")) show(getById("loading"), {animation: "fade"});
-
 },
 
-// Resume normal activity after recovering from a disconnection
+// Resume normal activity after recovering from a disconnection: clear messages and repeat the request that failed.
 resumeAfterDisconnection: function() {
 	Messages.clearMessages();
 	Ajax.request(Ajax.disconnectedRequest);
 	Ajax.disconnectedRequest = false;
 },
 
-// Show a disconnection message
+// Show a disconnection message: set the failed request to be repeated, clear the request queue, and show the message.
 disconnect: function(request) {
 	this.disconnected = true;
 	request.repeat = true;
@@ -558,13 +570,13 @@ disconnect: function(request) {
 	Messages.showMessage("ajaxDisconnected", "warning", esoTalk.language["ajaxDisconnected"], false);
 },
 
-// Dismiss the "beenLoggedOut" message, by pressing cancel or successfully logging in.
+// Dismiss the "beenLoggedOut" message by pressing cancel or successfully logging in.
 dismissLoggedOut: function(loggedInAs) {
 	this.beenLoggedOut = false;
 	// Hide the message and the shadow.
 	Messages.clearMessages();
 	if (getById("beenLoggedOutShadow")) document.body.removeChild(getById("beenLoggedOutShadow"));
-	// Set the new 'logged in' user. If we ended up pressing cancel, proceed with the ajax request that caused this mess...
+	// Set the new 'logged in' user.
 	esoTalk.user = loggedInAs ? loggedInAs : "";
 },
 
@@ -582,37 +594,35 @@ login: function(password) {
 
 
 
-
 // Conversation JavaScript
-
 var Conversation = {
 
 // Pagination bar variables
 dragging: false, // Are we dragging a pagination bar? Which one?
-mouseStart: null, // The start position of the mouse (onmousedown). Used to calculate the relative position of the handle.
+mouseStart: null, // The start position of the mouse (onmousedown) to calculate the relative position of the handle.
 handleWidth: 0, // The width of the handle (%).
 handlePos: 0, // The position of the handle (%) - i.e. the handle's marginLeft.
 unreadWidth: 0, // The width of the unread area (%).
-paginations: [], // An array of the pagination bars (0 => top bar, 1 => bottom bar)
+paginations: [], // An array of the pagination bars (0 => top bar, 1 => bottom bar).
 
 // Conversation details
-id: false, // The conversation id
-title: "", // The title of the conversation
-posts: [], // Array of all the posts we have data for - the post cache.
+id: false, // The conversation ID.
+title: "", // The title of the conversation.
+posts: [], // Array of all the posts we have data for - i.e. the post cache.
 startFrom: 0, // What post are we starting from?
-postCount: 0, // The total number of posts in the conversation
-lastActionTime: null, // The conversation's last action time
-lastRead: 0, // The last post in the conversation the user has read (start of the unread bar)
+postCount: 0, // The total number of posts in the conversation.
+lastActionTime: null, // The conversation's last action time.
+lastRead: 0, // The last post in the conversation the user has read (start of the unread bar).
 updateLastRead: false, // A flag for whether or not to make an AJAX request to update the last read when fetching posts.
 
 autoReloadInterval: 4, // The number of seconds in which to check for new posts.
-timeout: null, // A timeout to periodically check for new posts
+timeout: null, // A timeout to periodically check for new posts.
 disableJumpTo: false, // A flag for when the [viewing] part of the pagination bar is moused-over.
 editingReply: false, // Are we typing a reply?
 editingPosts: 0, // Number of posts being edited.
 multiQuote: false, // If this flag is true, we won't scroll to the reply area when the user clicks 'quote' on a post.
 
-// Initialize: set up a timeout to check for new posts, watch window.location.hash, etc.
+// Initialize: set up the conversation, a timeout to check for new posts, watch window.location.hash, etc.
 init: function() {
 	
 	// Get conversation information from the esoTalk variable.
@@ -625,7 +635,7 @@ init: function() {
 		this.autoReloadInterval = esoTalk.conversation.autoReloadInterval;
 	}
 
-	// Hide the save title/tags button
+	// Hide the save title/tags button.
 	if (getById("saveTitleTags")) getById("saveTitleTags").style.display = "none";
 	
 	// If we're not starting a new conversation...
@@ -639,22 +649,8 @@ init: function() {
 			if (isNaN(newHash) || Conversation.startFrom == newHash) return;
 			Conversation.moveTo(parseInt(newHash) || 0);
 		}, 500);
-	
-	}
-	
-	// Initialize the add member form
-	if (getById("addMemberSubmit")) {
-		getById("addMemberSubmit").onclick = function onclick() {Conversation.addMember(getById("addMember").value); return false;};
-		getById("addMember").onkeypress = function(e) {
-			if (!e) e = window.event;
-			if (e.keyCode == 13) {Conversation.addMember(getById("addMember").value); return false;}
-			else enable(getById("addMemberSubmit"));
-		};
-		disable(getById("addMemberSubmit"));
-	}
-	
-	// Initialize the title/tag inputs (only if it's not a new conversation).
-	if (this.id) {
+
+		// Initialize the title/tag inputs.
 		if (getById("cTitle").tagName.toLowerCase() == "input") {
 			getById("cTitle").onfocus = function(){this.initValue=this.value;};
 			getById("cTitle").onblur = function(){if(this.value!=this.initValue)Conversation.saveTitle(this.value);};
@@ -666,18 +662,31 @@ init: function() {
 			getById("cTags").onkeypress = function(e){if(!e)e=window.event;if(e.keyCode==13){this.blur();return false;}};
 		}
 	}
+	
+	// Get the conversation title.
 	Conversation.title = typeof getById("cTitle").value != "undefined" ? getById("cTitle").value : getById("cTitle").innerHTML;
 	
-	// Initialize the pagination
+	// Initialize the add member form.
+	if (getById("addMemberSubmit")) {
+		getById("addMemberSubmit").onclick = function onclick() {Conversation.addMember(getById("addMember").value); return false;};
+		getById("addMember").onkeypress = function(e) {
+			if (!e) e = window.event;
+			if (e.keyCode == 13) {Conversation.addMember(getById("addMember").value); return false;}
+			else enable(getById("addMemberSubmit"));
+		};
+		disable(getById("addMemberSubmit"));
+	}
+	
+	// Initialize the pagination bars.
 	Conversation.initPagination();
 	
 	// If there's a reply box, initilize it.
 	if (getById("reply")) Conversation.initReply();
 	
-	// Onbeforeunload handler
+	// Add an onbeforeunload handler (to warn the user if they have an unsaved post/draft).
 	window.onbeforeunload = Conversation.beforeUnload;
 	
-	// Add key events to tell whether the shift key is being held down. If so, don't scroll when the user clicks 'quote'.
+	// Add events to tell whether the shift key is being held down. If so, don't scroll when the user clicks 'quote'.
 	document.onkeydown = function(e) {
 		if (!e) e = window.event;
 		if (e.keyCode == 16) Conversation.multiQuote = true;
@@ -688,7 +697,7 @@ init: function() {
 	};
 },
 
-// Initialize the pagination bars - add click events, etc.
+// Initialize the pagination bars: add click and mouse handling events.
 initPagination: function() {
 	
 	// Loop through the bars and create an easy-to-access array of their child elements
@@ -707,53 +716,57 @@ initPagination: function() {
 			"to": getElementsByClassName(paginations[i], "pgTo")[0],
 			"count": getElementsByClassName(paginations[i], "pgCount")[0]
 		};
-		// Disable selection on the handle
+		// Disable selection on the handle.
 		pg.viewingPosts.onselectstart = function() {return false;};
 		pg.viewingPosts.unselectable = "on";
 		pg.viewingPosts.style.MozUserSelect = "none";
-		// Add some mouse handlers
+		
+		// Add some mouse handlers.
 		pg.middle.onclick = Conversation.jumpTo;
 		pg.unread.onclick = function() {Conversation.moveTo(Conversation.lastRead);};
 		pg.viewingPosts.onmousedown = Conversation.mouseDown;
 		pg.viewingPosts.onmouseup = Conversation.mouseUp;
-		// When the mouse is over viewingPosts or unread, prevent the jumpTo click from being activated
+		
+		// When the mouse is over viewingPosts or unread, prevent the jumpTo click from being activated.
 		Conversation.disableJumpTo = false;
 		pg.viewingPosts.onmouseover = pg.unread.onmouseover = function(){Conversation.disableJumpTo=true;};
 		pg.viewingPosts.onmouseout = pg.unread.onmouseout = function(){Conversation.disableJumpTo=false;};
-		// Add click events to the buttons
+		
+		// Add click events to the buttons.
 		pg.previous.onclick = Conversation.prevPage;
 		pg.next.onclick = Conversation.nextPage;
 		pg.first.onclick = Conversation.firstPage;
 		pg.last.onclick = Conversation.lastPage;
-		this.paginations[i] = pg;
+		Conversation.paginations[i] = pg;
 	}
 	
 	// Make sure we have the handle/unread position/width.
-	this.handlePos = parseFloat(this.paginations[0].viewingPosts.style.marginLeft);
-	this.handleWidth = parseFloat(this.paginations[0].viewingPosts.style.width);
-	this.unreadWidth = parseFloat(this.paginations[0].unread.style.width);
+	Conversation.handlePos = parseFloat(Conversation.paginations[0].viewingPosts.style.marginLeft);
+	Conversation.handleWidth = parseFloat(Conversation.paginations[0].viewingPosts.style.width);
+	Conversation.unreadWidth = parseFloat(Conversation.paginations[0].unread.style.width);
+	
 	// Add document mouse handlers.
 	document.onmousemove = Conversation.mouseMove;
 	document.onmouseup = Conversation.mouseUp;
 },
 
-// Initialize the reply section - disable/enable buttons, add click events, etc.
+// Initialize the reply section: disable/enable buttons, add click events, etc.
 initReply: function() {
 	
 	Conversation.editingReply = false;
 	
-	// Disable the post reply button if there's not a draft. Disable the save draft button regardless.
+	// Disable the "post reply" button if there's not a draft. Disable the save draft button regardless.
 	if (!getById("reply-textarea").value) {disable(getById("postReply")); disable(getById("discardDraft"));}
 	disable(getById("saveDraft"));
 	
-	// Add event handlers on the textarea to enable/disable buttons
+	// Add event handlers on the textarea to enable/disable buttons.
 	getById("reply-textarea").onkeyup = function onkeyup() {
 		if (this.value) {enable(getById("saveDraft")); enable(getById("postReply")); Conversation.editingReply = true;}
 		else {disable(getById("saveDraft")); disable(getById("postReply")); Conversation.editingReply = false;}
 	};
 	getById("reply-previewCheckbox").checked = false;
 	
-	// Add click events to the buttons
+	// Add click events to the buttons.
 	if (getById("saveDraft")) getById("saveDraft").getElementsByTagName("input")[0].onclick = function onclick() {Conversation.saveDraft(); return false;};
 	if (getById("discardDraft")) getById("discardDraft").getElementsByTagName("input")[0].onclick = function onclick() {Conversation.discardDraft(); return false;};
 	if (getById("postReply")) getById("postReply").getElementsByTagName("input")[0].onclick = function onclick() {
@@ -775,16 +788,17 @@ initReply: function() {
 	}
 },
 
-// Reload the posts
+// Reload the conversation post display, starting from a specific post.
 reloadPosts: function(startFrom, scrollTo, dontDisplay) {
-	// Make sure startFrom is a number within range
+	
+	// Make sure startFrom is a number within range.
 	startFrom = Math.max(0, Math.min(Conversation.postCount, parseInt(startFrom)));
 	
-	// Update the window hash
+	// Update the window hash.
 	Conversation.startFrom = window.location.hash = startFrom;
 	
 	// Do we need to make an ajax request to get more post information?
-	// Within the posts we will be viewing, what are the first and last ones we _don't_ have? We'll need to fetch those ones. 
+	// Within the posts we will be viewing, what are the first and last ones we _don't_ have? We'll need to fetch those.
 	var min, max;
 	maxPost = Math.min(startFrom + esoTalk.postsPerPage, Conversation.postCount);
 	for (var i = startFrom; i < maxPost; i++) {
@@ -793,7 +807,7 @@ reloadPosts: function(startFrom, scrollTo, dontDisplay) {
 			max = i;
 		}
 	}
-
+	
 	// If we do need to fetch some posts from the server...
 	if (typeof min != "undefined") {
 			
@@ -803,16 +817,21 @@ reloadPosts: function(startFrom, scrollTo, dontDisplay) {
 			"success": function() {
 				// Update our post cache with this new data.
 				if (posts = this.result) for (var i in posts) Conversation.posts[i] = posts[i];
-				// Only update the post display if the first/last post numbers of these ajax results are consistent with where we should be viewing.
-				// (Prevents blank display when a user clicks 'Next' or 'Previous' multiple times in a row.)
+				
+				// Only update the post display if the first/last post numbers of these ajax results are consistent with 
+				// where we should be viewing. (Prevents blank display when a user clicks 'Next' or 'Previous' multiple 
+				// times in a row.)
 				if (min >= Conversation.startFrom && max <= Conversation.startFrom + esoTalk.postsPerPage && !dontDisplay) Conversation.displayPosts(scrollTo);
 			},
 			"post": "action=getPosts&id=" + Conversation.id + "&start=" + min + "&end=" + max + (Conversation.updateLastRead ? "&updateLastRead=" + maxPost : "")
 		});
 	
+	}
 	// If we don't need to get any more data, just display the data we already have.
-	} else {
+	else {
 		if (!dontDisplay) Conversation.displayPosts(scrollTo);
+		
+		// Update the user's last read post if necessary.
 		if (Conversation.updateLastRead) {
 			Ajax.request({
 				"url": esoTalk.baseURL + "ajax.php?controller=conversation",
@@ -831,9 +850,10 @@ setReloadTimeout: function(seconds) {
 	Conversation.timeout = setTimeout(function() {Conversation.checkForNewPosts();}, seconds * 1000);
 },
 
+// Change and save a guest's avatar alignment.
 changeAvatarAlignment: function(alignment) {
 	esoTalk.avatarAlignment = alignment;
-	this.moveTo(this.startFrom);
+	Conversation.moveTo(Conversation.startFrom);
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"post": "action=saveAvatarAlignment&avatarAlignment=" + alignment,
@@ -841,6 +861,7 @@ changeAvatarAlignment: function(alignment) {
 	});
 },
 
+// Check if there are any new posts in the conversation, and update the conversation display as appropriate.
 checkForNewPosts: function() {
 	if (Conversation.editingPosts > 0) return;
 	Ajax.request({
@@ -848,37 +869,55 @@ checkForNewPosts: function() {
 		"post": "action=getNewPosts&id=" + Conversation.id + "&lastActionTime=" + Conversation.lastActionTime + (Conversation.startFrom + esoTalk.postsPerPage >= Conversation.postCount ? "&oldPostCount=" + Conversation.postCount : ""),
 		"background": true,
 		"success": function() {
+			
+			// If there are no updated or new posts, set a longer timeout to check again.
 			if (!this.result) {
 				Conversation.setReloadTimeout(Conversation.autoReloadInterval *= esoTalk.autoReloadIntervalMultiplier);
 				return;
 			}
-			// Update our cache with this new data.
+			
+			// Update our post cache with the new posts.
 			for (var i in this.result.newPosts) Conversation.posts[i] = this.result.newPosts[i];
 			var oldPostCount = Conversation.postCount;
 			Conversation.postCount = this.result.postCount;
 			Conversation.lastActionTime = this.result.lastActionTime;
 			var newPosts = Conversation.postCount - oldPostCount;
+			
+			// If there are no new posts, set a longer timeout to check again. Otherwise, reset the timeout length.
 			if (!newPosts) Conversation.setReloadTimeout(Conversation.autoReloadInterval *= esoTalk.autoReloadIntervalMultiplier);
 			else Conversation.setReloadTimeout(Conversation.autoReloadInterval = esoTalk.autoReloadIntervalStart);
+			
+			// Store the current position of the bottom pagination bar within the browser's window so it won't move
+			// when changing the post area HTML.
 			Conversation.scrollStart = getOffsetTop(Conversation.paginations[1].bar) - getScrollTop();
+			
 			// Show the unread area.
 			Conversation.unreadWidth += newPosts * (100 / Conversation.postCount);
+			
 			// Mark the new posts for animation.
 			for (var i = oldPostCount; i < Conversation.postCount; i++) Conversation.posts[i].animateNew = true;
+			
 			// If we were viewing the last post, move to the _new_ last post.
 			if (Conversation.startFrom + esoTalk.postsPerPage >= oldPostCount) {
+				
 				// If the amount of new posts is greater than the posts per page, go to the first new post.
 				if (newPosts > esoTalk.postsPerPage) Conversation.moveTo(oldPostCount, "top");
+				
 				// If we're _just_ on the edge of the conversation, move forward the amount of new posts
 				else if (Conversation.startFrom + esoTalk.postsPerPage <= Conversation.postCount) Conversation.moveTo(Conversation.postCount - esoTalk.postsPerPage, "newReply");
+				
 				// Otherwise, just display from where we currently are.
 				else Conversation.moveTo(Conversation.startFrom);
+				
 			} else Conversation.moveTo(Conversation.startFrom);
 		}
 	});
 },
 
+// Update the post area with new post HTML.
 displayPosts: function(scrollTo) {
+	
+	// Work out some initial details.
 	var max = Math.min(Conversation.startFrom + esoTalk.postsPerPage, Conversation.postCount);
 	var side = false;
 	switch (esoTalk.avatarAlignment || "alternate") {
@@ -887,15 +926,18 @@ displayPosts: function(scrollTo) {
 		case "left": side = "l"; break;
 	}
 	var html = [];
+	
+	// Loop through all the posts we are displaying and add their HTML.
 	for (var k = Conversation.startFrom; k < max; k++) {
 
+		// Hmmm... missing data!
 		if (typeof Conversation.posts[k] == "undefined") {
 			html.push("<div class='p deleted'><div class='hdr'><h3>Missing data</h3></div></div>");
 			continue;
 		}
 
 		var post = Conversation.posts[k];
-		var singlePost = false;
+		var singlePost = false; // If this post is the only consecutive one by the same member.
 
 		// If this post is deleted...
 		if (post.deleteMember) {
@@ -916,11 +958,13 @@ displayPosts: function(scrollTo) {
 		// If the post before this one is by a different member to this one, start a new post 'group'.
 		if (k == Conversation.startFrom || typeof Conversation.posts[k - 1] == "undefined" || Conversation.posts[k - 1]["name"] != post.name || Conversation.posts[k - 1]["deleteMember"]) {
 			html.push("<hr/><div class='p "); if (side) html.push(side); html.push(" c", post.color, "'");
-			// If this post is in its own group, assign the id to the whole post (not just the post 'part').
+			
+			// If this post is in its own group, assign the ID to the whole post (not just the post 'part').
 			if (typeof Conversation.posts[k + 1] == "undefined" || Conversation.posts[k + 1]["name"] != post.name || Conversation.posts[k + 1]["deleteMember"]) {
 				singlePost = true;
 				html.push(" id='p", post.id, "'");
 			}
+			
 			html.push("><div class='parts'>");
 		}
 
@@ -931,6 +975,7 @@ displayPosts: function(scrollTo) {
 			"<h3>", makeMemberLink(post.memberId, post.name), "</h3> ",
 			"<span title='", post.date, "'><a href='", makePermalink(post.id), "'>", post.relativeTime, "</a></span> ");
 		if (post.editTime) html.push("<span>", makeEditedBy(post.editMember, post.editTime), "</span> ");
+		// Output the member's account.
 		if (post.accounts.length > 0) {
 			html.push("<span><select onchange='Conversation.changeMemberGroup(", post.memberId, ",this.value)' name='group'>");
 			for (var i in post.accounts) {
@@ -940,8 +985,10 @@ displayPosts: function(scrollTo) {
 			}
 			html.push("</select></span> ");
 		} else if (post.account != "Member") html.push("<span>", esoTalk.language[post.account], "</span> ");
+		// Other post details.
 		if (post.lastAction) html.push("<span>", makeLastAction(post.lastAction), "</span> ");
 		for (var i in post.info) html.push("<span>", post.info[i], "</span> ");
+		// Post controls.
 		html.push("</div><div class='controls'>");
 		if (getById("reply")) html.push(makeQuoteLink(post.id), " ");
 		if (post.canEdit) html.push(makeEditLink(post.id), " ", makeDeleteLink(post.id), " ");
@@ -952,6 +999,7 @@ displayPosts: function(scrollTo) {
 		if (k == max - 1 || typeof Conversation.posts[k + 1] == "undefined" || Conversation.posts[k + 1]["name"] != post.name || Conversation.posts[k + 1]["deleteMember"]) {
 			html.push("</div>"); if (side) html.push("<div class='avatar'>", makeMemberLink(post.memberId, "<img src='" + (post.avatar || ("skins/" + esoTalk.skin + "/avatar" + (side == "l" ? "Left" : "Right") + ".png")) + "' alt=''/>"), "</div>");
 			html.push("<div class='clear'></div></div>");
+			
 			// Switch sides now that we're at the end of the group - only if the next post is not deleted!
 			if (esoTalk.avatarAlignment == "alternate" && typeof Conversation.posts[k + 1] != "undefined" && !Conversation.posts[k + 1]["deleteMember"]) side = side == "r" ? "l" : "r";
 		}
@@ -959,9 +1007,8 @@ displayPosts: function(scrollTo) {
 
 	getById("cPosts").innerHTML = html.join("");
 	
-	// Loop through all post links (i.e. "go to this post" links) and add a click handler
-	// to check if the post they are directed at is in the current conversation post cache.
-	// If it is, just scroll up to it.
+	// Loop through all post links (i.e. "go to this post" links) and add a click handler to check if the post they are
+	// directed at is in the current conversation post cache. If it is, just scroll up to it.
 	var postLinks = getElementsByClassName(getById("cPosts"), "postLink");
 	for (var i = 0; i < postLinks.length; i++) {
 		var linkParts = postLinks[i].href.split("/");
@@ -987,44 +1034,60 @@ displayPosts: function(scrollTo) {
 		supersleight.run();
 	}
 	
+	// Scroll to the bottom if necessary (we have to do this before animation of the posts).
 	if (scrollTo == "bottom") {
 		Conversation.scrollTo(scrollTo);
 		scrollTo = undefined;
 	}
 	
-	// Animate new posts
+	// Animate new posts.
 	for (var i = Conversation.startFrom; i < max; i++) {
 		if (Conversation.posts[i].animateNew) {
 			Conversation.animateNewPost(getById("p" + Conversation.posts[i].id));
 			Conversation.posts[i].animateNew = false;
 		}
 	}
-		
+	
 	Conversation.scrollTo(scrollTo);
 },
 
+// Scroll to a specific position on the conversation page.
 scrollTo: function(scrollTo) {
 	if (typeof scrollTo == "undefined" || scrollTo == null) return false;
 	Conversation.scrollDest = false;
 	switch (scrollTo) {
+		
 		// Scroll to the top pagination bar.
-		case "top":	if (getScrollTop() > getOffsetTop(Conversation.paginations[0].bar) - 10) Conversation.scrollDest = getOffsetTop(Conversation.paginations[0].bar) - 10; break;
+		case "top":
+			if (getScrollTop() > getOffsetTop(Conversation.paginations[0].bar) - 10)
+				Conversation.scrollDest = getOffsetTop(Conversation.paginations[0].bar) - 10;
+			break;
+		
 		// Scroll to the bottom pagination bar.
-		case "bottom": if (getScrollTop() < getOffsetTop(Conversation.paginations[1].bar) + Conversation.paginations[1].bar.offsetHeight + 10 - getClientDimensions()[1]) Conversation.scrollDest = getOffsetTop(Conversation.paginations[1].bar) + Conversation.paginations[1].bar.offsetHeight + 10 - getClientDimensions()[1]; break;
-		// Scroll back to where the bottom pagination bar was on the screen (when content height above it changes)
+		case "bottom":
+			if (getScrollTop() < getOffsetTop(Conversation.paginations[1].bar) + Conversation.paginations[1].bar.offsetHeight + 10 - getClientDimensions()[1])
+				Conversation.scrollDest = getOffsetTop(Conversation.paginations[1].bar) + Conversation.paginations[1].bar.offsetHeight + 10 - getClientDimensions()[1];
+			break;
+		
+		// Scroll back to where the bottom pagination bar was on the screen (when content height above it changes).
 		case "pagination":
 			window.scroll(0, getOffsetTop(Conversation.paginations[1].bar) - Conversation.scrollStart);
 			return;
-		// Scroll to the position where the user was before adding a reply, minus the height of the new reply (so as to push the reply area down.)
-		// Confused? I am.
+			
+		// Same as above.
 		case "newReply":
 			if (Conversation.postCount <= esoTalk.postsPerPage) return;
 			window.scroll(0, getOffsetTop(Conversation.paginations[1].bar) - Conversation.scrollStart);
 			return;
-		// Scroll to the reply area
-		case "reply": Conversation.scrollDest = getOffsetTop(getById("reply")) + getById("reply").offsetHeight - getClientDimensions()[1] + 10; break;
+			
+		// Scroll to the reply area.
+		case "reply":
+			Conversation.scrollDest = getOffsetTop(getById("reply")) + getById("reply").offsetHeight - getClientDimensions()[1] + 10;
+			break;
+			
 		default: Conversation.scrollDest = parseInt(scrollTo);
 	}
+	// Animate the scroll.
 	if (Conversation.scrollDest) animateScroll(Conversation.scrollDest);
 },
 
@@ -1034,7 +1097,7 @@ beforeUnload: function onbeforeunload() {
 	else if (Conversation.editingReply) return esoTalk.language["confirmDiscard"];
 },
 
-// Start dragging
+// Start dragging the pagination bar.
 mouseDown: function(e) {
 	if (!e) e = window.event;
 	document.body.style.cursor = "col-resize";
@@ -1045,22 +1108,25 @@ mouseDown: function(e) {
 	if (Conversation.paginationAnimation) Conversation.paginationAnimation.stop();
 },
 
-// Stop dragging
+// Stop dragging the pagination bar.
 mouseUp: function(e) {
 	if (!e) e = window.event;
 	document.body.style.cursor = "auto";
-	if (Conversation.draggingHandle) Conversation.moveToPercent(parseFloat(Conversation.paginations[0].viewingPosts.style.marginLeft), Conversation.draggingHandle == Conversation.paginations[1].viewingPosts ? "pagination" : null);
+	if (Conversation.draggingHandle) 
+		Conversation.moveToPercent(parseFloat(Conversation.paginations[0].viewingPosts.style.marginLeft), Conversation.draggingHandle == Conversation.paginations[1].viewingPosts ? "pagination" : null);
 	Conversation.draggingHandle = false;
 	Conversation.mouseStart = null;
 },
 
-// Drag the handle
+// Drag the handle of the pagination bar.
 mouseMove: function(e) {
 	if (!e) e = window.event;
 	if (Conversation.draggingHandle && e.clientX) {
+		// Work out the pagination handle's position in terms of %.
 		var offsetPixels = e.clientX - Conversation.mouseStart;
 		var offsetPercent = (offsetPixels / Conversation.paginations[0].middle.offsetWidth) * 100;
 		Conversation.moveHandle(parseFloat(Conversation.marginLeft) + offsetPercent);
+		
 		// Update the numbers in '1-20 of 38 posts'.
 		var startFrom = Math.round(parseFloat(Conversation.paginations[0].viewingPosts.style.marginLeft)
 			* (Conversation.postCount - esoTalk.postsPerPage) / Math.max(100 - Conversation.handleWidth, 1));
@@ -1072,7 +1138,7 @@ mouseMove: function(e) {
 	}
 },
 
-// Animate the pagination bar.
+// Animate the pagination bar moving and resizing.
 animatePagination: function() {
 	if (this.paginationAnimation) this.paginationAnimation.stop();
 	(this.paginationAnimation = new Animation(function(data) {
@@ -1101,7 +1167,7 @@ resizeHandle: function(width) {
 	for (i in Conversation.paginations) Conversation.paginations[i].viewingPosts.style.width = width + "%";
 },
 
-// Resize the unread area
+// Resize the unread area.
 resizeUnread: function(width) {
 	width = Math.max(0, Math.min(100, width));
 	for (i in Conversation.paginations) {
@@ -1139,27 +1205,32 @@ lastPage: function() {
 	return false;
 },
 
-// Jump to a specific position on the pagination bar. Works out what post number is associated with the pixel position on the bar.
+// Jump to a specific position on the pagination bar. Works out what post number is associated with the pixel position 
+// on the bar.
 jumpTo: function(e) {
 	if (!e) e = window.event;
+	
 	// If the user is clicking on the unread link or dragging the viewing area, we have no business here!
 	if (Conversation.disableJumpTo) return false;
-	// Where did the user click in terms of pixels?
-	pixels = e.clientX - Conversation.paginations[0].middle.offsetLeft;
-	// Where did the user click in terms of %?
-	clickPercent = (pixels / Conversation.paginations[0].middle.offsetWidth) * 100;
+	
+	// Where did the user click in terms of pixels and percent?
+	var pixels = e.clientX - Conversation.paginations[0].middle.offsetLeft;
+	var clickPercent = (pixels / Conversation.paginations[0].middle.offsetWidth) * 100;
+	
 	// Move the handle so its middle is where the user clicked.
-	startFromPercent = Math.max(0, Math.min(100 - Conversation.handleWidth, clickPercent - Conversation.handleWidth / 2));
+	var startFromPercent = Math.max(0, Math.min(100 - Conversation.handleWidth, clickPercent - Conversation.handleWidth / 2));
 	Conversation.scrollStart = getOffsetTop(Conversation.paginations[1].bar) - getScrollTop();
 	Conversation.moveToPercent(startFromPercent, this == Conversation.paginations[1].middle ? "pagination" : null);
 },
 
-// Move to a specific post. Takes care of pagination, animation, and reloading the posts.
+// Move to a specific position. Takes care of pagination, animation, and reloading the posts.
 moveTo: function(startFrom, scrollTo) {
-	getById("cBody").style.display = Conversation.postCount ? "block" : "none";
+	window[Conversation.postCount ? "show" : "hide"](getById("cBody"));
+	
 	// Check if we're editing any posts - if we are, confirm it with the user.
 	if (Conversation.editingPosts > 0 && !confirm(Conversation.beforeUnload())) startFrom = Conversation.startFrom;
 	else Conversation.editingPosts = 0;
+	
 	// Update the numbers in '1-20 of 38 posts', and disable/enable previous/next buttons if necessary.
 	for (var i in Conversation.paginations) {
 		Conversation.paginations[i].from.innerHTML = Math.max(parseInt(startFrom) + 1, 1);
@@ -1177,18 +1248,21 @@ moveTo: function(startFrom, scrollTo) {
 	var curHandleWidth = Math.max(esoTalk.postsPerPage / Conversation.postCount, minPercent) * 100;
 	if (Conversation.postCount <= esoTalk.postsPerPage) var percentPerPost = 100 / Conversation.postCount;
 	else var percentPerPost = (100 - curHandleWidth) / (Conversation.postCount - esoTalk.postsPerPage);
+	
 	// Work out how wide the handle can be.
 	Conversation.handleWidth = Math.max(percentPerPost * Math.min(Conversation.postCount - startFrom, esoTalk.postsPerPage), minPercent * 100);
 	Conversation.handlePos = Math.min(100 - Conversation.handleWidth, startFrom * percentPerPost);
 	
 	// Are we overlapping the unread section?
-	if (startFrom + esoTalk.postsPerPage > Conversation.lastRead) {
+	if (Math.min(startFrom + esoTalk.postsPerPage, Conversation.postCount) > Conversation.lastRead) {
 		Conversation.lastRead = Math.min(startFrom + esoTalk.postsPerPage, Conversation.postCount);
 		Conversation.unreadWidth = Math.max(100 - Conversation.lastRead * (100 / Conversation.postCount), 0);
 		Conversation.updateLastRead = true;
 	}
+	
 	// Animate the handle - let it slide!
 	Conversation.animatePagination();
+	
 	// Update the posts that are displaying.
 	Conversation.reloadPosts(startFrom, scrollTo);
 },
@@ -1199,9 +1273,10 @@ moveToPercent: function(startFromPercent, scrollTo) {
 	Conversation.moveTo(postNum, scrollTo);
 },
 
-// Add a reply
+// Add a reply.
 addReply: function() {
 	content = getById("reply-textarea").value;
+	
 	// Disable the reply/draft buttons.
 	disable(getById("postReply")); disable(getById("saveDraft"));
 	
@@ -1217,43 +1292,43 @@ addReply: function() {
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"post": "action=addReply&id=" + Conversation.id + "&content=" + encodeURIComponent(content) + "&postCount=" + Conversation.postCount + "&haveDataUpTo=" + max,
 		"success": function() {			
-			// Only do all this if we didn't get any messages...
-			if (!this.messages) {
-				
-				Messages.hideMessage("waitToReply");
-				Messages.hideMessage("emptyPost");
-				
-				// Everything went just as planned; initialize the reply area again
-				hide(getElementsByClassName(getById("cLabels"), "draft")[0]);
-				getById("reply-textarea").value = "";
-				Conversation.togglePreview("reply", false);
-				Conversation.initReply();
-				
-				// Update our post cache with this new data.
-				for (var i in this.result.posts) Conversation.posts[i] = this.result.posts[i];
-				oldPostCount = Conversation.postCount;
-				Conversation.postCount = this.result.postCount;
-				Conversation.lastActionTime = this.result.lastActionTime;
-				newPosts = Conversation.postCount - oldPostCount;
-				Conversation.scrollStart = getOffsetTop(Conversation.paginations[1].bar) - getScrollTop();
-				
-				// Mark the new posts for animation.
-				for (i = oldPostCount; i < Conversation.postCount; i++) Conversation.posts[i].animateNew = true;
-				
-				// Move the to last post.
-				// If the amount of new posts is greater than the posts per page, go to the first new post.
-				if (newPosts > esoTalk.postsPerPage) Conversation.moveTo(oldPostCount);
-				// If we're _just_ on the edge of the conversation, move forward the amount of new posts.
-				else if (Conversation.startFrom + esoTalk.postsPerPage <= Conversation.postCount) Conversation.moveTo(Conversation.postCount - esoTalk.postsPerPage, "newReply");
-				// Otherwise, just display from where we currently are.
-				else Conversation.moveTo(Conversation.startFrom, "newReply");
-				
-				Conversation.setReloadTimeout(Conversation.autoReloadInterval = esoTalk.autoReloadIntervalStart);
-				
-			} else {
-				// Enable the reply/draft buttons.
+			// If there are messages, enable the reply/draft buttons and don't continue.
+			if (this.messages) {
 				enable(getById("postReply")); enable(getById("saveDraft"));
+				return;
 			}
+			
+			// Hide messages which may have been previously triggered.
+			Messages.hideMessage("waitToReply");
+			Messages.hideMessage("emptyPost");
+			
+			// Hide the draft label, clear the textarea, and initialize the reply area again.
+			hide(getElementsByClassName(getById("cLabels"), "draft")[0]);
+			getById("reply-textarea").value = "";
+			Conversation.togglePreview("reply", false);
+			Conversation.initReply();
+				
+			// Update our post cache with the posts that were returned.
+			for (var i in this.result.posts) Conversation.posts[i] = this.result.posts[i];
+			oldPostCount = Conversation.postCount;
+			Conversation.postCount = this.result.postCount;
+			Conversation.lastActionTime = this.result.lastActionTime;
+			newPosts = Conversation.postCount - oldPostCount;
+			Conversation.scrollStart = getOffsetTop(Conversation.paginations[1].bar) - getScrollTop();
+				
+			// Mark the new posts for animation.
+			for (i = oldPostCount; i < Conversation.postCount; i++) Conversation.posts[i].animateNew = true;
+				
+			// Move the to last post.
+			// If the amount of new posts is greater than the posts per page, go to the first new post.
+			if (newPosts > esoTalk.postsPerPage) Conversation.moveTo(oldPostCount);
+			// If we're _just_ on the edge of the conversation, move forward the amount of new posts.
+			else if (Conversation.startFrom + esoTalk.postsPerPage <= Conversation.postCount) Conversation.moveTo(Conversation.postCount - esoTalk.postsPerPage, "newReply");
+			// Otherwise, just display from where we currently are.
+			else Conversation.moveTo(Conversation.startFrom, "newReply");
+			
+			// Reset the post-checking timeout.
+			Conversation.setReloadTimeout(Conversation.autoReloadInterval = esoTalk.autoReloadIntervalStart);
 		}
 	});
 },
@@ -1286,7 +1361,7 @@ animateDeletePost: function(post, startHeight) {
 // Start a new conversation.
 startConversation: function(draft) {
 
-	// Prepare the conversation data
+	// Prepare the conversation data.
 	var title = encodeURIComponent(getById("cTitle").placeholderFlag ? "" : getById("cTitle").value);
 	var content = encodeURIComponent(getById("reply-textarea").value);
 	var tags = encodeURIComponent(getById("cTags").placeholderFlag ? "" : getById("cTags").value);
@@ -1294,13 +1369,14 @@ startConversation: function(draft) {
 	// Disable the post reply and save draft buttons.
 	disable(getById("postReply")); disable(getById("saveDraft"));
 	
-	// Make the ajax request
+	// Make the ajax request.
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"post": "action=startConversation&content=" + content + "&title=" + title + "&tags=" + tags + (draft ? "&draft=true" : ""),
 		"success": function() {
+			// If there was an error, enable the buttons.
 			if (this.messages) {enable(getById("postReply")); enable(getById("saveDraft"));}
-			// Redirect to the new conversation page
+			// Otherwise, redirect to the new conversation page.
 			else if (!this.messages && this.result.redirect) {
 				Conversation.editingReply = false;
 				document.location = this.result.redirect;
@@ -1309,42 +1385,48 @@ startConversation: function(draft) {
 	});
 },
 
-// Delete a conversation
+// Confirm the deletion of the conversation.
 deleteConversation: function onclick() {return confirm(esoTalk.language["confirmDeleteConversation"]);},
 
-// Save a draft
+// Save a draft.
 saveDraft: function() {
+	
 	// If this is a new conversation, just use the startConversation function
 	if (!Conversation.id) {
 		Conversation.startConversation(true);
 		return;
 	}
+	// Make the ajax request.
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"post": "action=saveDraft&id=" + Conversation.id + "&content=" + encodeURIComponent(getById("reply-textarea").value),
 		"success": function() {
-			if (!this.messages) {
-				Messages.hideMessage("emptyPost");
-				// Show the draft label, disable the save draft button, and enable the discard draft button.
-				show(getElementsByClassName(getById("cLabels"), "draft")[0], {animation: "horizontalSlide"});
-				disable(getById("saveDraft")); enable(getById("discardDraft"));
-				Conversation.editingReply = false;
-			}
+			if (this.messages) return;
+			Messages.hideMessage("emptyPost");
+			
+			// Show the draft label, disable the save draft button, and enable the discard draft button.
+			show(getElementsByClassName(getById("cLabels"), "draft")[0], {animation: "horizontalSlide"});
+			disable(getById("saveDraft")); enable(getById("discardDraft"));
+			Conversation.editingReply = false;
 		}
 	});
 },
 
-// Discard a draft
+// Discard a draft.
 discardDraft: function() {
+	
+	// If there are no posts in the conversation (ie. it's a draft conversation), delete the conversation.
 	if (!this.postCount) {
 		window.location = window.location.split("?")[0] + "?delete";
 		return;
 	}
+	// Make the ajax request.
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"post": "action=discardDraft&id=" + Conversation.id,
 		"success": function() {
-			// Hide the draft label and reinitialize the reply area
+			
+			// Hide the draft label and reinitialize the reply area.
 			hide(getElementsByClassName(getById("cLabels"), "draft")[0], {animation: "horizontalSlide"});
 			getById("reply-textarea").value = "";
 			Conversation.togglePreview("reply", false);
@@ -1355,79 +1437,96 @@ discardDraft: function() {
 
 // Delete a post.
 deletePost: function(postId) {
+	
 	// Check if we're editing any posts - if we are, confirm it with the user.
 	if (Conversation.editingPosts > 0 && !confirm(Conversation.beforeUnload())) return false;
 	else Conversation.editingPosts = 0;
+	
 	// Reload the posts on this page so we can redisplay them when needed.
 	Conversation.reloadPosts(Conversation.startFrom, null, true);
+	
+	// Make the ajax request.
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"post": "action=deletePost&postId=" + postId,
 		"success": function() {
-			if (!this.messages) {
-				// Find the post we just deleted and change its deleteMember to the current user, then redisplay the posts.
-				for (var i in Conversation.posts) {
-					if (Conversation.posts[i].id == postId) {
-						Conversation.posts[i].deleteMember = esoTalk.user;
-						Conversation.posts[i].body = "";
-						oldHeight = getById("p" + postId).offsetHeight;
-						Conversation.displayPosts();
-						Conversation.animateDeletePost(getById("p" + postId), oldHeight);
-						break;
-					}
+			if (this.messages) return;
+			
+			// Find the post we just deleted and change its deleteMember to the current user, then redisplay the posts.
+			for (var i in Conversation.posts) {
+				if (Conversation.posts[i].id == postId) {
+					Conversation.posts[i].deleteMember = esoTalk.user;
+					Conversation.posts[i].body = "";
+					var oldHeight = getById("p" + postId).offsetHeight;
+					Conversation.displayPosts();
+					Conversation.animateDeletePost(getById("p" + postId), oldHeight);
+					break;
 				}
 			}
 		}
 	});
 },
 
-// Restore a delete post
+// Restore a deleted post.
 restorePost: function(postId) {
+	
 	// Check if we're editing any posts - if we are, confirm it with the user.
 	if (Conversation.editingPosts > 0 && !confirm(Conversation.beforeUnload())) return false;
 	else Conversation.editingPosts = 0;
+	
 	// Reload the posts on this page so we can redisplay them when needed.
 	Conversation.reloadPosts(Conversation.startFrom, null, true);
+
+	// Make the ajax request.
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"success": function() {
-			if (!this.messages) {
-				for (var i in this.result) Conversation.posts[i] = this.result[i];
-				var oldHeight = getById("p" + postId).offsetHeight;
-				Conversation.displayPosts();
-				Conversation.animateNewPost(getById("p" + postId));
-			}
+			if (this.messages) return;
+			
+			// Update the post cache with the restored post, and redisplay the posts.
+			for (var i in this.result) Conversation.posts[i] = this.result[i];
+			var oldHeight = getById("p" + postId).offsetHeight;
+			Conversation.displayPosts();
+			Conversation.animateNewPost(getById("p" + postId));
 		},
 		"post": "action=restorePost&postId=" + postId
 	});
 },
 
+// Show a deleted post.
 showDeletedPost: function(postId) {
+	
 	// Reload the posts on this page so we can redisplay them when needed.
 	Conversation.reloadPosts(Conversation.startFrom, null, true);
+	
+	// Make the ajax request.
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"post": "action=showDeletedPost&postId=" + postId,
 		"success": function() {
-			if (!this.messages) {
-				// Find the post we just deleted and change its deleteMember to the current user, then redisplay the posts.
-				for (var i in Conversation.posts) {
-					if (Conversation.posts[i].id == postId) {
-						Conversation.posts[i].body = this.result;
-						oldHeight = getById("p" + postId).offsetHeight;
-						Conversation.displayPosts();
-						Conversation.animateDeletePost(getById("p" + postId), oldHeight);
-						break;
-					}
+			if (this.messages) return;
+			
+			// Find the post we're showing and update its body, then redisplay the posts.
+			for (var i in Conversation.posts) {
+				if (Conversation.posts[i].id == postId) {
+					Conversation.posts[i].body = this.result;
+					var oldHeight = getById("p" + postId).offsetHeight;
+					Conversation.displayPosts();
+					Conversation.animateDeletePost(getById("p" + postId), oldHeight);
+					break;
 				}
 			}
 		}
 	});
 },
 
+// Hide a deleted post.
 hideDeletedPost: function(postId) {
+	
 	// Reload the posts on this page so we can redisplay them when needed.
 	Conversation.reloadPosts(Conversation.startFrom, null, true);
+	
+	// Find the post we're hiding and clear its body, then redisplay the posts.
 	for (var i in Conversation.posts) {
 		if (Conversation.posts[i].id == postId) {
 			Conversation.posts[i].body = "";
@@ -1446,27 +1545,32 @@ editPost: function(postId) {
 	if (getById("p" + postId).editing) return;
 	getById("p" + postId).editing = true;
 	
-	// Get the editing controls and textarea templates with an ajax request
+	// Get the editing controls and textarea HTML with an ajax request.
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"post": "action=getEditPost&postId=" + postId,
 		"success": function() {
 			if (this.messages) return;
 			Conversation.editingPosts++;
+			var startHeight = getById("p" + postId).offsetHeight;
+
+			// Update the post controls and body HTML.
 			var controls = getElementsByClassName(getById("p" + postId), "controls")[0];
 			var body = getElementsByClassName(getById("p" + postId), "body")[0];
 			controls.old = controls.innerHTML;
 			body.old = body.innerHTML;
-			var startHeight = getById("p" + postId).offsetHeight;
-			// Change up the html
 			body.className += " edit";
 			controls.innerHTML = this.result.controls;
 			body.innerHTML = this.result.body;
+			
+			// Animate the post.
 			Conversation.animateEditPost(getById("p" + postId), startHeight);
-			// Scroll
+			
+			// Scroll to the bottom of the edit area if necessary.
 			var scrollTo = getOffsetTop(getById("p" + postId)) + getById("p" + postId).offsetHeight - getClientDimensions()[1] + 10;
 			if (getScrollTop() < scrollTo) Conversation.scrollTo(scrollTo);
-			// Regsiter the Ctrl+Enter shortcut.
+			
+			// Regsiter the Ctrl+Enter shortcut on the post's textarea.
 			getById("p" + postId + "-textarea").onkeypress = function onkeypress(e) {
 				if (!e) e = window.event;
 				if (e.ctrlKey && e.keyCode == 13) {
@@ -1478,50 +1582,58 @@ editPost: function(postId) {
 	});
 },
 
-// Save an edited post to the database
+// Save an edited post to the database.
 saveEditPost: function(postId, content) {
 
-	// Disable the buttons
+	// Disable the buttons.
 	var buttons = getElementsByClassName(getElementsByClassName(getById("p" + postId), "editButtons")[0], "button");
 	for (var i in buttons) disable(buttons[i]);
 	
-	// Make the ajax request
+	// Make the ajax request.
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"success": function() {
-			if (!this.messages) {
-				// Success! Revert back to normal
-				getElementsByClassName(getById("p" + postId), "body")[0].old = this.result.content;
-				Conversation.cancelEdit(postId);
-				// Find the post we just edited and change its content to the new content.
-				for (var i in Conversation.posts) {
-					if (Conversation.posts[i].id == postId) {
-						Conversation.posts[i].body = this.result.content;
-						break;
-					}
+			// If there was an error, enable the buttons.
+			if (this.messages) {
+				for (var i in buttons) enable(buttons[i]);
+				return;
+			}
+			// Success! Revert the post back to normal.
+			getElementsByClassName(getById("p" + postId), "body")[0].old = this.result.content;
+			Conversation.cancelEdit(postId);
+			// In the post cache, find the post we just edited and change its content to the new content.
+			for (var i in Conversation.posts) {
+				if (Conversation.posts[i].id == postId) {
+					Conversation.posts[i].body = this.result.content;
+					break;
 				}
 			}
-			// Enable the buttons
-			else for (var i in buttons) enable(buttons[i]);
 		},
 		"post": "action=editPost&postId=" + postId + "&content=" + encodeURIComponent(content)
 	});
 },
-// Cancel editing a post
+
+// Cancel editing a post.
 cancelEdit: function(postId) {
 	Conversation.editingPosts--;
 	getById("p" + postId).editing = false;
+	
+	// Change the post control and body HTML back to what it was before.
 	var controls = getElementsByClassName(getById("p" + postId), "controls")[0];
 	var body = getElementsByClassName(getById("p" + postId), "body")[0];
 	body.className = body.className.replace(" edit", "");
 	var startHeight = getById("p" + postId).offsetHeight;
 	controls.innerHTML = controls.old;
 	body.innerHTML = body.old;
+	
+	// Animate the post.
 	Conversation.animateEditPost(getById("p" + postId), startHeight);
+	
+	// Set the post-checking timeout.
 	Conversation.setReloadTimeout(Conversation.autoReloadInterval);
 },
 
-// Toggle sticky
+// Toggle sticky.
 toggleSticky: function() {
 	var label = getElementsByClassName(getById("cLabels"), "sticky")[0];
 	toggle(label, {animation: "horizontalSlide"});
@@ -1532,7 +1644,7 @@ toggleSticky: function() {
 	});
 },
 
-// Toggle lock
+// Toggle lock.
 toggleLock: function() {
 	label = getElementsByClassName(getById("cLabels"), "locked")[0];
 	toggle(label, {animation: "horizontalSlide"});
@@ -1543,29 +1655,31 @@ toggleLock: function() {
 	});
 },
 
-// Add a member to the members allowed list
+// Add a member to the members allowed list.
 addMember: function(name) {
 	if (!name) return;
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"success": function() {
+			// Reset the add member form.
 			getById("addMember").value = "";
 			disable(getById("addMemberSubmit"));
-			if (!this.messages) {
-				// Update the list/labels
-				getById("allowedList").innerHTML = this.result.list;
-				show(getElementsByClassName(getById("cLabels"), "private")[0], {animation: "horizontalSlide"});
-			}
+			if (this.messages) return;
+			
+			// Update the members allowed list and show the private label.
+			getById("allowedList").innerHTML = this.result.list;
+			show(getElementsByClassName(getById("cLabels"), "private")[0], {animation: "horizontalSlide"});
 		}, 
 		"post": "action=addMember&member=" + encodeURIComponent(name) + (Conversation.id ? "&id=" + Conversation.id : "")
 	});
 },
 
-// Remove a member from the members allowed list
+// Remove a member from the members allowed list.
 removeMember: function(name) {
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"success": function() {
+			// Update the members allowed list and hide the private label.
 			getById("allowedList").innerHTML = this.result.list;
 			if (!this.result.private) hide(getElementsByClassName(getById("cLabels"), "private")[0], {animation: "horizontalSlide"});
 		},
@@ -1573,7 +1687,7 @@ removeMember: function(name) {
 	});
 },
 
-// Save the tags
+// Save the tags.
 saveTags: function(tags) {
 	if (!Conversation.id) return false;
 	Ajax.request({
@@ -1583,12 +1697,13 @@ saveTags: function(tags) {
 	});
 },
 
-// Save the title
+// Save the title.
 saveTitle: function(title) {
 	if (!Conversation.id) return false;
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"success": function() {
+			// Update the title in the page titlebar as well as in the title input.
 			document.title = document.title.replace(Conversation.title, this.result);
 			getById("cTitle").value = Conversation.title = this.result;
 		},
@@ -1596,12 +1711,14 @@ saveTitle: function(title) {
 	});
 },
 
-// Change a user's group
+// Change a member's group.
 changeMemberGroup: function(memberId, group) {
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"success": function() {
 			if (this.messages) return;
+			
+			// Update all posts in the post cache by this member, and redisplay the posts.
 			for (var i in Conversation.posts) {
 				if (Conversation.posts[i].memberId == memberId) Conversation.posts[i].account = group;
 			}
@@ -1611,7 +1728,7 @@ changeMemberGroup: function(memberId, group) {
 	});
 },
 
-// Formatting buttons
+// Formatting buttons.
 bold: function(id) {Conversation.wrapText(getById(id + "-textarea"), "<b>", "</b>");},
 italic: function(id) {Conversation.wrapText(getById(id + "-textarea"), "<i>", "</i>");},
 strikethrough: function(id) {Conversation.wrapText(getById(id + "-textarea"), "<s>", "</s>");},
@@ -1620,17 +1737,17 @@ link: function(id) {Conversation.wrapText(getById(id + "-textarea"), "<a href='h
 image: function(id) {Conversation.wrapText(getById(id + "-textarea"), "<img src='", "'>", "", "http://example.com/image.jpg");},
 fixed: function(id) {Conversation.wrapText(getById(id + "-textarea"), "<pre>", "</pre>");},
 
-// Quotes
+// Quotes.
 quote: function(id, name, quote) {
 	Conversation.wrapText(getById(id + "-textarea"), "<blockquote><cite>" + (name ? name : "Name") + "</cite> " + (quote ? quote : ""), "</blockquote>", (!name ? "Name" : null));
 },
-// Quote a post
+// Quote a post.
 quotePost: function(postId) {
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 		"success": function() {
 			var top = getScrollTop();
-			// Quote this post's author and content
+			// Add the quote to the reply textarea.
 			Conversation.insertText(getById("reply-textarea"), "<blockquote><cite>" + this.result.member + "</cite> " + this.result.content + "</blockquote>\n");
 			// Scroll to the reply box if the user isn't holding down shift.
 			window.scroll(0, top);
@@ -1645,34 +1762,35 @@ insertText: function(textarea, text) {
 	textarea.focus();
 	textarea.value += text;
 	textarea.focus();
-	// Trigger the textarea's keyup to emulate typing
+	// Trigger the textarea's keyup to emulate typing.
 	getById("reply-textarea").onkeyup();
 },
 
-// Add text to the reply area, with the options of wrapping it around a selection and selecting a part of it when it's inserted
+// Add text to the reply area, with the options of wrapping it around a selection and selecting a part of it when it's
+// inserted.
 wrapText: function(textarea, tagStart, tagEnd, selectArgument, defaultArgumentValue) {
 	
-	// Save the scroll position of the textarea
-	scrollTop = textarea.scrollTop;
+	// Save the scroll position of the textarea.
+	var scrollTop = textarea.scrollTop;
 	
-	// Work out the currently selected text
+	// Work out what text is currently selected.
 	if (typeof textarea.selectionStart != "undefined") {
 		var start = textarea.selectionStart, end = textarea.selectionEnd;
-		// Trim a space off either side
+		// Trim a space off either side.
 		if (textarea.value.substring(start, start + 1) == " ") start++;
 		if (textarea.value.substring(end - 1, end) == " ") end--;
-		selection = textarea.value.substring(start, end);
-		selectionStart = start;
+		var selection = textarea.value.substring(start, end);
+		var selectionStart = start;
 	} else if (document.selection.createRange) {
-		selection = document.selection.createRange().text;
-		selectionStart = 0;
+		var selection = document.selection.createRange().text;
+		var selectionStart = 0;
 	}
 	
-	// Work out the text to insert over the selection
+	// Work out the text to insert over the selection.
 	selection = selection ? selection : (defaultArgumentValue ? defaultArgumentValue : "");
-	text = tagStart + selection + (typeof tagEnd != "undefined" ? tagEnd : tagStart);
+	var text = tagStart + selection + (typeof tagEnd != "undefined" ? tagEnd : tagStart);
 	
-	// Replace the textarea's value (or the selection's value in IE's case)
+	// Replace the textarea's value (or the selection's value in IE's case).
 	if (typeof textarea.selectionStart != "undefined")
 		textarea.value = textarea.value.substr(0, start) + text + textarea.value.substr(end);
 	else if (document.selection && document.selection.createRange) {
@@ -1681,13 +1799,13 @@ wrapText: function(textarea, tagStart, tagEnd, selectArgument, defaultArgumentVa
 		range.text = text.replace(/\r?\n/g, "\r\n");
 		range.select();
 	} else textarea.value += text;
-	// Scroll back down and refocus on the textarea
+	// Scroll back down and refocus on the textarea.
 	textarea.scrollTop = scrollTop;
 	textarea.focus();
 	
-	// If a selectArgument was passed, work out where it is and select it
-	// Otherwise, select the text that was selected before this function was called
-	// IE - move the cursor position relatively (from the end of the endTag)
+	// If a selectArgument was passed, work out where it is and select it. Otherwise, select the text that was selected
+	// before this function was called.
+	// IE - move the cursor position relatively (from the end of the endTag).
 	if (typeof textarea.setSelectionRange == "undefined") {
 		range = document.selection.createRange();
 		tagEndLength = (typeof tagEnd != "undefined" ? tagEnd : tagStart).length;
@@ -1701,7 +1819,7 @@ wrapText: function(textarea, tagStart, tagEnd, selectArgument, defaultArgumentVa
 			range.moveEnd("character", -tagEndLength);
 		}
 		range.select();
-	// Good browsers - move the cursor position easily 
+	// Good browsers - move the cursor position easily.
 	} else {
 		if (selectArgument) {
 			newStart = selectionStart + tagStart.indexOf(selectArgument);
@@ -1713,22 +1831,22 @@ wrapText: function(textarea, tagStart, tagEnd, selectArgument, defaultArgumentVa
 		textarea.setSelectionRange(newStart, newEnd);
 	}
 
-	// Trigger the textarea's keyup to emulate typing
+	// Trigger the textarea's keyup to emulate typing.
 	getById("reply-textarea").onkeyup();
 },
 
-// Toggle preview on an editing area
+// Toggle preview on an editing area.
 togglePreview: function(id, preview) {
 	
 	// If the preview box is checked...
 	if (preview) {
-		// Keep the minimum height - won't work in ie :(
+		// Keep the minimum height - won't work in IE. :(
 		getById(id + "-preview").style.minHeight = getById(id + "-textarea").offsetHeight + 4 + "px";
-		// Hide the formatting buttons and the textarea; show the preview area
+		// Hide the formatting buttons and the textarea; show the preview area.
 		hide(getElementsByClassName(getById(id), "formattingButtons")[0]); hide(getById(id + "-textarea"));
 		getById(id + "-preview").innerHTML = "";
 		show(getById(id + "-preview"));
-		// Get the formatted post and show it
+		// Get the formatted post and show it.
 		Ajax.request({
 			"url": esoTalk.baseURL + "ajax.php?controller=conversation",
 			"success": function() {getById(id + "-preview").innerHTML = this.result;},
@@ -1736,9 +1854,9 @@ togglePreview: function(id, preview) {
 		});
 	}
 	
-	// The preview box isn't checked
+	// The preview box isn't checked...
 	else {
-		// Show the formatting buttons and the textarea; hide the preview area
+		// Show the formatting buttons and the textarea; hide the preview area.
 		show(getElementsByClassName(getById(id), "formattingButtons")[0]); show(getById(id + "-textarea"));
 		hide(getById(id + "-preview"));
 	}
@@ -1752,36 +1870,36 @@ togglePreview: function(id, preview) {
 
 var Search = {
 
-currentSearch: "",
-negativeGambit: false,
+currentSearch: "", // The current search string.
+negativeGambit: false, // A flag which determines whether gambits should be added negatively when clicked on.
 updateCurrentResultsTimeout: null,
 checkForNewResultsTimeout: null,
 
 init: function() {
 
-	// Add an onclick handler to the search button
+	// Add an onclick handler to the search button.
 	getById("submit").getElementsByTagName("input")[0].onclick = function onclick() {
 		Search.search(getById("searchText").value);
 		return false;
 	};
-	// Add an onkeydown handler for when you press enter/escape in the search input
+	// Add an onkeydown handler for when you press enter/escape in the search input.
 	getById("searchText").onkeydown = function onkeydown(e) {
 		if (!e) e = window.event;
-		if (e.keyCode == 13) { // Enter
+		if (e.keyCode == 13) { // Enter: perform a search.
 			Search.search(getById("searchText").value);
 			return false;
-		} else if (e.keyCode == 27) { // Escape
+		} else if (e.keyCode == 27) { // Escape: clear the search.
 			if (getById("searchText").value != "") setTimeout(function(){Search.search("");}, 1);
 			return false;
 		}
 	};
-	// Add an onclick handler to the reset link
+	// Add an onclick handler to the reset link.
 	getById("reset").onclick = function onclick() {
 		Search.search("");
 		return false;
 	};
 
-	// Set an interval to check on the url hash
+	// Set an interval to check for changes to the URL hash
 	setInterval(function() {
 		var hash = window.location.hash.replace("#", "");
 		if (hash.length < 1) return;
@@ -1789,10 +1907,11 @@ init: function() {
 		if (Search.currentSearch != newSearch) {Search.search(newSearch);}
 	}, 500);
 	
+	// Initialise timeouts to update current results and check for new results.
 	Search.resetUpdateCurrentResultsTimeout();
 	Search.resetCheckForNewResultsTimeout();
 	
-	// Add handlers to all the tags and gambits
+	// Add click and double click handlers to all the tags and gambits.
 	var t = getById("tags").getElementsByTagName("a");
 	for (var i = 0; i < t.length; i++) {
 		t[i].onclick = function onclick() {Search.tag(Search.desanitize(this.innerHTML)); return false;};
@@ -1804,7 +1923,7 @@ init: function() {
 		g[i].ondblclick = function ondblclick() {Search.search((Search.negativeGambit ? "!" : "") + Search.desanitize(this.innerHTML)); return false;};
 	}
 	
-	// Add key events to tell whether the shift key is being held down. If so, set a flag to negate all gambit clicks to true.
+	// Add events to tell whether the shift key is being held down. If so, set a flag to negate all gambit clicks.
 	document.onkeydown = function(e) {
 		if (!e) e = window.event;
 		if (e.keyCode == 16) Search.negativeGambit = true;
@@ -1820,22 +1939,22 @@ init: function() {
 resetUpdateCurrentResultsTimeout: function() {
 	if (!esoTalk.updateCurrentResultsInterval) return;
 	if (this.updateCurrentResultsTimeout) clearInterval(this.updateCurrentResultsTimeout);
-	this.updateCurrentResultsTimeout = setInterval(function() {Search.updateCurrentResults();}, Math.max(esoTalk.updateCurrentResultsInterval) * 1000);
+	this.updateCurrentResultsTimeout = setInterval(function() {Search.updateCurrentResults();}, esoTalk.updateCurrentResultsInterval * 1000);
 },
 
 // Set a timeout to check for new results.
 resetCheckForNewResultsTimeout: function() {
 	if (!esoTalk.checkForNewResultsInterval) return;
 	if (this.checkForNewResultsTimeout) clearInterval(this.checkForNewResultsTimeout);
-	this.checkForNewResultsTimeout = setInterval(function() {Search.checkForNewResults();}, Math.max(esoTalk.checkForNewResultsInterval) * 1000);
+	this.checkForNewResultsTimeout = setInterval(function() {Search.checkForNewResults();}, esoTalk.checkForNewResultsInterval * 1000);
 },
 
-// Get rid of html entities from tags and gambits
+// Get rid of HTML entities from tags and gambits.
 desanitize: function(value) {
 	return value.replace(/\u00a0|&nbsp;/gi, " ").replace(/&gt;/gi, ">").replace(/&lt;/gi, "<").replace(/&amp;/gi, "&");
 },
 
-// Perform a search
+// Perform a search.
 search: function(query, hideLoading) {
 	Search.currentSearch = getById("searchText").value = query;
 	window.location.hash = "search:" + (query ? encodeURIComponent(query) : "");
@@ -1848,22 +1967,29 @@ search: function(query, hideLoading) {
 		"background": hideLoading,
 		"success": function() {
 			if (this.messages) return;
+			// Display the new results.
 			getById("searchResults").innerHTML = this.result;
 			Messages.hideMessage("waitToSearch");
 		}
 	});
 },
 
+// Check for new results in the current search.
 checkForNewResults: function() {
+	
+	// Construct a list of the conversation IDs which are in the current resultset.
 	var conversationIds = "";
 	var rows = getById("conversations").getElementsByTagName("tr");
 	for (var i = 0; i < rows.length; i++) conversationIds += rows[i].id.substr(1) + ",";
+	
+	// Make an ajax request.
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=search",
 		"post": "action=checkForNewResults&conversationIds=" + conversationIds + "&query=" + encodeURIComponent(Search.currentSearch),
 		"background": true,
 		"success": function() {
 			if (!this.result.newActivity) return;
+			// If there is new activity, show the 'new activity' message.
 			getById("newResults").style.display = "table-row";
 			show(getById("newResults").getElementsByTagName("div")[0], {animation: "verticalSlide"});
 			clearInterval(Search.checkForNewResultsTimeout);
@@ -1871,28 +1997,43 @@ checkForNewResults: function() {
 	});
 },
 
+// Update the current search results with new post counts, last post times, etc.
 updateCurrentResults: function() {
+	
+	// Construct a list of conversation IDs for which to get updated details.
 	var conversationIds = "";
 	var rows = getById("conversations").getElementsByTagName("tr");
 	var count = Math.min(rows.length, 20);
 	for (var i = 0; i < count; i++) conversationIds += rows[i].id.substr(1) + ",";
 	if (!conversationIds) return;
+	
+	// Make an ajax request.
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=search",
 		"post": "action=updateCurrentResults&conversationIds=" + conversationIds,
 		"background": true,
 		"success": function() {
 			if (!this.result) return;
+			
+			// For each of the conversations...
 			for (var i in this.result.conversations) {
 				if (!getById("c" + i)) continue;
 				var row = getById("c" + i);
 				var data = this.result.conversations[i];
+				
+				// Update the last post member and time.
 				if (data.postCount > 1) {
 					getElementsByClassName(row, "lastPostMember")[0].innerHTML = data.lastPostMember;
 					getElementsByClassName(row, "lastPostTime")[0].innerHTML = data.lastPostTime;
 				}
+				
+				// Update the post count.
 				getElementsByClassName(row, "posts")[0].innerHTML = data.postCount;
+				
+				// Mark the conversation title as read or unread.
 				row.getElementsByTagName("strong")[0].className = data.unread ? "" : "read";
+				
+				// Update the star.
 				var star;
 				if (star = getElementsByClassName(row, "star")[0].getElementsByTagName("a")[0]) {
 					star.className = data.starred ? "star1" : "star0";
@@ -1900,6 +2041,8 @@ updateCurrentResults: function() {
 					row.className = data.starred ? "starred" : "";
 				}
 			}
+			
+			// Update forum statistics.
 			for (var i in this.result.statistics) {
 				if (getById("statistic-" + i)) getById("statistic-" + i).innerHTML = this.result.statistics[i];
 			}
@@ -1920,21 +2063,26 @@ showNewActivity: function() {
 
 // Add (or take away) a gambit from the search input.
 gambit: function(gambit) {
+	
 	// Get the initial length of the search text.
 	var initialLength = getById("searchText").value.length;
+	
 	// Make a regular expression to find any instances of the gambit already in there.
 	var safe = gambit.replace(/([?^():\[\]])/g, "\\$1");
 	var regexp = new RegExp(this.negativeGambit
 		? "( ?(- *|!)" + safe + " *$|^ *!" + safe + " *\\+ ?| ?(- *|!)" + safe + "|^ *!" + safe + " *$)"
 		: "( ?\\+ *" + safe + " *$|^ *" + safe + " *\\+ ?| ?\\+ *" + safe + "|^ *" + safe + " *$)"
 	, "i");
+	
 	// If there is an instance, take it out.
 	if (getById("searchText").value.match(regexp)) getById("searchText").value = getById("searchText").value.replace(regexp, "");
+	
 	// Otherwise, insert the gambit with a +, -, or ! before it.
 	else {
 		var insert = (getById("searchText").value ? (this.negativeGambit ? " - " : " + ") : (this.negativeGambit ? "!" : "")) + gambit;
 		getById("searchText").focus();
 		getById("searchText").value += insert;
+		
 		// If there is an instance of "?" or ":member" in the gambit, we want to select it so the user can type over it.
 		var placeholderIndex, placeholder;
 		if (insert.indexOf("?") != -1) {
@@ -1957,7 +2105,7 @@ gambit: function(gambit) {
 	}
 },
 
-// Add (or take away) a tag from the search input
+// Add (or take away) a tag from the search input.
 tag: function(tag) {
 	Search.gambit(esoTalk.language["tag:"] + tag);
 }
@@ -2017,6 +2165,7 @@ validateField: function() {
 }
 
 };
+
 
 
 // Settings JavaScript.
