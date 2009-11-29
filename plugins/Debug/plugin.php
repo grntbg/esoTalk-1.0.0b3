@@ -155,8 +155,10 @@ function renderDebug($esoTalk)
 	$end = $this->microtimeFloat();
 	$time = round($end - $this->start, 4);
 		
-	echo "<div id='debug'>
-<h2>{$language["Debug information"]} <small>" . sprintf($language["Page loaded in"], $time) . "</small> <small style='float:right'><input type='checkbox' class='checkbox' id='debugUpdateBackground' value='1' checked='checked' onchange='Ajax.debugUpdateBackground=this.checked'/> <label for='debugUpdateBackground' class='checkbox'>{$language["Update debug information for background AJAX requests"]}</label></small></h2>";
+	echo "<div id='debug'><h2>
+<div id='debugHdr'>{$language["Debug information"]} <small>" . sprintf($language["Page loaded in"], $time) . "</small></div>
+<div id='debugSetting'><small><input type='checkbox' class='checkbox' id='debugUpdateBackground' value='1' checked='checked' onchange='Ajax.debugUpdateBackground=this.checked'/> <label for='debugUpdateBackground' class='checkbox'>{$language["Update debug information for background AJAX requests"]}</label></small></div>
+</h2>";
 	
 	// MySQL queries.
 	echo "<h3><a href='#' onclick='toggle(getById(\"debugQueries\"), {animation:\"verticalSlide\"});return false'>{$language["MySQL queries"]} (<span id='debugQueriesCount'>" . count($_SESSION["queries"]) . "</span>)</a></h3>

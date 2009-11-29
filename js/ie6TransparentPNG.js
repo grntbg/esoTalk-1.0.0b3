@@ -4,10 +4,10 @@ var supersleight	= function() {
 	var applyPositioning = true;
 	
 	// Path to a transparent GIF image
-	var shim			= 'x.gif';
+	var shim			= 'js/x.gif';
 	
 	// RegExp to match above GIF image name
-	var shim_pattern	= /x\.gif$/i;
+	var shim_pattern	= /js\/x\.gif$/i;
 	
 	
 	
@@ -18,10 +18,6 @@ var supersleight	= function() {
 			root = document;
 		}
 		for (var i = root.all.length - 1, obj = null; (obj = root.all[i]); i--) {
-			// background pngs
-			if (obj.currentStyle.backgroundImage.match(/\.png/i) !== null) {
-				bg_fnFixPng(obj);
-			}
 			// image elements
 			if (obj.tagName=='IMG' && obj.src.match(/\.png$/i) !== null){
 				el_fnFixPng(obj);
@@ -31,17 +27,6 @@ var supersleight	= function() {
 				obj.style.position = 'relative';
 			}
 		}
-	};
-
-	var bg_fnFixPng = function(obj) {
-		var mode = 'scale';
-		var bg	= obj.currentStyle.backgroundImage;
-		var src = bg.substring(5,bg.length-2);
-		if (obj.currentStyle.backgroundRepeat == 'no-repeat') {
-			mode = 'crop';
-		}
-		obj.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" + src + "', sizingMethod='" + mode + "')";
-		obj.style.backgroundImage = 'url('+shim+')';
 	};
 
 	var el_fnFixPng = function(img) {

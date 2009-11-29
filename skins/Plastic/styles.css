@@ -74,7 +74,7 @@ a.s5 {font-size:90%}
 #search .fr {margin-right:-18.5em; width:18.5em}
 #searchText {border-right:0; float:left; height:21px; min-width:100px; width:100%; margin-right:-100%; padding-right:2em}
 #search.withStartConversation {padding-right:18.5em}
-#submit {border-left:1px solid #046b9e; float:left; font-size:100%}
+#submit {border-left:1px solid #046b9e; float:left; font-size:100%; position:relative}
 #submit input {font-size:100%; margin-left:0; padding-left:.3em; width:5.5em}
 #new {float:right; font-size:100%}
 #new input {font-size:100%; width:10.5em}

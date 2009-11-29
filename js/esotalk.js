@@ -166,6 +166,8 @@ function animate(element, options) {
 	switch (options.animation) {
 		case "verticalSlide":
 		case "horizontalSlide":
+			if (options.animation == "horizontalSlide" && (isIE6 || isIE7)) return;
+			
 			// Create an overflow div to perform the animation on. Set some default attributes.
 			var overflowDiv = createOverflowDiv(element);
 			if (!overflowDiv.style.display) overflowDiv.style.display = element.showing ? "none"
