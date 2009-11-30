@@ -19,7 +19,7 @@ foreach ($this->skins as $k => $skin): ?>
 <li<?php if ($skin["selected"]): ?> class='enabled'<?php endif; ?>>
 <a href='<?php echo makeLink("skins", $k, "?token={$_SESSION["token"]}"); ?>'>
 <span class='preview'>
-<?php if (file_exists("skins/$k/preview.png")): ?><img src='skins/<?php echo $k; ?>/preview.png' alt='<?php echo $skin["name"]; ?>'/>
+<?php if ($skin["preview"]): ?><img src='skins/<?php echo $k; ?>/<?php echo $skin["preview"]; ?>' alt='<?php echo $skin["name"]; ?>'/>
 <?php else: ?><span><?php echo $language["No preview"]; ?></span>
 <?php endif; ?>
 </span>

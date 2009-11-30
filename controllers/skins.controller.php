@@ -30,11 +30,16 @@ function init()
 			// Make sure the skin is valid, and set up its class.
 	        if ($file[0] != "." and is_dir("skins/$file") and file_exists("skins/$file/skin.php") and (include_once "skins/$file/skin.php") and class_exists($file)) {
 	        	$skin = new $file;
+				if (file_exists("skins/$file/preview.jpg")) $preview = "preview.jpg";
+				elseif (file_exists("skins/$file/preview.png")) $preview = "preview.png";
+				elseif (file_exists("skins/$file/preview.gif")) $preview = "preview.gif";
+				else $preview = "";
 				$this->skins[$file] = array(
 					"selected" => $config["skin"] == $file,
 					"name" => $skin->name,
 					"version" => $skin->version,
 					"author" => $skin->author,
+					"preview" => $preview
 				);
 			}
 			
