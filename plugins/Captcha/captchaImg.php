@@ -9,16 +9,16 @@ header("Cache-Control: no-cache, must-revalidate");
 header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 header("Content-type: image/jpeg");
 
+// Include the captcha configuration.
+require "../../config/config.php";
+if (file_exists("../../config/Captcha.php")) include "../../config/Captcha.php";
+$numberOfCharacters = !empty($config["Captcha"]["numberOfCharacters"]) ? $config["Captcha"]["numberOfCharacters"] : 3;
+
 // Start a session if one does not already exist.
 if (!session_id()) {
 	session_name("{$config["cookieName"]}_Session");
 	session_start();
 }
-
-// Include the captcha configuration.
-require "../../config/config.php";
-if (file_exists("../../config/Captcha.php")) include "../../config/Captcha.php";
-$numberOfCharacters = !empty($config["Captcha"]["numberOfCharacters"]) ? $config["Captcha"]["numberOfCharacters"] : 3;
 
 // Set up the captcha image.
 $font = realpath("exagger8.otf");
