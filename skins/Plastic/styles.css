@@ -282,6 +282,7 @@ blockquote p {margin-bottom:.75em}
 #skins small {margin-left:10px}
 #skins .preview {background:#eee; border:1px solid #ddd; color:#ddd; display:block; font-size:20px; height:153px; margin-bottom:5px; overflow:hidden; text-align:center; width:275px}
 #skins .preview span {display:block; margin-top:65px}
+#skins a:hover .preview, #skins .enabled .preview {border-color:#aaa}
 
 /* Profile */
 .profile .body {overflow:visible; padding:5px 10px}
