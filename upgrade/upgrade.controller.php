@@ -164,6 +164,15 @@ function upgrade_100b1()
 	foreach ($filesToDelete as $file) {
 		@unlink("../$file") or $this->warning("esoTalk could not delete <code>/$file</code>. Please delete it manually.");
 	}
+	
+	// Rewrite robots.txt (change forgotPassword to forgot-password).
+	writeFile("../robots.txt", "User-agent: *
+Disallow: /search/
+Disallow: /online/
+Disallow: /join/
+Disallow: /forgot-password/
+Disallow: /conversation/new/
+Sitemap: {$config["baseURL"]}sitemap.php") or $this->warning("Could not write to <code>/robots.txt</code>.");
 }
 
 }

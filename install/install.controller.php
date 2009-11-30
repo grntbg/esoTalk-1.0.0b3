@@ -217,7 +217,7 @@ RewriteRule ^(.*)$ index.php/$1 [QSA,L]
 Disallow: /search/
 Disallow: /online/
 Disallow: /join/
-Disallow: /forgotPassword/
+Disallow: /forgot-password/
 Disallow: /conversation/new/
 Sitemap: {$config["baseURL"]}sitemap.php");
 	fclose($handle);
