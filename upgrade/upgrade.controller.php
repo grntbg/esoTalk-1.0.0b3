@@ -155,9 +155,12 @@ function upgrade_100b1()
 		$this->query("CREATE INDEX conversations_sticky ON {$config["tablePrefix"]}conversations (sticky, lastPostTime)");
 	if (!$this->numRows("SHOW INDEX FROM {$config["tablePrefix"]}conversations WHERE Key_name='conversations_startTime'"))		
 		$this->query("CREATE INDEX conversations_startTime ON {$config["tablePrefix"]}conversations (startTime)");
+		
+	// Update posts with quote syntax changes.
+	$this->query("UPDATE {$config["tablePrefix"]}posts SET content=REPLACE(content,'</cite>','</cite></p><p>')");
 					
 	// Delete init.php, classes.php, database.php, formatter.php, and functions.php from the root directory.
-	$filesToDelete = array("init.php", "classes.php", "database.php", "formatter.php", "functions.php");
+	$filesToDelete = array("init.php", "classes.php", "database.php", "functions.php");
 	foreach ($filesToDelete as $file) {
 		@unlink("../$file") or $this->warning("esoTalk could not delete <code>/$file</code>. Please delete it manually.");
 	}

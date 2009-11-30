@@ -67,6 +67,8 @@ function init()
 			"suspended" => $_SESSION["user"]["account"] == "Suspended" ? true : null
 		);
 		$this->user["color"] = min($this->user["color"], $this->skin->numberOfColors);
+		// Fix for 1.0.0a5 -> 1.0.0b1 upgrade. Remove in next version.
+		if (!isset($this->user["avatarFormat"])) $this->user["avatarFormat"] = $this->user["avatarExtension"];
 	}
 	
 	// Set the default avatarAlignment for logged out users.
