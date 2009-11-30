@@ -87,7 +87,7 @@ if (isset($_POST["new"]) and !defined("AJAX_REQUEST")) redirect("conversation", 
 $esoTalk->language = sanitizeFileName((isset($_SESSION["user"]["language"]) and file_exists("languages/{$_SESSION["user"]["language"]}.php")) ? $_SESSION["user"]["language"] : $config["language"]);
 if (file_exists("languages/$esoTalk->language.php")) include "languages/$esoTalk->language.php";
 // If we haven't got a working language, show an error!
-if (empty($language)) $esoTalk->fatalError("esoTalk can't find a language file to use. Please make sure <code>languages/$esoTalk->language.php</code> exists or change the default language by adding <code>\"language\" => \"YourLanguage\",</code> to <code>config/config.php</code>.");
+if (empty($language)) $esoTalk->fatalError("esoTalk can't find a language file to use. Please make sure <code>languages/$esoTalk->language.php</code> exists or change the default language by adding <code>\"language\" => \"YourLanguage\",</code> to <code>config/config.php</code>.", "language");
 
 // Include the skin file.
 require "config/skin.php";
@@ -98,7 +98,7 @@ if (class_exists($config["skin"])) {
 	$esoTalk->skin->init();
 }
 // If we haven't got a working skin, show an error!
-if (empty($esoTalk->skin)) $esoTalk->fatalError("esoTalk can't find a skin file to use. Please make sure <code>skins/{$config["skin"]}/skin.php</code> exists or change the default skin in <code>config/skin.php</code>.");
+if (empty($esoTalk->skin)) $esoTalk->fatalError("esoTalk can't find a skin file to use. Please make sure <code>skins/{$config["skin"]}/skin.php</code> exists or change the default skin in <code>config/skin.php</code>.", "skin");
 
 // Load plugins, which will hook on to controllers.
 require "config/plugins.php";

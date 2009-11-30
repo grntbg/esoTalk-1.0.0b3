@@ -41,7 +41,7 @@ function esoTalk()
 	$this->db = new Database();
 	$this->db->esoTalk =& $this;
 	if (!$this->db->connect($config["mysqlHost"], $config["mysqlUser"], $config["mysqlPass"], $config["mysqlDB"]))
-		$this->fatalError($config["verboseFatalErrors"] ? $this->db->error() : "");
+		$this->fatalError($config["verboseFatalErrors"] ? $this->db->error() : "", "mysql");
 	
 	// Clear messages in the SESSION messages variable.
 	if (!isset($_SESSION["messages"]) or !is_array($_SESSION["messages"])) $_SESSION["messages"] = array();
@@ -294,7 +294,7 @@ function registerController($name, $file)
 }
 
 // Halt page execution and show a fatal error message.
-function fatalError($message)
+function fatalError($message, $esoTalkSearch = "")
 {
 	global $language, $config;
 	$this->callHook("fatalError", array(&$message));
@@ -303,7 +303,7 @@ function fatalError($message)
 		echo strip_tags("{$language["Fatal error"]} - $message");
 	} else {
 		$messageTitle = isset($language["Fatal error"]) ? $language["Fatal error"] : "Fatal error";
-		$messageBody = $language["fatalErrorMessage"] . ($message ? "<div class='info'>$message</div>" : "");
+		$messageBody = sprintf($language["fatalErrorMessage"], $esoTalkSearch) . ($message ? "<div class='info'>$message</div>" : "");
 		include "views/message.php";
 	}
 	exit;

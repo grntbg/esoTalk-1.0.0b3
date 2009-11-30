@@ -175,7 +175,10 @@ function doInstall()
 	writeConfigFile("../config/config.php", '$config', $config);
 	
 	// Write the plugins.php file, which contains plugins enabled by default.
-	if (!file_exists("../config/plugins.php")) writeConfigFile("../config/plugins.php", '$config["loadedPlugins"]', array("Captcha", "Emoticons"));
+	$enabledPlugins = array("Emoticons");
+	if ((extension_loaded("gd") or extension_loaded("gd2")) and function_exists("imagettftext"))
+		$enabledPlugins[] = "Captcha";
+	if (!file_exists("../config/plugins.php")) writeConfigFile("../config/plugins.php", '$config["loadedPlugins"]', $enabledPlugins);
 	
 	// Write the skin.php file, which contains the enabled skin, and custom.php.
 	if (!file_exists("../config/skin.php")) writeConfigFile("../config/skin.php", '$config["skin"]', "Plastic");

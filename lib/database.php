@@ -35,7 +35,7 @@ function query($query, $fatal = true)
 	$result = mysql_query($query, $this->link);
 	if (!$result and $fatal) {
 		$error = $this->error();
-		$this->esoTalk->fatalError($config["verboseFatalErrors"] ? $error . "<p style='font:100% monospace; overflow:auto'>" . $this->highlightQueryErrors($query, $error) . "</p>" : "");
+		$this->esoTalk->fatalError($config["verboseFatalErrors"] ? $error . "<p style='font:100% monospace; overflow:auto'>" . $this->highlightQueryErrors($query, $error) . "</p>" : "", "mysql");
 	}
 	
 	$this->esoTalk->callHook("afterDatabaseQuery", array($query, &$result));

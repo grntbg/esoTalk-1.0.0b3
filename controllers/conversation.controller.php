@@ -63,7 +63,8 @@ function init()
 				"draft" => isset($_POST["saveDraft"]),
 				"content" => @$_POST["content"]
 			));
-			// If there was an error creating the conversation, set the "draft" content so the user won't lose their post.
+			// If there was an error creating the conversation, set the "draft" content so the user won't lose their
+			// post.
 			if (!$id) $this->conversation["draft"] = $_POST["content"];
 			// Otherwise, redirect to the newly-created conversation!
 			else redirect($this->conversation["id"], $this->conversation["slug"]);
@@ -144,7 +145,8 @@ function init()
 			redirect("");
 		}
 		
-		// Quote a post: get the post details (id, name, content) and then set the value of the reply textarea appropriately.
+		// Quote a post: get the post details (id, name, content) and then set the value of the reply textarea
+		// appropriately.
 		if (isset($_GET["quotePost"])) {
 			$postId = (int)$_GET["quotePost"];
 			$result = $this->esoTalk->db->query("SELECT name, content FROM {$config["tablePrefix"]}posts INNER JOIN {$config["tablePrefix"]}members USING (memberId) WHERE postId=$postId AND conversationId={$this->conversation["id"]}");
@@ -268,7 +270,8 @@ function init()
 		// Add a meta tag to the head to prevent search engines from indexing this page.
 		$this->esoTalk->addToHead("<meta name='robots' content='noindex, noarchive'/>");
 
-		// If there's a member name in the querystring, make the conversation that we're starting private with them and redirect.
+		// If there's a member name in the querystring, make the conversation that we're starting private with them and
+		// redirect.
 		if (isset($_GET["member"]) and $this->esoTalk->validateToken(@$_GET["token"])) {
 			$_SESSION["membersAllowed"] = array();
 			$this->conversation["membersAllowed"] = null;
@@ -536,7 +539,8 @@ function getConversation($id = false)
 		
 		// Add labels to the 'select' part of the query, only if we're loading the page from scratch (not ajax).
 		// The esoTalk labels array contains SQL conditions that must be satisfied for that label to be 'active'.
-		// Here we concatinate all these conditions into a string which can then be exploded and the active labels can be determined.
+		// Here we concatinate all these conditions into a string which can then be exploded and the active labels can
+		// be determined.
 		// e.g. The condition for the sticky label is: IF(sticky,1,0)
 		// Therefore CONCAT(IF(sticky,1,0), ',', ...) may return '1,...' implying that the sticky label is active.
 		$labels = "CONCAT(";
@@ -574,7 +578,8 @@ function getConversation($id = false)
 		// Get all the details from the result into an array.
 		$conversation = $this->esoTalk->db->fetchAssoc($result);
 		
-		// Explode the labels string and determine which labels are active. See the massive comment about a screen-height up.
+		// Explode the labels string and determine which labels are active. See the massive comment about a
+		// screen-height up.
 		$labels = explode(",", $conversation["labels"]); $i = 0;
 		$conversation["labels"] = array();
 		foreach ($this->esoTalk->labels as $k => $v) {
@@ -656,7 +661,8 @@ function getPosts($criteria = array(), $display = false)
 	// Construct the select component of the query.
 	$select = array("p.postId AS id", "m.memberId AS memberId", "m.name AS name", "m.account AS account", "m.color AS color", "m.avatarFormat AS avatarFormat", "p.content AS content", "p.time AS time", "em.name AS editMember", "p.editTime AS editTime", "dm.name AS deleteMember", "m.lastSeen AS lastSeen", "IF(" . (time() - $config["userOnlineExpire"]) . " < m.lastSeen,m.lastAction,'') AS lastAction");
 	
-	// If we're getting posts based on the lastActionTime or specific post IDs, we'll need to find the position within the conversation of each post.
+	// If we're getting posts based on the lastActionTime or specific post IDs, we'll need to find the position within
+	// the conversation of each post.
 	if (isset($criteria["lastActionTime"]) or isset($criteria["postIds"])) $select[] = "(SELECT COUNT(*) FROM {$config["tablePrefix"]}posts p2 WHERE p2.conversationId=p.conversationId AND p2.time<=p.time AND IF(p2.time=p.time,p2.postId<p.postId,1)) AS number";
 	
 	// From...
@@ -684,8 +690,9 @@ function getPosts($criteria = array(), $display = false)
 		// Make sure the post color is in range.
 		$post["color"] = min($post["color"], $this->esoTalk->skin->numberOfColors);
 		
-		// $k is the position of the post within the conversation, and will depend on if we've fetched posts sequentially ($i)
-		// or arbitrarily ($post["number"] if $criteria["lastActionTime"] or $criteria["postIds"] have been used.)
+		// $k is the position of the post within the conversation, and will depend on if we've fetched posts
+		// sequentially ($i) or arbitrarily ($post["number"] if $criteria["lastActionTime"] or $criteria["postIds"] have
+		// been used.)
 		$k = isset($post["number"]) ? $post["number"] : $i;
 				
 		// Build the post array.
@@ -745,7 +752,7 @@ function updateLastRead($lastRead)
 // Add a reply to this conversation.
 function addReply($content, $newConversation = false)
 {
-	global $language, $config;
+	global $config;
 
 	// Does the user have permission? Is the post content valid? Flood control?
 	$hookError = $this->callHook("validateAddReply", array(&$content), true);
@@ -785,21 +792,28 @@ function addReply($content, $newConversation = false)
 			$this->esoTalk->db->query("UPDATE {$config["tablePrefix"]}status SET draft=NULL WHERE conversationId={$this->conversation["id"]} AND memberId={$this->esoTalk->user["memberId"]}");
 	
 		// Email people who have starred this conversation and want an email!
-		// Conditions for the query: the member isn't themselves, they have ticked 'email me' in My settings, they've starred the conversation, they have no unread posts in the conversation (apart from this one), and they're not online at the moment.
-		$query = "SELECT name, email
+		// Conditions for the query: the member isn't themselves, they have ticked 'email me' in My settings, they've
+		// starred the conversation, they have no unread posts in the conversation (apart from this one), and they're
+		// not online at the moment.
+		$query = "SELECT name, email, language
 			FROM {$config["tablePrefix"]}members m
 			LEFT JOIN {$config["tablePrefix"]}status s ON (s.conversationId={$this->conversation["id"]} AND s.memberId=m.memberId)
 			WHERE m.memberId!={$this->esoTalk->user["memberId"]} AND m.emailOnStar=1 AND s.starred=1 AND s.lastRead>={$this->conversation["postCount"]} AND (m.lastSeen IS NULL OR " . (time() - $config["userOnlineExpire"]) . ">m.lastSeen)";
 		$result = $this->esoTalk->db->query($query);
-		while (list($name, $email) = $this->esoTalk->db->fetchRow($result))
+		global $versions;
+		while (list($name, $email, $language) = $this->esoTalk->db->fetchRow($result)) {
+			include "languages/" . sanitizeFileName(file_exists("languages/$language.php") ? $language : $config["language"]) . ".php";
 			sendEmail($email, vsprintf($language["emails"]["newReply"]["subject"], array($name, $this->conversation["title"])), vsprintf($language["emails"]["newReply"]["body"], array($name, $this->esoTalk->user["name"], $this->conversation["title"], $config["baseURL"] . makeLink($this->conversation["id"], $this->conversation["slug"], "unread"))));
+			unset($langauge, $messages);
+		}
 	}
 
 	// Update local conversation details.
 	$this->conversation["postCount"]++;
 	$this->conversation["draft"] = null;
 	
-	// If this is the first reply (ie. the conversation was a draft and now it isn't), email people who are in the membersAllowed list.
+	// If this is the first reply (ie. the conversation was a draft and now it isn't), email people who are in the
+	// membersAllowed list.
 	if ($this->conversation["postCount"] == 1 and !empty($this->conversation["membersAllowed"]))
 		$this->emailPrivateAdd(array_keys($this->conversation["membersAllowed"]), true);
 	
@@ -1189,7 +1203,8 @@ function addMember($name)
 	// If the conversation exists, add this member to the database as allowed.
 	if ($this->conversation["id"]) {
 		
-		// Email the member(s) - we have to do this before we put them in the db because it will only email them if they don't already have a record for this conversation in the status table.
+		// Email the member(s) - we have to do this before we put them in the db because it will only email them if they
+		// don't already have a record for this conversation in the status table.
 		$this->emailPrivateAdd($memberId);
 
 		// Set the conversation's private field to true and update the last action time.
@@ -1270,20 +1285,23 @@ function emailPrivateAdd($memberIds, $emailAll = false)
 	$memberIds = array_diff($memberIds, array("Member", "Moderator", "Administrator"));
 	if (!count($memberIds)) $memberIds[] = 0;
 	
-	// Work out which members need to be emailed. Conditions: the member isn't themselves, the member name/account is in our array, they've checked the 'email me' box in My settings, and the member musn't have a record in the status table for this conversation if we're emailing ALL members in the conversation.
-	$query = "SELECT DISTINCT name, email
+	// Work out which members need to be emailed. Conditions: the member isn't themselves, the member name/account is in
+	// our array, they've checked the 'email me' box in My settings, and the member musn't have a record in the status
+	// table for this conversation if we're emailing ALL members in the conversation.
+	$query = "SELECT DISTINCT name, email, language
 		FROM {$config["tablePrefix"]}members m
 		LEFT JOIN {$config["tablePrefix"]}status s ON (s.conversationId={$this->conversation["id"]} AND m.memberId=s.memberId)
 		WHERE m.memberId!={$this->esoTalk->user["memberId"]} AND (m.memberId IN (" . implode(",", $memberIds) . ") OR m.account IN ('" . implode("','", $accounts) . "')) AND m.emailOnPrivateAdd=1 " . (!$emailAll ? "AND s.memberId IS NULL" : "");
 	$result = $this->esoTalk->db->query($query);
 	if (!$this->esoTalk->db->numRows($result)) return false;
-
-	global $language;
 	
 	// Send the email.
-	while (list($name, $email) = $this->esoTalk->db->fetchRow($result)) {
+	global $versions;
+	while (list($name, $email, $language) = $this->esoTalk->db->fetchRow($result)) {
+		include "languages/" . sanitizeFileName(file_exists("languages/$language.php") ? $language : $config["language"]) . ".php";
 		$args = array($name, $this->conversation["title"], $config["baseURL"] . makeLink($this->conversation["id"], $this->conversation["slug"]));
 		sendEmail($email, vsprintf($language["emails"]["privateAdd"]["subject"], $args), vsprintf($language["emails"]["privateAdd"]["body"], $args));
+		unset($language, $messages);
 	}
 }
 
