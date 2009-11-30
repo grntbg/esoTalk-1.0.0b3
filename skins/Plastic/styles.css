@@ -266,7 +266,7 @@ blockquote p {margin-bottom:.75em}
 #plugins li {border-bottom:1px solid #ddd; display:block; padding:5px 7px}
 #plugins li strong {font-weight:normal; font-size:120%}
 #plugins li.enabled strong {font-weight:bold}
-#plugins li form {margin:15px 23px}
+#plugins li form {margin:15px 5px}
 #plugins li .settings {background:#fff; padding:5px 20px; margin-top:5px}
 #plugins li form label {margin-bottom:10px; width:25em}
 #plugins li input.checkbox {margin:2px 7px 2px 0}
