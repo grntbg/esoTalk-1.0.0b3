@@ -514,6 +514,7 @@ function ajax()
 			$conversationIds = array_unique($conversationIds);
 
 			// Get the difference of the two sets of conversationId's.
+			if (!is_array($newConversationIds) or !is_array($conversationIds)) return array("newActivity" => false);
 			$diff = array_diff($newConversationIds, $conversationIds);
 			return array("newActivity" => count($diff));
 	}

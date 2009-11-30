@@ -68,7 +68,8 @@ function init()
 		);
 		$this->user["color"] = min($this->user["color"], $this->skin->numberOfColors);
 		// Fix for 1.0.0a5 -> 1.0.0b1 upgrade. Remove in next version.
-		if (!isset($this->user["avatarFormat"])) $this->user["avatarFormat"] = $this->user["avatarExtension"];
+		if (!isset($this->user["avatarFormat"]) and isset($this->user["avatarExtension"]))
+			$this->user["avatarFormat"] = $this->user["avatarExtension"];
 	}
 	
 	// Set the default avatarAlignment for logged out users.
@@ -510,9 +511,9 @@ function getAvatar($memberId, $avatarFormat, $type = false)
 {
 	if ($return = $this->callHook("getAvatar", array($memberId, $avatarFormat, $type))) return $return;
 	
-	// If this is a full-sized gif avatar, we need to render it via gif.php for security purposes.
+	// If this is a full-sized gif avatar, we need to render it via g.php for security purposes.
 	if ($avatarFormat == "gif" and $type != "thumb" and file_exists("avatars/$memberId.gif")) {
-	 	return "avatars/gif.php?id=$memberId";
+	 	return "avatars/g.php?id=$memberId";
 	}
 	
 	// Otherwise, construct the avatar path from the provided information.

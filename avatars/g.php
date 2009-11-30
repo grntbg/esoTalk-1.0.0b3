@@ -4,7 +4,7 @@
 
 // GIF avatar loader: displays an unresized gif avatar with secure headers.
 
-$memberId = (int)$_GET["id"];
+if (!$memberId = (int)@$_GET["id"]) exit;
 $filename = "$memberId.gif";
 if (!file_exists($filename)) exit;
 header("Content-Type: image/gif");
