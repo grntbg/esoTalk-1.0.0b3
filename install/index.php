@@ -145,18 +145,18 @@ if (!getById("adminEmail").value) makePlaceholder(getById("adminEmail"), "simon@
 </script>
 
 <br/>
-<a href='#advanced' onclick='toggleAdvanced();return false' title='What, you&#39;re too cool for the normal settings?'>Advanced options</a>
+<a href='#advanced' onclick='toggleAdvanced();return false' title='What, you&#39;re too cool for the normal settings?' tabindex='11'>Advanced options</a>
 <hr class='aboveToggle'/>
 <div id='advanced'>
 
 <?php if (isset($install->errors["tablePrefix"])): ?><p class='warning msg'><?php echo $install->errors["tablePrefix"]; ?></p><?php endif; ?>
 
 <ul class='form'>
-<li><label>MySQL table prefix</label> <input name='tablePrefix' id='tablePrefix' type='text' class='text' value='<?php echo isset($_POST["tablePrefix"]) ? $_POST["tablePrefix"] : "et_"; ?>'/></li>
+<li><label>MySQL table prefix</label> <input name='tablePrefix' id='tablePrefix' tabindex='12' type='text' class='text' value='<?php echo isset($_POST["tablePrefix"]) ? $_POST["tablePrefix"] : "et_"; ?>'/></li>
 
-<li><label>Base URL</label> <input name='baseURL' type='text' class='text' value='<?php echo isset($_POST["baseURL"]) ? $_POST["baseURL"] : $install->suggestBaseUrl(); ?>'/></li>
+<li><label>Base URL</label> <input name='baseURL' type='text' tabindex='13' class='text' value='<?php echo isset($_POST["baseURL"]) ? $_POST["baseURL"] : $install->suggestBaseUrl(); ?>'/></li>
 
-<li><label>Use friendly URLs</label> <input name='friendlyURLs' type='checkbox' class='checkbox' value='1' checked='<?php echo (!empty($_POST["friendlyURLs"]) or $install->suggestFriendlyUrls()) ? "checked" : ""; ?>'/></li>
+<li><label>Use friendly URLs</label> <input name='friendlyURLs' type='checkbox' tabindex='14' class='checkbox' value='1' checked='<?php echo (!empty($_POST["friendlyURLs"]) or $install->suggestFriendlyUrls()) ? "checked" : ""; ?>'/></li>
 </ul>
 
 <hr/>
@@ -177,7 +177,7 @@ function toggleAdvanced() {
 </script>
 </div>
 
-<p id='footer' style='margin:0'><input type='submit' value='Next step &#155;' class='button'/></p>
+<p id='footer' style='margin:0'><input type='submit' tabindex='15' value='Next step &#155;' class='button'/></p>
 <?php break;
 
 
