@@ -70,25 +70,25 @@ function init()
 		$language["gambits"]["author:"] . $language["gambits"]["member"] => "s5",
 		$language["gambits"]["contributor:"] . $language["gambits"]["member"] => "s5",
 		$language["gambits"]["dead"] => "s4",
-		$language["gambits"]["draft"] => "s1 draftText",
 		$language["gambits"]["has replies"] => "s2",
 		$language["gambits"]["has &gt;10 posts"] => "s4",
 		$language["gambits"]["locked"] => "s4 lockedText",
 		$language["gambits"]["more results"] => "s2",
 		$language["gambits"]["order by newest"] => "s4",
 		$language["gambits"]["order by posts"] => "s2",
-		$language["gambits"]["private"] => "s1 privateText",
 		$language["gambits"]["random"] => "s5",
 		$language["gambits"]["reverse"] => "s4",
-		$language["gambits"]["starred"] => "s1 starredText",
 		$language["gambits"]["sticky"] => "s2 stickyText",
-		$language["gambits"]["unread"] => "s1"
 	);
 	// Only show the contributor:myself and author:myself gambits if there is a user logged in.
 	if ($this->esoTalk->user) {
 		$this->gambitCloud += array(
 			$language["gambits"]["contributor:"] . $language["gambits"]["myself"] => "s4",
-			$language["gambits"]["author:"] . $language["gambits"]["myself"] => "s2"
+			$language["gambits"]["author:"] . $language["gambits"]["myself"] => "s2",
+			$language["gambits"]["draft"] => "s1 draftText",
+			$language["gambits"]["private"] => "s1 privateText",
+			$language["gambits"]["starred"] => "s1 starredText",
+			$language["gambits"]["unread"] => "s1"
 		);
 	}
 	
