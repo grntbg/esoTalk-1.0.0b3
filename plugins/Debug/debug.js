@@ -8,7 +8,7 @@ Ajax.request = function(request) {
 	request.success = function() {
 		this._success();
 		if (!Ajax.debugUpdateBackground && this.background) return;
-		if (!this.json.queries) return;
+		if (typeof this.json.queries == "undefined") return;
 		getById("debugQueries").innerHTML = this.json.queries;
 		getById("debugQueriesCount").innerHTML = this.json.queriesCount;
 		getById("debugLoadTime").innerHTML = this.json.loadTime;

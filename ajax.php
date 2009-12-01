@@ -40,7 +40,6 @@ foreach ($esoTalk->plugins as $plugin) $plugin->init();
 
 // Initialize esoTalk (connect to the db, login, stylesheets, user bar, etc.)
 // Save the token to see if it has been regenerated later on.
-$token = $_SESSION["token"];
 $esoTalk->init();
 
 // Now we're going to collect the result from the controller's ajax() function...
@@ -63,8 +62,8 @@ else {
 // $result is the variable that we will pass through json() and output for our Javascript to parse.
 $result = array("messages" => array(), "result" => $controllerResult);
 
-// If the token has been regenrated, include it in the result.
-if ($token != $_SESSION["token"]) $result["token"] = $_SESSION["token"];
+// If the token the user has is invalid, send them a new one.
+if (isset($_POST["token"]) and $_POST["token"] != $_SESSION["token"]) $result["token"] = $_SESSION["token"];
 
 $esoTalk->callHook("ajaxFinish", array(&$result));
 
