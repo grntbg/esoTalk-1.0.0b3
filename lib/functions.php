@@ -441,7 +441,7 @@ function writeConfigFile($file, $variable, $settings)
 function writeFile($file, $contents)
 {
 	// Attempt to open the file for writing.
-	if (($handle = fopen($file, "w")) === false) return false;
+	if (($handle = @fopen($file, "w")) === false) return false;
 	// Write the file.
 	fwrite($handle, $contents);
 	fclose($handle);
