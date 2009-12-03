@@ -50,7 +50,7 @@ else printf($language["posts per day"], $postsPerDay);
 
 <?php if ($this->esoTalk->user and $this->member["memberId"] != $this->esoTalk->user["memberId"]): ?>
 <li><label><?php echo $this->member["name"]; ?> &amp; <?php echo $this->esoTalk->user["name"]; ?><br/><span class='label private'><?php echo $language["labels"]["private"]; ?></span></label> <div><a href='<?php echo makeLink("search", "?q2=private+%2B+contributor:" . urlencode(desanitize($this->member["name"]))); ?>'><?php printf($language["See the private conversations I've had"], $this->member["name"]); ?></a><br/>
-<a href='<?php echo makeLink("new", "?member=" . urlencode(desanitize($this->member["name"]))); ?>'><?php printf($language["Start a private conversation"], $this->member["name"]); ?></a></div></li>
+<a href='<?php echo makeLink("conversation", "new", "?member=" . urlencode(desanitize($this->member["name"])), "&token={$_SESSION["token"]}"); ?>'><?php printf($language["Start a private conversation"], $this->member["name"]); ?></a></div></li>
 <?php endif; ?>
 
 </ul>

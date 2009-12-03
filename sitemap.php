@@ -18,7 +18,7 @@ $config = array_merge($defaultConfig, $config);
 require "config/versions.php";
 if ($versions["esoTalk"] != ESOTALK_VERSION) exit;
 
-require "functions.php";
+require "lib/functions.php";
 
 // If sitemap.xml is recent then we'll just use the cached version.
 // Otherwise, we'll regenerate all the sitemap files.
@@ -28,7 +28,7 @@ if (!file_exists("sitemap.xml") or filemtime("sitemap.xml") < time() - $config["
 	set_time_limit(0);
 
 	// Connect to the database.
-	require "database.php";
+	require "lib/database.php";
 	$db = new Database();
 	if (!$db->connect($config["mysqlHost"], $config["mysqlUser"], $config["mysqlPass"], $config["mysqlDB"])) exit;
 	

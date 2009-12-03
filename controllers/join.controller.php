@@ -111,7 +111,7 @@ function ajax()
 		
 		// Validate a form field.
 		case "validate":
-			if ($msg = @call_user_func($this->fields[$_POST["field"]]["validate"], &$_POST["value"]))
+			if ($msg = @call_user_func_array($this->fields[$_POST["field"]]["validate"], array(&$_POST["value"])))
 				return array("validated" => false, "message" => $this->esoTalk->htmlMessage($msg));
 			else return array("validated" => true, "message" => "");
 	}

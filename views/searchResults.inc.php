@@ -8,7 +8,7 @@ if (!defined("IN_ESOTALK")) exit;
 ?>
 <table cellspacing='0' cellpadding='2' class='c'>
 <thead><tr><?php if ($this->esoTalk->user): ?><th>&nbsp;</th><?php endif; if (!empty($config["showAvatarThumbnails"])): ?><th>&nbsp;</th><?php endif; ?><th><?php echo $language["Conversation"]; ?></th><th class='posts'><?php echo $language["Posts"]; ?></th><th><?php echo $language["Started by"]; ?></th><th><?php echo $language["Last reply"]; ?></th></tr>
-<tr id='newResults' style='display:none'><td colspan='5'><?php echo $this->esoTalk->htmlMessage("newSearchResults"); ?></td></tr>
+<tr id='newResults' style='display:none'><td colspan='<?php echo 4 + (int)$this->esoTalk->user + (int)!empty($config["showAvatarThumbnails"]); ?>'><?php echo $this->esoTalk->htmlMessage("newSearchResults"); ?></td></tr>
 </thead>
 <tbody id='conversations'>
 

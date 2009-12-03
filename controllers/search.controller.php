@@ -231,7 +231,7 @@ function getConversationIDs($search = "")
 	// Add some preliminary conditions to the search results.
 	// These make sure conversations that the user isn't allowed to see are filtered out.
 	if (!$this->esoTalk->user) $this->condition("conversations", "c.posts!=0 AND c.private=0");
-	else $this->condition("conversations", "c.startMember={$this->esoTalk->user["memberId"]} OR (c.posts>0 AND (c.private=0 OR (SELECT allowed FROM {$config["tablePrefix"]}status WHERE conversationId=c.conversationId AND memberId IN ('{$this->esoTalk->user["account"]}',{$this->esoTalk->user["memberId"]}))))");
+	else $this->condition("conversations", "c.startMember={$this->esoTalk->user["memberId"]} OR (c.posts>0 AND (c.private=0 OR EXISTS (SELECT allowed FROM {$config["tablePrefix"]}status WHERE conversationId=c.conversationId AND memberId IN ('{$this->esoTalk->user["account"]}',{$this->esoTalk->user["memberId"]}) AND allowed=1)))");
 	
 	// Process the search string into individial terms, but only keep the first 10 terms!
 	$terms = !empty($search) ? explode("+", strtolower(str_replace("-", "+!", trim($search, " +-")))) : array();
@@ -315,7 +315,7 @@ function getConversationIDs($search = "")
 	// Reverse the order if necessary - swap DESC and ASC.
 	if ($this->reverse) {
 		foreach ($this->orderBy as $k => $v)
-			$this->orderBy[$k] = strtr($this->orderBy, array("DESC" => "ASC", "ASC" => "DESC"));
+			$this->orderBy[$k] = strtr($this->orderBy[$k], array("DESC" => "ASC", "ASC" => "DESC"));
 	}
 	
 	// Set a default limit if none has previously been set.

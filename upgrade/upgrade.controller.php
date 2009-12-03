@@ -123,6 +123,15 @@ function upgrade_100b1()
 {
 	global $config;
 	
+	// Rewrite robots.txt (change forgotPassword to forgot-password).
+	$this->writeFile("../robots.txt", "User-agent: *
+Disallow: /search/
+Disallow: /online/
+Disallow: /join/
+Disallow: /forgot-password/
+Disallow: /conversation/new/
+Sitemap: {$config["baseURL"]}sitemap.php");
+	
 	// Add the markedAsRead field to the members table, used for the new 'Mark all conversations as read' feature.
 	if (!$this->numRows("SHOW COLUMNS FROM {$config["tablePrefix"]}members LIKE 'markedAsRead'"))
 		$this->query("ALTER TABLE {$config["tablePrefix"]}members ADD COLUMN markedAsRead int unsigned default NULL AFTER disableJSEffects");
@@ -164,15 +173,6 @@ function upgrade_100b1()
 	foreach ($filesToDelete as $file) {
 		@unlink("../$file") or $this->warning("esoTalk could not delete <code>/$file</code>. Please delete it manually.");
 	}
-	
-	// Rewrite robots.txt (change forgotPassword to forgot-password).
-	writeFile("../robots.txt", "User-agent: *
-Disallow: /search/
-Disallow: /online/
-Disallow: /join/
-Disallow: /forgot-password/
-Disallow: /conversation/new/
-Sitemap: {$config["baseURL"]}sitemap.php") or $this->warning("Could not write to <code>/robots.txt</code>.");
 }
 
 }

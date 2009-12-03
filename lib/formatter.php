@@ -33,7 +33,7 @@ var $allowedModes = array(
 function Formatter()
 {
 	// Set up the lexer.
-	$this->lexer = &new SimpleLexer($this, "text", false);
+	$this->lexer = new SimpleLexer($this, "text", false);
 	
 	// Define the modes.
 	$this->modes = array(
@@ -932,7 +932,7 @@ var $firstItem = true;
 function revert($string)
 {
 	// Set up the lexer to go through HTML list tags linearly and convert them back to text bullets.
-	$this->lexer = &new SimpleLexer($this, "text", true);
+	$this->lexer = new SimpleLexer($this, "text", true);
 	$allowedModes = array("text", "unorderedList", "orderedList");
 	foreach ($allowedModes as $mode) {
 		$this->lexer->addEntryPattern('<ul>', $mode, "unorderedList");

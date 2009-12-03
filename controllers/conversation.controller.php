@@ -212,7 +212,7 @@ function init()
 			foreach ($align as $k => $v)
 				$avatarAlignmentOptions .= "<option value='$k'" . (@$_SESSION["avatarAlignment"] == $k ? " selected='selected'" : "") . ">$v</option>";
 			// Add it to the bar.
-			$this->esoTalk->addToBar("right", "<form action='" . curLink() . "' method='post'><div><input type='hidden' name='token' value='{$_SESSION["token"]}'/>Display avatars <select onchange='Conversation.changeAvatarAlignment(this.value)' name='avatarAlignment'>$avatarAlignmentOptions</select> <noscript><div style='display:inline'>" . $this->esoTalk->skin->button(array("value" => $language["Save changes"])) . "</div></noscript></div></form>", 100);
+			$this->esoTalk->addToBar("right", "<form action='" . curLink() . "' method='post'><div><input type='hidden' name='token' value='{$_SESSION["token"]}'/>{$language["Display avatars"]} <select onchange='Conversation.changeAvatarAlignment(this.value)' name='avatarAlignment'>$avatarAlignmentOptions</select> <noscript><div style='display:inline'>" . $this->esoTalk->skin->button(array("value" => $language["Save changes"])) . "</div></noscript></div></form>", 100);
 		}
 
 		// Add links to the bar.
@@ -291,7 +291,8 @@ function init()
 	}
 
 	// If the add member form has been submitted, attempt to add the member.
-	if (isset($_POST["addMember"]) and $this->esoTalk->validateToken(@$_POST["token"])) $result = $this->addMember($_POST["member"]);
+	if (isset($_POST["addMember"]) and $this->esoTalk->validateToken(@$_POST["token"]))
+		$result = $this->addMember($_POST["member"]);
 	
 	$this->callHook("init");
 }
