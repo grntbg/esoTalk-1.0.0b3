@@ -9,7 +9,7 @@ if (!defined("IN_ESOTALK")) exit;
 class Plastic extends Skin {
 
 var $name = "Plastic";
-var $version = "1.0.0";
+var $version = "1.0";
 var $author = "esoTalk team";
 var $numberOfColors = 27;
 

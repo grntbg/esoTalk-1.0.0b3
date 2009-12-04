@@ -105,7 +105,7 @@ function init()
 // Run AJAX actions.
 function ajax()
 {
-	if ($return = $this->callHook("ajax")) return $return;
+	if ($return = $this->callHook("ajax", null, true)) return $return;
 	
 	switch ($_POST["action"]) {
 		
@@ -158,7 +158,7 @@ function addMember()
 	
 	// Add a few extra fields to the query.
 	$insertData["color"] = "FLOOR(1 + (RAND() * {$this->esoTalk->skin->numberOfColors}))";
-	$insertData["language"] = "'" . addslashes($config["language"]) . "'";
+	$insertData["language"] = "'" . $this->esoTalk->db->escape($config["language"]) . "'";
 	$insertData["avatarAlignment"] = "'{$_SESSION["avatarAlignment"]}'";
 	
 	$this->callHook("beforeAddMember", array(&$insertData));
@@ -194,7 +194,7 @@ function validateMember($hash)
 	
 	// Split the hash into the member ID and password.
 	$memberId = (int)substr($hash, 0, strlen($hash) - 32);
-	$password = addslashes(substr($hash, -32));
+	$password = $this->esoTalk->db->escape(substr($hash, -32));
 	
 	// See if there is an unvalidated user with this ID and password hash. If there is, validate them and log them in.
 	if ($name = @$this->esoTalk->db->result($this->esoTalk->db->query("SELECT name FROM {$config["tablePrefix"]}members WHERE memberId=$memberId AND password='$password' AND account='Unvalidated'"), 0)) {
@@ -233,7 +233,7 @@ function validateName(&$name)
 	if (in_array(strtolower($name), $this->reservedNames)) return "nameTaken";
 	if (!strlen($name)) return "nameEmpty";
 	if (preg_match("/[" . preg_quote("!/%+-", "/") . "]/", $name)) return "invalidCharacters";
-	if (@$this->esoTalk->db->result($this->esoTalk->db->query("SELECT 1 FROM {$config["tablePrefix"]}members WHERE name='" . addslashes($name) . "' AND account!='Unvalidated'"), 0))
+	if (@$this->esoTalk->db->result($this->esoTalk->db->query("SELECT 1 FROM {$config["tablePrefix"]}members WHERE name='" . $this->esoTalk->db->escape($name) . "' AND account!='Unvalidated'"), 0))
 		return "nameTaken";
 }
 	

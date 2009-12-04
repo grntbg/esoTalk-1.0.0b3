@@ -205,7 +205,7 @@ function validateEmail(&$email)
 	global $esoTalk, $config;
 	$email = substr($email, 0, 63);
 	if (!preg_match("/^[A-Z0-9._%-+]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i", $email)) return "invalidEmail";
-	elseif ($esoTalk->db->numRows($esoTalk->db->query("SELECT 1 FROM {$config["tablePrefix"]}members WHERE email='" . addslashes($email) . "' AND account!='Unvalidated'"))) return "emailTaken";
+	elseif ($esoTalk->db->numRows($esoTalk->db->query("SELECT 1 FROM {$config["tablePrefix"]}members WHERE email='" . $esoTalk->db->escape($email) . "' AND account!='Unvalidated'"))) return "emailTaken";
 }
 
 // Validate a password field: make sure it's not too long, then encrypt it with a salt.

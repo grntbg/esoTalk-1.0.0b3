@@ -10,7 +10,7 @@ class Captcha extends Plugin {
 	
 var $id = "Captcha";
 var $name = "Captcha";
-var $version = "1.0.0";
+var $version = "1.0";
 var $description = "Provides image verification during the join process to prevent bots from joining the forums";
 var $author = "esoTalk team";
 var $defaultConfig = array(

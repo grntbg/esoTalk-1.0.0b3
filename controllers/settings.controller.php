@@ -447,7 +447,7 @@ function changeColor($color)
 // Run AJAX actions.
 function ajax()
 {
-	if ($return = $this->callHook("ajax")) return $return;
+	if ($return = $this->callHook("ajax", null, true)) return $return;
 
 	switch ($_POST["action"]) {
 		

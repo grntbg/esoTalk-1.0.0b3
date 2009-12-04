@@ -10,7 +10,7 @@ class Debug extends Plugin {
 
 var $id = "Debug";
 var $name = "Debug";
-var $version = "1.0.0";
+var $version = "1.0";
 var $description = "Shows programming debug information for administrators";
 var $author = "esoTalk team";
 var $defaultConfig = array(

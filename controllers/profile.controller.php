@@ -38,7 +38,7 @@ function init()
 // Run AJAX actions.
 function ajax()
 {
-	if ($return = $this->callHook("ajax")) return $return;
+	if ($return = $this->callHook("ajax", null, true)) return $return;
 }
 
 // Add a section to the profile page.

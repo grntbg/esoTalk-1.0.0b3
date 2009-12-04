@@ -10,7 +10,7 @@ class Emoticons extends Plugin {
 
 var $id = "Emoticons";
 var $name = "Emoticons";
-var $version = "1.0.0";
+var $version = "1.0";
 var $description = "Converts emoticon text entities into graphic emoticons";
 var $author = "esoTalk team";
 

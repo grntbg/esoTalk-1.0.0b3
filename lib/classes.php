@@ -25,7 +25,7 @@ function callHook($marker, $parameters = array(), $return = false)
 		
 		// Add the instance of this class to the parameters.
 		// We can't use array_unshift here because call-time pass-by-reference has been deprecated.
-		$parameters = array_merge(array(&$this), $parameters);
+		$parameters = is_array($parameters) ? array_merge(array(&$this), $parameters) : array(&$this);
 		
 		// Loop through the functions which have been hooked on this hook and execute them.
 		// If this hook requires a return value and the function we're running returns something, return that.

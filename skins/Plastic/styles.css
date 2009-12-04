@@ -106,7 +106,7 @@ a.star0:active, a.star1:active {color:#e4b600}
 .starInline {cursor:inherit; display:-moz-inline-block; display:inline-block; font-size:350%; margin-bottom:-4px}
 
 /* Conversation labels */
-.label {font-size:90%; padding:0 5px}
+.label {font-size:90%; padding:0 5px; white-space:nowrap}
 .locked {background:#999; color:#fff}
 .private {background:#7b00ad; color:#fff}
 #gambits a.privateText {color:#7b00ad}
