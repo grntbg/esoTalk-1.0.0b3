@@ -165,47 +165,34 @@ function animate(element, options) {
 	if (!options) return;
 	switch (options.animation) {
 		case "verticalSlide":
-		case "horizontalSlide":
-			if (options.animation == "horizontalSlide" && (isIE6 || isIE7)) return;
-			
+					
 			// Create an overflow div to perform the animation on. Set some default attributes.
 			var overflowDiv = createOverflowDiv(element);
-			if (!overflowDiv.style.display) overflowDiv.style.display = element.showing ? "none"
-				: (options["animation"] == "horizontalSlide" ? "inline-block" : "block");
+			if (!overflowDiv.style.display) overflowDiv.style.display = element.showing ? "none" : "block";
 			if (!overflowDiv.style.opacity) overflowDiv.style.opacity = element.showing ? 0 : 1;
 			
-			// Get the starting height/width and opacity of the overflow div.
+			// Get the starting height and opacity of the overflow div.
 			element.style.display = "";
-			var initLength = options["animation"] == "verticalSlide" ? overflowDiv.offsetHeight : overflowDiv.offsetWidth;
+			var initHeight = overflowDiv.offsetHeight;
 			var initOpacity = parseFloat(overflowDiv.style.opacity);
 			
-			// Now show the overflow div and get the final length from it.
-			overflowDiv.style.display = options["animation"] == "horizontalSlide" ? "inline-block" : "block";
+			// Now show the overflow div and get the final height from it.
+			overflowDiv.style.display = "block";
 			overflowDiv.style.overflow = "hidden";
-			var finalLength = options["animation"] == "verticalSlide" ? overflowDiv.offsetHeight : overflowDiv.offsetWidth;
-			
-			// If it's a horizontal slide, save the element's width to go back to when the animation is finished.
-			if (options["animation"] == "horizontalSlide") {
-				element.oldWidth = element.style.width;
-				element.style.width = finalLength + "px";
-				overflowDiv.style.verticalAlign = "bottom";
-			}
-			
+			var finalHeight = overflowDiv.offsetHeight;
+						
 			// Set up the animation on the overflow div.
 			if (overflowDiv.animation) overflowDiv.animation.stop();
 			overflowDiv.animation = new Animation(function(values, final) {
-				overflowDiv.style[options["animation"] == "verticalSlide" ? "height" : "width"] = Math.round(values[0]) + "px";
+				overflowDiv.style.height = Math.round(values[0]) + "px";
 				overflowDiv.style.opacity = values[1];
 				
-				// If this is the final frame, let the width/height be automatic and hide the overflow div if necessary.
+				// If this is the final frame, let the height be automatic and hide the overflow div if necessary.
 				if (final) {
-					overflowDiv.style[options["animation"] == "verticalSlide" ? "height" : "width"] = "";
-					if (!element.showing) {
-						overflowDiv.style.display = "none";
-						if (options["animation"] == "horizontalSlide") element.style.width = element.oldWidth;
-					}
+					overflowDiv.style.height = "";
+					if (!element.showing) overflowDiv.style.display = "none";
 				}
-			}, {begin: [initLength, initOpacity], end: [element.showing ? finalLength : 0, element.showing ? 1 : 0]});
+			}, {begin: [initHeight, initOpacity], end: [element.showing ? finalHeight : 0, element.showing ? 1 : 0]});
 			overflowDiv.animation.start();
 			break;
 			
@@ -728,6 +715,10 @@ init: function() {
 			else enable(getById("addMemberSubmit"));
 		};
 		disable(getById("addMemberSubmit"));
+		// Add a textInput event handler so the button is enabled when typing special characters in Safari.
+		if (getById("addMember").addEventListener) getById("addMember").addEventListener("textInput", function() {
+			enable(getById("addMemberSubmit"));
+		});
 	}
 	
 	// Initialize the pagination bars.
@@ -1461,7 +1452,7 @@ saveDraft: function() {
 			Messages.hideMessage("emptyPost");
 			
 			// Show the draft label, disable the save draft button, and enable the discard draft button.
-			show(getElementsByClassName(getById("cLabels"), "draft")[0], {animation: "horizontalSlide"});
+			show(getElementsByClassName(getById("cLabels"), "draft")[0]);
 			disable(getById("saveDraft")); enable(getById("discardDraft"));
 			Conversation.editingReply = false;
 		}
@@ -1483,7 +1474,7 @@ discardDraft: function() {
 		"success": function() {
 			
 			// Hide the draft label and reinitialize the reply area.
-			hide(getElementsByClassName(getById("cLabels"), "draft")[0], {animation: "horizontalSlide"});
+			hide(getElementsByClassName(getById("cLabels"), "draft")[0]);
 			getById("reply-textarea").value = "";
 			Conversation.togglePreview("reply", false);
 			Conversation.initReply();
@@ -1692,7 +1683,7 @@ cancelEdit: function(postId) {
 // Toggle sticky.
 toggleSticky: function() {
 	var label = getElementsByClassName(getById("cLabels"), "sticky")[0];
-	toggle(label, {animation: "horizontalSlide"});
+	toggle(label);
 	getById("stickyLink").innerHTML = esoTalk.language[label.showing ? "Unsticky" : "Sticky"];
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
@@ -1703,7 +1694,7 @@ toggleSticky: function() {
 // Toggle lock.
 toggleLock: function() {
 	label = getElementsByClassName(getById("cLabels"), "locked")[0];
-	toggle(label, {animation: "horizontalSlide"});
+	toggle(label);
 	getById("lockLink").innerHTML = esoTalk.language[label.showing ? "Unlock" : "Lock"];
 	Ajax.request({
 		"url": esoTalk.baseURL + "ajax.php?controller=conversation",
@@ -1724,7 +1715,7 @@ addMember: function(name) {
 			
 			// Update the members allowed list and show the private label.
 			getById("allowedList").innerHTML = this.result.list;
-			show(getElementsByClassName(getById("cLabels"), "private")[0], {animation: "horizontalSlide"});
+			show(getElementsByClassName(getById("cLabels"), "private")[0]);
 		}, 
 		"post": "action=addMember&member=" + encodeURIComponent(name) + (Conversation.id ? "&id=" + Conversation.id : "")
 	});
@@ -1737,7 +1728,7 @@ removeMember: function(name) {
 		"success": function() {
 			// Update the members allowed list and hide the private label.
 			getById("allowedList").innerHTML = this.result.list;
-			if (!this.result.private) hide(getElementsByClassName(getById("cLabels"), "private")[0], {animation: "horizontalSlide"});
+			if (!this.result.private) hide(getElementsByClassName(getById("cLabels"), "private")[0]);
 		},
 		"post": "action=removeMember&member=" + encodeURIComponent(name) + (Conversation.id ? "&id=" + Conversation.id : "")
 	});

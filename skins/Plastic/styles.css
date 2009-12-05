@@ -51,7 +51,7 @@ h3 {font-size:120%; font-weight:bold}
 #bar .text {width:8em}
 #bar span.button {margin-left:5px}
 #bar img {vertical-align:-4px}
-#rss {background:url(icons.png) -166px -1px no-repeat; display:inline-block; height:18px; width:18px; vertical-align:-4px}
+#rss {background:url(icons.png) -166px -1px no-repeat; height:18px; width:18px; vertical-align:-4px; float:left;}
 #rss span {display:none}
 
 /* Body */
@@ -103,7 +103,7 @@ a.star0:hover {color:#fe7}
 a.star0:active, a.star1:active {color:#e4b600}
 .starred td {background:#ffa}
 .star1 span, .star0 span {display:none}
-.starInline {cursor:inherit; display:-moz-inline-block; display:inline-block; font-size:350%; margin-bottom:-4px}
+.starInline {cursor:inherit; display:none; display:inline-block; font-size:350%; margin-bottom:-4px}
 
 /* Conversation labels */
 .label {font-size:90%; padding:0 5px; white-space:nowrap}
@@ -217,7 +217,7 @@ hr {display:none}
 
 /* Formatting buttons */
 .p .controls {margin:-1px 0 -3px 0}
-.p .controls .formattingButtons a {background-image:url(icons.png); background-repeat:no-repeat; display:inline-block; height:18px; margin:0 1px 0 0; width:18px; vertical-align:top}
+.p .controls .formattingButtons a {background-image:url(icons.png); background-repeat:no-repeat; height:18px; margin:0 3px 0 0; width:18px; vertical-align:top; float:left}
 .p .controls .formattingButtons a span {display:none}
 .p .controls .formattingButtons a:hover {background-color:#fff; text-decoration:none}
 .p .controls .formattingButtons a:active {background-color:#888}
