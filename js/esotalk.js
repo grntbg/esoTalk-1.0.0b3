@@ -1383,10 +1383,12 @@ addReply: function() {
 // Animate a new post (e.g. reply), fading it in and expanding its height from 0.
 animateNewPost: function(post) {
 	var overflowDiv = createOverflowDiv(post);
-	(overflowDiv.animation = new Animation(function(values, final) {
+	var height = overflowDiv.offsetHeight;
+	overflowDiv.style.height = "0px";
+	setTimeout(function(){(overflowDiv.animation = new Animation(function(values, final) {
 		overflowDiv.style.height = final ? "" : values[0] + "px";
 		overflowDiv.style.opacity = final ? "" : values[1];
-	}, {begin: [0, 0], end: [overflowDiv.offsetHeight, 1]})).start();
+	}, {begin: [0, 0], end: [height, 1]})).start()}, 1);
 },
 
 // Animate a post expanding/shrinking to the correct height when being edited.
@@ -2081,8 +2083,8 @@ updateCurrentResults: function() {
 				row.getElementsByTagName("strong")[0].className = data.unread ? "" : "read";
 				
 				// Update the star.
-				var star;
-				if (star = getElementsByClassName(row, "star")[0].getElementsByTagName("a")[0]) {
+				var star, cell;
+				if ((cell = getElementsByClassName(row, "star")[0]) && (star = cell.getElementsByTagName("a")[0])) {
 					star.className = data.starred ? "star1" : "star0";
 					star.getElementsByTagName("span")[0].innerHTML = esoTalk.language[data.starred ? "Starred" : "Unstarred"];
 					row.className = data.starred ? "starred" : "";
