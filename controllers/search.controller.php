@@ -102,12 +102,12 @@ function init()
 	);
 	
 	// Define the columns of the search results table.
-	if ($this->esoTalk->user) $this->resultsTable[] = array("class" => "star", "content" => array($this, "columnStar"));
-	if (!empty($config["showAvatarThumbnails"])) $this->resultsTable[] = array("class" => "avatar", "content" => array($this, "columnAvatar"));
-	$this->resultsTable[] = array("title" => $language["Conversation"], "content" => array($this, "columnConversation"));
-	$this->resultsTable[] = array("title" => $language["Posts"], "class" => "posts", "content" => array($this, "columnPosts"));
-	$this->resultsTable[] = array("title" => $language["Started by"], "class" => "author", "content" => array($this, "columnAuthor"));
-	$this->resultsTable[] = array("title" => $language["Last reply"], "class" => "lastPost", "content" => array($this, "columnLastReply"));
+	if ($this->esoTalk->user) $this->resultsTable[] = array("class" => "star", "content" => "columnStar");
+	if (!empty($config["showAvatarThumbnails"])) $this->resultsTable[] = array("class" => "avatar", "content" => "columnAvatar");
+	$this->resultsTable[] = array("title" => $language["Conversation"], "content" => "columnConversation");
+	$this->resultsTable[] = array("title" => $language["Posts"], "class" => "posts", "content" => "columnPosts");
+	$this->resultsTable[] = array("title" => $language["Started by"], "class" => "author", "content" => "columnAuthor");
+	$this->resultsTable[] = array("title" => $language["Last reply"], "class" => "lastPost", "content" => "columnLastReply");
 	
 	// Mark all conversations as read if requested.
 	if (isset($_GET["markAsRead"]) and $this->esoTalk->user and !defined("AJAX_REQUEST"))
@@ -685,73 +685,6 @@ function fulltext(&$search, $term, $negate)
 	}
 	$words = array_unique(array_merge($words, explode(" ", $term)));
 	$search->highlight($words);
-}
-
-
-// Returns the HTML for the contents of a cell in the star column.
-function columnStar(&$search, $conversation)
-{
-	return $search->esoTalk->htmlStar($conversation["id"], $conversation["starred"]);
-}
-
-// Returns the HTML for the contents of a cell in the avatar column.
-function columnAvatar(&$search, $conversation)
-{
-	return "<img src='" . $search->esoTalk->getAvatar($conversation["startMemberId"], $conversation["avatarFormat"], "thumb") . "' alt='' class='thumb'/>";
-}
-
-// Returns the HTML for the contents of a cell in the conversation column (labels, title, tags.)
-function columnConversation(&$search, $conversation)
-{
-	global $language;
-	
-	// $conversation["labels"] contains comma-separated values corresponding to each label in the $esoTalk->labels 
-	// array (0 = label does not apply, 1 = label does apply.) Read this variable and output applied labels.
-	$labels = explode(",", $conversation["labels"]); $i = 0; $labelsHtml = ""; $html = "";
-	foreach ($this->esoTalk->labels as $k => $v) {
-		if (@$labels[$i]) $labelsHtml .= "<span class='label $k'>{$language["labels"][$k]}</span> ";
-		$i++;
-	}
-	if ($labelsHtml) $html .= "<span class='labels'>$labelsHtml</span>";
-	
-	// Output the conversation title.
-	$html .= "<strong";
-	if ($this->esoTalk->user and !$conversation["unread"]) $html .= " class='read'";
-	$html .= "><a href='" . makeLink($conversation["id"], $conversation["slug"]) . "'>" . highlight($conversation["title"], $_SESSION["highlight"]) .  "</a></strong>";
-	
-	// A Jump to last/unread link, depending on the user.
-	if ($this->esoTalk->user["name"] and $conversation["unread"]) $html .= "<small><a href='" . makeLink($conversation["id"], $conversation["slug"], "?start=unread") . "'>{$language["Jump to unread"]}</a></small>";
-	else $html .= "<small><a href='" . makeLink($conversation["id"], $conversation["slug"], "?start=last") . "'>{$language["Jump to last"]}</a></small>";
-	
-	// And tags!
-	$html .= "<br/><small class='tags'>{$conversation["tags"]}</small>";
-	
-	$search->callHook("getConversationColumn", array(&$html, $conversation));
-	
-	return $html;
-}
-
-// Returns the HTML for the contents of a cell in the post count column.
-function columnPosts(&$search, $conversation)
-{
-	return "<span class='p" . (($conversation["posts"] > 50) ? "1" : (($conversation["posts"] > 10) ? "2" : "3")) . "'>{$conversation["posts"]}</span>";
-}
-
-// Returns the HTML for the contents of a cell in the "started by" column.
-function columnAuthor(&$search, $conversation)
-{
-	return "<a href='" . makeLink("profile", $conversation["startMemberId"]) . " '>{$conversation["startMember"]}</a><br/><small>" . relativeTime($conversation["startTime"]) . "</small>";
-}
-
-// Returns the HTML for the contents of a cell in the "last reply" column.
-function columnLastReply(&$search, $conversation)
-{
-	$html = "<span class='lastPostMember'>";
-	if ($conversation["posts"] > 1) $html .= "<a href='" . makeLink("profile", $conversation["lastPostMemberId"]) . "'>{$conversation["lastPostMember"]}</a>";
-	$html .= "</span><br/><small class='lastPostTime'>";
-	if ($conversation["posts"] > 1) $html .= relativeTime($conversation["lastPostTime"]);
-	$html .= "</small>";
-	return $html;
 }
 
 }
