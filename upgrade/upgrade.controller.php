@@ -27,6 +27,13 @@ function init()
 		writeConfigFile("../config/versions.php", '$versions', $versions);
 	}
 	
+	// 1.0.0 beta 1 -> 1.0.0 beta 2
+	if ($versions["esoTalk"] == "1.0.0b1") {
+		$this->upgrade_100b2();
+		$versions["esoTalk"] = "1.0.0b2";
+		writeConfigFile("../config/versions.php", '$versions', $versions);
+	}
+	
 	// Write the program version to the versions.php file.
 	if ($versions["esoTalk"] != ESOTALK_VERSION) {
 		$versions["esoTalk"] = ESOTALK_VERSION;
@@ -116,6 +123,15 @@ function warning($msg)
 {
 	if (!isset($_SESSION["warnings"]) or !is_array($_SESSION["warnings"])) $_SESSION["warnings"] = array();
 	$_SESSION["warnings"][] = $msg;	
+}
+
+// 1.0.0 beta 1 -> 1.0.0 beta 2
+function upgrade_100b2()
+{
+	global $config;
+
+	// Make the cookieIP field in the members table an unsigned INT (rather than a signed one.)
+	$this->query("ALTER TABLE {$config["tablePrefix"]}members MODIFY COLUMN cookieIP int unsigned default NULL");	
 }
 
 // 1.0.0 alpha 5 -> 1.0.0 beta 1

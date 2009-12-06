@@ -178,7 +178,9 @@ function login($name = false, $password = false, $hash = false)
 		);
 		
 		// Get the user's IP address, and validate it against the cookie IP address if they're logging in via cookie.
-		$ip = (int)ip2long($_SESSION["ip"]);
+		// Do some back-and-forth conversion so we only use the first three parts of the IP (the last will be 0.)
+		$ip = long2ip(ip2long($_SESSION["ip"]));
+		$ip = sprintf("%u", ip2long(substr($ip, 0, strrpos($ip, ".")) . ".0"));
 		if (isset($cookie)) $components["where"][] = "cookieIP=" . ($ip ? $ip : "0");
 		
 		$this->callHook("beforeLogin", array(&$components));

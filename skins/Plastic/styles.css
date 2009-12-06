@@ -132,9 +132,9 @@ a.star0:active, a.star1:active {color:#e4b600}
 .c td.star {width:3.5em}
 .c .posts {padding:5px 10px; text-align:center}
 .c td.posts {font-size:175%}
-.c td.p1 {color:#000}
-.c td.p2 {color:#666}
-.c td.p3 {color:#aaa}
+.c .p1 {color:#000}
+.c .p2 {color:#666}
+.c .p3 {color:#aaa}
 #newResults td {padding:1px 0; border:0}
 #newResults .msg {margin:0; padding:3px 0; font-size:90%; text-align:center}
 #newResults a {margin:0; font-weight:bold}
