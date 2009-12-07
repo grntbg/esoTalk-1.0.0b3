@@ -198,7 +198,7 @@ function animate(element, options) {
 			
 		case "fade":
 			element.style.display = "";
-			var initOpacity = parseFloat(element.style.opacity);
+			var initOpacity = parseFloat(element.style.opacity) || 1;
 			if (element.animation) element.animation.stop();
 			element.animation = new Animation(function(opacity, final) {
 				element.style.opacity = opacity;

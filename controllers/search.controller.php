@@ -154,7 +154,8 @@ function init()
 		
 		// Add meta tags to the header and the "Mark all conversations as read" link to the footer.
 		$this->esoTalk->addToHead("<meta name='keywords' content='" . implode(",", $tags) . "'/>");
-		$this->esoTalk->addToHead("<meta name='description' content='" . sprintf($language["forumDescription"], $config["forumTitle"], implode(", ", $tags)) . "'/>");
+		list($lastTag) = array_splice($tags, count($tags) - 1, 1);
+		$this->esoTalk->addToHead("<meta name='description' content='" . sprintf($language["forumDescription"], $config["forumTitle"], implode(", ", $tags), $lastTag) . "'/>");
 		if ($this->esoTalk->user) $this->esoTalk->addToFooter("<a href='" . makeLink("?markAsRead") . "'>{$language["Mark all conversations as read"]}</a>");
 		
 		// If this is not technically the homepage (if it's a search page) the we don't want it to be indexed.
