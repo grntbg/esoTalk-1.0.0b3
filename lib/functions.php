@@ -271,8 +271,12 @@ function relativeTime($then)
 // Send an email with proper headers.
 function sendEmail($to, $subject, $body)
 {
-	global $config, $language;
+	global $config, $language, $esoTalk;
 	if (!preg_match("/^[A-Z0-9._%-+]+@[A-Z0-9.-]+.[A-Z]{2,4}$/i", $to)) return false;
+	
+	if (isset($esoTalk) and ($return = $esoTalk->callHook("sendEmail", array(&$to, &$subject, &$body), true)) !== null)
+		return $return;
+	
 	return mail(sanitizeForHTTP($to), sanitizeForHTTP(desanitize($subject)), desanitize($body), "From: " . sanitizeForHTTP(desanitize($config["forumTitle"]) . " <{$config["emailFrom"]}>") . "\nContent-Type: text/plain; charset={$language["charset"]}; format=flowed");
 }
 
