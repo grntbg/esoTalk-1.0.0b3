@@ -9,7 +9,7 @@ if (!defined("IN_ESOTALK")) exit;
 <table cellspacing='0' cellpadding='2' class='c'>
 <thead>
 <tr><?php foreach ($this->resultsTable as $column): ?><th<?php if (!empty($column["class"])): ?> class='<?php echo $column["class"]; ?>'<?php endif; ?>><?php echo !empty($column["title"]) ? $column["title"] : "&nbsp;"; ?></th><?php endforeach; ?></tr>
-<tr id='newResults' style='display:none'><td colspan='<?php count($this->resultsTable); ?>'><?php echo $this->esoTalk->htmlMessage("newSearchResults"); ?></td></tr>
+<tr id='newResults' style='display:none'><td colspan='<?php echo count($this->resultsTable); ?>'><?php echo $this->esoTalk->htmlMessage("newSearchResults"); ?></td></tr>
 </thead>
 <tbody id='conversations'>
 
@@ -60,7 +60,7 @@ function columnConversation(&$search, $conversation)
 // Returns the HTML for the contents of a cell in the post count column.
 function columnPosts(&$search, $conversation)
 {
-	return "<span class='p" . (($conversation["posts"] > 50) ? "1" : (($conversation["posts"] > 10) ? "2" : "3")) . "'>{$conversation["posts"]}</span>";
+	return "<span class='postCount p" . (($conversation["posts"] > 50) ? "1" : (($conversation["posts"] > 10) ? "2" : "3")) . "'>{$conversation["posts"]}</span>";
 }
 
 // Returns the HTML for the contents of a cell in the "started by" column.

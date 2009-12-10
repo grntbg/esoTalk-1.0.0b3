@@ -1900,7 +1900,7 @@ togglePreview: function(id, preview) {
 			"success": function() {
 
 				// Keep the minimum height - won't work in IE. :(
-				getById(id + "-preview").style.minHeight = getStyle(getById(id + "-textarea"), "height");
+				getById(id + "-preview").style.minHeight = getById(id + "-textarea").offsetHeight + "px";
 				
 				// Hide the textarea, and show the preview.
 				hide(getById(id + "-textarea"));
@@ -2086,7 +2086,7 @@ updateCurrentResults: function() {
 				}
 				
 				// Update the post count.
-				getElementsByClassName(row, "posts")[0].innerHTML = data.postCount;
+				getElementsByClassName(row, "postCount")[0].innerHTML = data.postCount;
 				
 				// Mark the conversation title as read or unread.
 				row.getElementsByTagName("strong")[0].className = data.unread ? "" : "read";
