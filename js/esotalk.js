@@ -198,7 +198,7 @@ function animate(element, options) {
 			
 		case "fade":
 			element.style.display = "";
-			var initOpacity = parseFloat(element.style.opacity) || 1;
+			var initOpacity = typeof element.style.opacity != "undefined" ? parseFloat(element.style.opacity) : 1;
 			if (element.animation) element.animation.stop();
 			element.animation = new Animation(function(opacity, final) {
 				element.style.opacity = opacity;
@@ -1889,16 +1889,24 @@ togglePreview: function(id, preview) {
 	
 	// If the preview box is checked...
 	if (preview) {
-		// Keep the minimum height - won't work in IE. :(
-		getById(id + "-preview").style.minHeight = getById(id + "-textarea").offsetHeight + 4 + "px";
-		// Hide the formatting buttons and the textarea; show the preview area.
-		hide(getElementsByClassName(getById(id), "formattingButtons")[0]); hide(getById(id + "-textarea"));
+		
+		// Hide the formatting buttons.
+		hide(getElementsByClassName(getById(id), "formattingButtons")[0]);
 		getById(id + "-preview").innerHTML = "";
-		show(getById(id + "-preview"));
+		
 		// Get the formatted post and show it.
 		Ajax.request({
 			"url": esoTalk.baseURL + "ajax.php?controller=conversation",
-			"success": function() {getById(id + "-preview").innerHTML = this.result;},
+			"success": function() {
+
+				// Keep the minimum height - won't work in IE. :(
+				getById(id + "-preview").style.minHeight = getStyle(getById(id + "-textarea"), "height");
+				
+				// Hide the textarea, and show the preview.
+				hide(getById(id + "-textarea"));
+				show(getById(id + "-preview"));
+				getById(id + "-preview").innerHTML = this.result;
+			},
 			"post": "action=getPostFormatted&content=" + encodeURIComponent(getById(id + "-textarea").value)
 		});
 	}
@@ -1906,7 +1914,8 @@ togglePreview: function(id, preview) {
 	// The preview box isn't checked...
 	else {
 		// Show the formatting buttons and the textarea; hide the preview area.
-		show(getElementsByClassName(getById(id), "formattingButtons")[0]); show(getById(id + "-textarea"));
+		show(getElementsByClassName(getById(id), "formattingButtons")[0]);
+		show(getById(id + "-textarea"));
 		hide(getById(id + "-preview"));
 	}
 }
