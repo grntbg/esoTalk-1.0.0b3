@@ -110,7 +110,7 @@ function undoRegisterGlobals()
         $array = array("_REQUEST", "_SESSION", "_SERVER", "_ENV", "_FILES");
         foreach ($array as $value) {
         	foreach ((array)$GLOBALS[$value] as $key => $var) {
-            	if ($var === $GLOBALS[$key]) unset($GLOBALS[$key]);
+            	if (isset($GLOBALS[$key]) and $var === $GLOBALS[$key]) unset($GLOBALS[$key]);
         	}
         }
     }
