@@ -51,7 +51,7 @@ foreach ($this->footer as $v) echo "<li>$v</li>";
 ?></ul><?php endif; ?>
 <p id='copyright'>
 <!-- The following text constitutes a copyright notification and, under the terms of the GNU GPL (see LICENSE), may neither be removed nor altered in any way which makes it invisible, affects the hyperlink, or changes the text "Powered by esoTalk". -->
-Powered by <a href='http://esotalk.com/'>esoTalk</a>&trade;
+Powered by <a href='http://esotalk.com/'>esoTalk</a>&trade; <?php if ($this->user["admin"]) echo ESOTALK_VERSION; ?>
 <!-- End copyright notification -->
 </p>
 </div>
