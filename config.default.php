@@ -28,6 +28,7 @@ $defaultConfig = array(
 "sitemapCacheTime" => 3600, // Keep sitemaps for at least 1 hour.
 "verboseFatalErrors" => false, // Show MySQL error information in fatal errors. Enable this if you need to debug a situation.
 "basePath" => "", // The base path to use when including or writing to any files.
+"gzipOutput" => true, // Whether or not to compress the page output with gzip.
 
 "useFriendlyURLs" => false, // ex. example.com/index.php/conversation/1
 "useModRewrite" => false, // ex. example.com/conversation/1 (requires mod_rewrite and a .htaccess file!)

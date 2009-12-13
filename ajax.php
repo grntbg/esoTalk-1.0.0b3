@@ -79,7 +79,9 @@ if (count($_SESSION["messages"])) {
 
 // Alright, we're good to go! Output the JSON array to the page.
 header("Content-type: text/plain; charset={$language["charset"]}");
+if (!empty($config["gzipOutput"]) and !ob_start("ob_gzhandler")) ob_start();
 echo json($result);
+ob_flush();
 
 // Clear the messages array now that we have returned the messages.
 $_SESSION["messages"] = array();
