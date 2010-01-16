@@ -83,6 +83,7 @@ $language = array(
 "Header" => "Header",
 "hide" => "hide",
 "Home" => "Home",
+"Hooked functions" => "Hooked functions",
 "hour" => "hour",
 "hours" => "hours",
 "Image" => "Image",

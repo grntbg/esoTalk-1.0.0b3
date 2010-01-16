@@ -86,6 +86,7 @@ $language = array(
 "Header" => "Header",
 "hide" => "hide",
 "Home" => "Home",
+"Hooked functions" => "Hooked functions",
 "Image" => "Image",
 "Installed plugins" => "Installed plugins",
 "Installed skins" => "Installed skins",

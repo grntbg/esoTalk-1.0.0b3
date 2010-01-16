@@ -125,6 +125,14 @@ function warning($msg)
 	$_SESSION["warnings"][] = $msg;	
 }
 
+// 1.0.0 beta 2 -> 1.0.0 RC1
+function upgrade_100rc1()
+{
+	global $config;
+	
+	$this->query("ALTER TABLE {$config["tablePrefix"]}members MODIFY COLUMN emailOnPrivateAdd tinyint(1) NOT NULL default '1', MODIFY COLUMN emailOnStar tinyint(1) NOT NULL default '1'");
+}
+
 // 1.0.0 beta 1 -> 1.0.0 beta 2
 function upgrade_100b2()
 {

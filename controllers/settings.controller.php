@@ -50,6 +50,7 @@ function init()
 			}
 		}
 	}
+	sort($this->languages);
 	
 	// Create a string of options to go in the avatar alignment <select> tag.
 	$avatarAlignmentOptions = "";
@@ -321,7 +322,7 @@ function changeAvatar()
 		if (file_exists("$destination.{$this->esoTalk->user["avatarFormat"]}"))
 			unlink("$destination.{$this->esoTalk->user["avatarFormat"]}");
 					
-		if ($this->callHook("resizeAvatar", array($image, $destination, $type, $values[0], $values[1]))) continue;
+		if ($this->callHook("resizeAvatar", array($image, $destination, $type, $values[0], $values[1]), true)) continue;
 
 		// If the new max dimensions exist and are smaller than the current dimensions, we're gonna want to resize.
 		$newWidth = $values[0];

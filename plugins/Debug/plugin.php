@@ -55,6 +55,7 @@ function init()
 	$this->esoTalk->addLanguage("MySQL queries", "MySQL queries");
 	$this->esoTalk->addLanguage("POST + GET + FILES information", "POST + GET + FILES information");
 	$this->esoTalk->addLanguage("SESSION + COOKIE information", "SESSION + COOKIE information");
+	$this->esoTalk->addLanguage("Hooked functions", "Hooked functions");
 	$this->esoTalk->addLanguage("Update debug information for background AJAX requests", "Update debug information for background AJAX requests");
 	$this->esoTalk->addScript("plugins/Debug/debug.js", 1000);
 	$this->esoTalk->addCSS("plugins/Debug/debug.css");
@@ -111,6 +112,7 @@ function addInformationToAjaxResult($esoTalk, &$result)
 	$result["debugSession"] = sanitize(print_r($_SESSION, true));
 	$result["debugCookie"] = sanitize(print_r($_COOKIE, true));
 	$result["log"] = sanitize($this->log);
+	$result["hookedFunctions"] = $this->getHookedFunctions();
 	$_SESSION["queries"] = array();
 }
 
@@ -186,7 +188,11 @@ function renderDebug($esoTalk)
 	echo sanitize(print_r($_SESSION, true));
 	echo "</p><p style='white-space:pre' class='fixed' id='debugCookie'>\$_COOKIE = ";
 	echo sanitize(print_r($_COOKIE, true));
-	echo "</p></div>
+	echo "</p></div>";
+	
+	// Hooked functions.
+	echo "<h3><a href='#' onclick='toggle(getById(\"debugHooks\"), {animation:\"verticalSlide\"});return false'>{$language["Hooked functions"]}</a></h3>
+	<ul id='debugHooks' class='fixed'>" . $this->getHookedFunctions() . "</ul>
 	</div>";
 	
 	// Hide all panels by default.
@@ -195,6 +201,21 @@ function renderDebug($esoTalk)
 	hide(getById(\"debugQueries\")); hide(getById(\"debugPostGetFiles\")); hide(getById(\"debugSessionCookie\"));
 	// ]]>
 	</script>";
+}
+
+function getHookedFunctions()
+{
+	$html = "";
+	$classes = array(&$this->esoTalk, &$this->esoTalk->controller);
+	foreach ($this->esoTalk->plugins as $plugin) $classes[] =& $plugin;
+	foreach ($classes as $class) {
+		foreach ($class->hookedFunctions as $hook => $functions) {
+			$html .= "<li>" . get_class($class) . " class: <strong>$hook</strong><br/>";
+			foreach ($functions as $function) $html .= "  " . get_class($function[0]) . "->{$function[1]}";
+			$html .= "</li>";
+		}
+	}
+	return $html ? $html : "<li></li>";
 }
 
 }
