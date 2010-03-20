@@ -7,10 +7,11 @@
 
 if (!defined("IN_ESOTALK")) exit;
 
-class Database {
+class Database extends Pluggable {
 
 var $esoTalk;
 var $link;
+var $className = "Database";
 
 // Connect to a MySQL server and database.
 function connect($host, $user, $password, $db)
@@ -22,7 +23,7 @@ function connect($host, $user, $password, $db)
 
 // Run a query. If $fatal is true, then a fatal error will be displayed and page execution will be halted if the query
 // fails.
-function query($query, $fatal = true)
+function xquery($query, $fatal = true)
 {
 	global $language, $config;
 	

@@ -48,7 +48,7 @@ $esoTalk->controller->init();
 
 // Show the page!
 header("Content-type: text/html; charset={$language["charset"]}");
-if (!empty($config["gzipOutput"]) and !ob_start("ob_gzhandler")) ob_start();
+//if (!empty($config["gzipOutput"]) and !ob_start("ob_gzhandler")) ob_start();
 $esoTalk->render();
 ob_flush();
 

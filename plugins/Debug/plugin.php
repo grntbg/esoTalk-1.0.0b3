@@ -21,6 +21,7 @@ var $start;
 var $queryTimer;
 var $log = "";
 
+
 function Debug()
 {
 	// Set verboseFatalErrors to true.
@@ -34,18 +35,33 @@ function Debug()
 	parent::Plugin();
 }
 
+function Database_query_before()
+{
+	//echo "query_before";
+}
+
+function Database_query_after()
+{
+	//echo "query_after";
+}
+
+//function Database_query_override($query)
+//{
+	//return mysql_query($query);
+//}
+
 function init()
 {
 	parent::init();
 	
 	// Add hooks to be run before and after database queries.
-	$this->esoTalk->addHook("beforeDatabaseQuery", array($this, "startQueryTimer"));
-	$this->esoTalk->addHook("afterDatabaseQuery", array($this, "addQuery"));
+	//$this->esoTalk->addHook("beforeDatabaseQuery", array($this, "startQueryTimer"));
+	//$this->esoTalk->addHook("afterDatabaseQuery", array($this, "addQuery"));
 	$this->esoTalk->addLanguage("seconds", "seconds");
 	
 	// If this is an AJAX request, add a hook to add debug information to the returned JSON array.
 	if (defined("AJAX_REQUEST")) {
-		$this->esoTalk->addHook("ajaxFinish", array($this, "addInformationToAjaxResult"));
+		//$this->esoTalk->addHook("ajaxFinish", array($this, "addInformationToAjaxResult"));
 		return;
 	}
 	
@@ -61,7 +77,7 @@ function init()
 	$this->esoTalk->addCSS("plugins/Debug/debug.css");
 	
 	// Add a hook to the bottom of the page, where we'll output the debug information!
-	$this->esoTalk->addHook("pageEnd", array($this, "renderDebug"));
+	//$this->esoTalk->addHook("pageEnd", array($this, "renderDebug"));
 }
 
 // Plugin settings: whether or not to show debug information to non-administrators.

@@ -14,7 +14,7 @@ if (!defined("IN_ESOTALK")) exit;
 // Hookable - a class in which code can be hooked on to.
 // Extend this class and then use $this->callHook("uniqueMarker") in the class code to call any code which has been
 // hooked via $classInstance->addHook("uniqueMarker", "function").
-class Hookable {
+class Hookable extends Pluggable {
 
 var $hookedFunctions = array();
 

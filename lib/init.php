@@ -38,6 +38,9 @@ if (isset($_SERVER["HTTP_HOST"])) {
 	}
 }
 
+if (version_compare(PHP_VERSION, '5.0.0', '>=')) require "pluggable.php5.php";
+else require "pluggable.php4.php";
+
 // Require essential files.
 require "functions.php";
 require "database.php";
