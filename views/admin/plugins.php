@@ -18,7 +18,7 @@ if (count($this->plugins)): ?>
 // Toggle whether a plugin is enabled or not.
 function toggleEnabled(id, enabled) {
 	Ajax.request({
-		"url": esoTalk.baseURL + "ajax.php?controller=plugins",
+		"url": esoTalk.baseURL + "ajax.php?controller=admin&q2=plugins",
 		"post": "action=toggle&id=" + encodeURIComponent(id) + "&enabled=" + (enabled ? "1" : "0"),
 		"success": function() {
 			if (this.messages) getById("plugin-" + id + "-checkbox").checked = !enabled;
@@ -47,14 +47,14 @@ foreach ($this->plugins as $k => $plugin): ?>
 <?php if (!empty($plugin["settings"])): ?><a href='javascript:toggleSettings("<?php echo $k; ?>");void(0)'><?php echo $language["settings"]; ?></a><?php endif; ?>
 </div>
 <input type='checkbox' class='checkbox'<?php if ($plugin["loaded"]): ?> checked='checked'<?php endif; ?> id='plugin-<?php echo $k; ?>-checkbox' name='plugins[<?php echo $k; ?>]' value='1' onclick='toggleEnabled("<?php echo $k; ?>", this.checked);'/>
-<noscript><div style='display:inline'><a href='<?php echo makeLink("plugins", "?toggle=$k", "&token={$_SESSION["token"]}"); ?>'><?php echo $plugin["loaded"] ? "Deactivate" : "Activate"; ?></a></div></noscript>	
+<noscript><div style='display:inline'><a href='<?php echo makeLink("admin", "plugins", "?toggle=$k", "&token={$_SESSION["token"]}"); ?>'><?php echo $plugin["loaded"] ? "Deactivate" : "Activate"; ?></a></div></noscript>	
 <label for='plugin-<?php echo $k; ?>-checkbox' class='checkbox'><strong><?php echo $plugin["name"]; ?></strong></label>
 <small><?php printf($language["version"], $plugin["version"]); ?> <?php printf($language["author"], $plugin["author"]); ?></small> <small><?php echo $plugin["description"]; ?></small>
 
 <?php // Output plugin settings.
 if (!empty($plugin["settings"])): ?>
 <div id='plugin-<?php echo $k; ?>-settings' class='settings'>
-<form action='<?php echo makeLink("plugins"); ?>' method='post'>
+<form action='<?php echo makeLink("admin", "plugins"); ?>' method='post'>
 <input type='hidden' name='plugin' value='<?php echo $k; ?>'/>
 <input type='hidden' name='token' value='<?php echo $_SESSION["token"]; ?>'/>
 <?php echo $plugin["settings"]; ?>
@@ -83,7 +83,7 @@ else: ?>
 <fieldset id='addPlugin'>
 <legend><?php echo $language["Add a new plugin"]; ?></legend>
 <?php echo $this->esoTalk->htmlMessage("downloadPlugins", "http://esotalk.com/plugins"); ?>
-<form action='<?php echo makeLink("plugins"); ?>' method='post' enctype='multipart/form-data'>
+<form action='<?php echo makeLink("admin", "plugins"); ?>' method='post' enctype='multipart/form-data'>
 <input type='hidden' name='token' value='<?php echo $_SESSION["token"]; ?>'/>
 <ul class='form'>
 <li><label><?php echo $language["Upload a plugin"]; ?></label> <input name='installPlugin' type='file' class='text' size='20'/></li>

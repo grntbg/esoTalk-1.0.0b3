@@ -6,7 +6,7 @@
 
 if (!defined("IN_ESOTALK")) exit;
 ?>
-<?php $this->callHook("beforeRenderTagCloud"); ?>
+<?php $this->fireEvent("beforeRenderTagCloud"); ?>
 
 <div id='tagArea'>
 <p id='tags'><?php
@@ -17,7 +17,7 @@ foreach ($this->tagCloud as $k => $v) {
 }
 ?></p>
 
-<?php $this->callHook("afterRenderTagCloud"); ?>
+<?php $this->fireEvent("afterRenderTagCloud"); ?>
 
 <p id='gambits'><?php
 // Echo the gambits alphabetically
@@ -28,17 +28,17 @@ foreach ($this->gambitCloud as $k => $v) {
 ?></p>
 </div>
 
-<?php $this->callHook("beforeRenderSearchForm"); ?>
+<?php $this->fireEvent("beforeRenderSearchForm"); ?>
 
 <?php include $this->esoTalk->skin->getView("searchForm.inc.php"); ?> 
 
-<?php $this->callHook("afterRenderSearchForm"); ?>
+<?php $this->fireEvent("afterRenderSearchForm"); ?>
 
 <div id='searchResults'>
 <?php include $this->esoTalk->skin->getView("searchResults.inc.php"); ?>
 </div>
 
-<?php $this->callHook("afterRenderSearchResults"); ?>
+<?php $this->fireEvent("afterRenderSearchResults"); ?>
 
 <script type='text/javascript'>
 // <![CDATA[

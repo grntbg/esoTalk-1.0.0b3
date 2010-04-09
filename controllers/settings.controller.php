@@ -6,7 +6,7 @@
 
 if (!defined("IN_ESOTALK")) exit;
 
-class settings extends Controller {
+class SettingsController extends Controller {
 	
 var $view = "settings.view.php";
 var $messages = array();
@@ -18,7 +18,7 @@ function init()
 	if (!$this->esoTalk->user) redirect("join");
 	
 	// Set the title.
-	global $language;
+	global $config, $language;
 	$this->title = $language["My settings"];	
 	
 	// Change the user's color?
@@ -40,17 +40,11 @@ function init()
 	
 	// Loop through the languages directory to create a string of options to go in the language <select> tag.
 	$langOptions = "";
-	$this->languages = array();
-	if ($handle = opendir("languages")) {
-	    while (false !== ($v = readdir($handle))) {
-			if (!in_array($v, array(".", "..")) and substr($v, -4) == ".php" and $v[0] != ".") {
-				$v = substr($v, 0, strrpos($v, "."));
-				$langOptions .= "<option value='$v'" . ($this->esoTalk->user["language"] == $v ? " selected='selected'" : "") . ">$v</option>";
-				$this->languages[] = $v;
-			}
-		}
+	$this->languages = $this->esoTalk->getLanguages();
+	foreach ($this->languages as $v) {
+		$value = ($v == $config["language"]) ? "" : $v;
+		$langOptions .= "<option value='$value'" . ($this->esoTalk->user["language"] == $value ? " selected='selected'" : "") . ">$v</option>";
 	}
-	sort($this->languages);
 	
 	// Create a string of options to go in the avatar alignment <select> tag.
 	$avatarAlignmentOptions = "";
@@ -104,7 +98,7 @@ function init()
 		
 	);
 	
-	$this->callHook("init");
+	$this->fireEvent("init");
 	
 	// Save settings if the big submit button was clicked.
 	if (isset($_POST["submit"]) and $this->esoTalk->validateToken(@$_POST["token"]) and $this->saveSettings()) {
@@ -137,7 +131,7 @@ function saveSettings()
 		}
 	}
 	
-	$this->callHook("validateForm", array(&$validationError));
+	$this->fireEvent("validateForm", array(&$validationError));
 	
 	// If there was a validation error, don't continue.
 	if ($validationError) return false;
@@ -152,7 +146,7 @@ function saveSettings()
 			: "'{$field["input"]}'";
 	}
 	
-	$this->callHook("beforeSave", array(&$updateData));
+	$this->fireEvent("beforeSave", array(&$updateData));
 	
 	// Construct and execute the query!
 	$updateQuery = $this->esoTalk->db->constructUpdateQuery("members", $updateData, array("memberId" => $this->esoTalk->user["memberId"]));
@@ -164,7 +158,7 @@ function saveSettings()
 			$_SESSION["user"][$field["databaseField"]] = $this->esoTalk->user[$field["databaseField"]] = $field["input"];
 	}
 	
-	$this->callHook("afterSave");
+	$this->fireEvent("afterSave");
 	
 	return true;
 }
@@ -322,7 +316,7 @@ function changeAvatar()
 		if (file_exists("$destination.{$this->esoTalk->user["avatarFormat"]}"))
 			unlink("$destination.{$this->esoTalk->user["avatarFormat"]}");
 					
-		if ($this->callHook("resizeAvatar", array($image, $destination, $type, $values[0], $values[1]), true)) continue;
+		if ($this->fireEvent("resizeAvatar", array($image, $destination, $type, $values[0], $values[1]), true)) continue;
 
 		// If the new max dimensions exist and are smaller than the current dimensions, we're gonna want to resize.
 		$newWidth = $values[0];
@@ -448,7 +442,7 @@ function changeColor($color)
 // Run AJAX actions.
 function ajax()
 {
-	if ($return = $this->callHook("ajax", null, true)) return $return;
+	if ($return = $this->fireEvent("ajax", null, true)) return $return;
 
 	switch ($_POST["action"]) {
 		
@@ -480,8 +474,7 @@ function validateAvatarAlignment(&$alignment)
 // Validate the language field: make sure the selected language actually exists.
 function validateLanguage(&$language)
 {
-	global $config;
-	if (!in_array($language, $this->languages)) $language = $config["language"];
+	if (!in_array($language, $this->languages)) $language = "";
 }
 
 }

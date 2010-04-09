@@ -7,7 +7,7 @@
 
 if (!defined("IN_ESOTALK")) exit;
 
-class forgotpassword extends Controller {
+class ForgotPasswordController extends Controller {
 
 var $view = "forgotPassword.view.php";
 var $title = "";

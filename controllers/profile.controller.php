@@ -6,7 +6,7 @@
 
 if (!defined("IN_ESOTALK")) exit;
 
-class profile extends Controller {
+class ProfileController extends Controller {
 
 var $view = "profile.view.php";
 var $member = array();
@@ -32,13 +32,13 @@ function init()
 	global $language;
 	$this->title = sprintf($language["profile"], $this->member["name"]);
 	
-	$this->callHook("init");
+	$this->fireEvent("init");
 }
 
 // Run AJAX actions.
 function ajax()
 {
-	if ($return = $this->callHook("ajax", null, true)) return $return;
+	if ($return = $this->fireEvent("ajax", null, true)) return $return;
 }
 
 // Add a section to the profile page.
@@ -66,7 +66,7 @@ function getMember($memberId)
 	// Put together the query components.
 	$components = array("select" => $select, "from" => $from, "where" => $where);	
 	
-	$this->callHook("beforeGetMember", array(&$components));
+	$this->fireEvent("beforeGetMember", array(&$components));
 	
 	// Construct and run the query!
 	$query = $this->esoTalk->db->constructSelectQuery($components);
@@ -76,7 +76,7 @@ function getMember($memberId)
 	// Get all the details from the query into an array.
 	$member = $this->esoTalk->db->fetchAssoc($result);
 	
-	$this->callHook("afterGetMember", array(&$member));
+	$this->fireEvent("afterGetMember", array(&$member));
 	
 	return $member;
 }

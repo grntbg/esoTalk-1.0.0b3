@@ -71,7 +71,7 @@ $queries[] = "CREATE TABLE {$config["tablePrefix"]}members (
 	password char(32) NOT NULL,
 	color tinyint unsigned NOT NULL default '1',
 	account enum('Administrator','Moderator','Member','Suspended','Unvalidated') NOT NULL default 'Unvalidated',
-	language varchar(31) NOT NULL,
+	language varchar(31) default '',
 	avatarAlignment enum('alternate','right','left') NOT NULL default 'alternate',
 	avatarFormat enum('jpg','png','gif') default NULL,
 	emailOnPrivateAdd tinyint(1) NOT NULL default '1',
@@ -105,8 +105,8 @@ $queries[] = "CREATE TABLE {$config["tablePrefix"]}searches (
 
 // Create the a member for the administrator.
 $color = rand(1, 27);
-$queries[] = "INSERT INTO {$config["tablePrefix"]}members (memberId, name, email, password, color, account, language) VALUES 
-(1, '{$_SESSION["install"]["adminUser"]}', '{$_SESSION["install"]["adminEmail"]}', '" . md5($config["salt"] . $_SESSION["install"]["adminPass"]) . "', $color, 'Administrator', '{$_SESSION["install"]["language"]}')";
+$queries[] = "INSERT INTO {$config["tablePrefix"]}members (memberId, name, email, password, color, account) VALUES 
+(1, '{$_SESSION["install"]["adminUser"]}', '{$_SESSION["install"]["adminEmail"]}', '" . md5($config["salt"] . $_SESSION["install"]["adminPass"]) . "', $color, 'Administrator')";
 
 // Create default conversations.
 $time = time();

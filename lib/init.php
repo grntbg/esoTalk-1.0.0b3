@@ -38,14 +38,14 @@ if (isset($_SERVER["HTTP_HOST"])) {
 	}
 }
 
-if (version_compare(PHP_VERSION, '5.0.0', '>=')) require "pluggable.php5.php";
-else require "pluggable.php4.php";
-
 // Require essential files.
 require "functions.php";
-require "database.php";
 require "classes.php";
+require "database.php";
 require "formatter.php";
+
+// Set up the object factory.
+$factory = new Factory();
 
 // Start a session if one does not already exist.
 if (!session_id()) {
@@ -81,14 +81,14 @@ $_COOKIE = sanitize($_COOKIE);
 
 // Include and set up the esoTalk controller.
 require "controllers/esoTalk.controller.php";
-$esoTalk = new esoTalk();
+$esoTalk = $factory->make("esoTalk");
 $esoTalk->esoTalk =& $esoTalk;
 
 // Redirect if the 'Start a conversation' button was pressed.
 if (isset($_POST["new"]) and !defined("AJAX_REQUEST")) redirect("conversation", "new");
 
 // Include the language file.
-$esoTalk->language = sanitizeFileName((isset($_SESSION["user"]["language"]) and file_exists("languages/{$_SESSION["user"]["language"]}.php")) ? $_SESSION["user"]["language"] : $config["language"]);
+$esoTalk->language = sanitizeFileName((!empty($_SESSION["user"]["language"]) and file_exists("languages/{$_SESSION["user"]["language"]}.php")) ? $_SESSION["user"]["language"] : $config["language"]);
 if (file_exists("languages/$esoTalk->language.php")) include "languages/$esoTalk->language.php";
 // If we haven't got a working language, show an error!
 if (empty($language)) $esoTalk->fatalError("esoTalk can't find a language file to use. Please make sure <code>languages/$esoTalk->language.php</code> exists or change the default language by adding <code>\"language\" => \"YourLanguage\",</code> to <code>config/config.php</code>.", "language");

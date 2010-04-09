@@ -20,6 +20,7 @@ if ($versions["esoTalk"] == ESOTALK_VERSION) {
 
 // Require essential files.
 require "../lib/functions.php";
+require "../lib/classes.php";
 require "../lib/database.php";
 require "../config/config.php";
 require "upgrade.controller.php";

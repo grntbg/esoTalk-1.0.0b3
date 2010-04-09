@@ -11,7 +11,6 @@ class Database extends Pluggable {
 
 var $esoTalk;
 var $link;
-var $className = "Database";
 
 // Connect to a MySQL server and database.
 function connect($host, $user, $password, $db)
@@ -23,14 +22,14 @@ function connect($host, $user, $password, $db)
 
 // Run a query. If $fatal is true, then a fatal error will be displayed and page execution will be halted if the query
 // fails.
-function xquery($query, $fatal = true)
+function query($query, $fatal = true)
 {
 	global $language, $config;
 	
 	// If the query is empty, don't bother proceeding.
 	if (!$query) return false;
 	
-	$this->esoTalk->callHook("beforeDatabaseQuery", array(&$query));
+	$this->fireEvent("BeforeQuery", array(&$query));
 
 	// Execute the query. If there is a problem, display a formatted fatal error.
 	$result = mysql_query($query, $this->link);
@@ -39,7 +38,7 @@ function xquery($query, $fatal = true)
 		$this->esoTalk->fatalError($config["verboseFatalErrors"] ? $error . "<p style='font:100% monospace; overflow:auto'>" . $this->highlightQueryErrors($query, $error) . "</p>" : "", "mysql");
 	}
 	
-	$this->esoTalk->callHook("afterDatabaseQuery", array($query, &$result));
+	$this->fireEvent("AfterQuery", array($query, &$result));
 	
 	return $result;
 }

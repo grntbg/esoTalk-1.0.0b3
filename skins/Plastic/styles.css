@@ -40,7 +40,7 @@ h3 {font-size:120%; font-weight:bold}
 #hdr #search {margin-bottom:0; margin-top:10px; overflow:hidden}
 
 /* User bar */
-#bar {background:#f0f0f3 url(bg.png) repeat-x 0 -100px; border-bottom:1px solid #ababab; border-top:1px solid #c1c1c1; line-height:18px; overflow:hidden; padding:6px 25px}
+#bar {background:#f0f0f3 url(bg.png) repeat-x 0 -100px; border-bottom:1px solid #a1abb5; border-top:1px solid #bac1c8; line-height:18px; overflow:hidden; padding:6px 25px}
 #bar ul {list-style-type:none; margin:0; padding:0}
 #bar li {float:left; margin:0}
 #bar .fl li {margin-right:20px}
@@ -81,16 +81,19 @@ a.s5 {font-size:90%}
 #reset {display:block; float:left; height:27px; line-height:23px; overflow:hidden; text-align:center; width:1.5em; color:#bbb}
 #searchText:focus + .fr #reset {color:#555}
 #reset:hover, #searchText:focus ~ #reset:hover {text-decoration:none; color:#000}
+#reset:active {color:#999}
 
 /* Messages */
 #messages .msg {margin:0}
-.msg .close {float:right; border:1px solid #fff; color:#fff; text-decoration:none; padding:0 5px; margin:-2px -4px 0 0}
+.msg .close {float:right; text-decoration:none; padding:1px 6px; margin:-1px -6px 0 0}
 .msg .close:hover {background:#fff; color:#000; text-decoration:none}
 .msg .close:active {background:#aaa}
-.msg {background:#ddd; line-height:1.4; margin:0 0 1em 0; padding:5px 10px}
-.info {background:#fad163}
-.success {background:#cf0}
-.warning {background:#c00; color:#fff}
+.msg {background:#ddd; line-height:1.4; margin:0 0 1em 0; padding:5px 10px; border-bottom:2px solid #aaa}
+.info {background:#fff5a0; color:#686000; border-bottom-color:#f6e235}
+.info .close {color:#686000}
+.success {background:#e6ff84; color:#1d5d00; border-bottom-color:#d0ef58}
+.success .close {color:#1d5d00}
+.warning {background:#cc0000; color:#fff; border-bottom-color:#900c0c}
 .warning a, .warning a:hover {color:#fff; text-decoration:underline}
 .msg code {background:none}
 
@@ -260,6 +263,20 @@ blockquote p {margin-bottom:.75em}
 #palette a {display:block; height:35px; margin-top:2px}
 #palette a.selected {height:40px; margin-top:0}
 
+/* Admin */
+#admin {border-left:175px solid #eee; margin:-15px -25px; background:#fff;}
+#admin .menu {float:left; width:175px; margin:0; margin-left:-175px; padding:10px 0; border-right:1px solid #ccc;}
+#admin .menu li {list-style-type:none; margin:0; padding:0; display:block}
+#admin .menu li a {display:block; margin-left:15px; padding:10px 15px; font-size:120%;}
+#admin .menu li.active a {background:#fff; border:solid #ccc; border-width:1px 0 1px 1px; margin-right:-1px; color:#000; font-weight:bold;}
+#admin .inner {padding:15px 25px; border-left:1px solid #ccc;}
+#admin .stats label {font-weight:normal; text-align:left; width:30%}
+#admin .stats div {float:none; font-size:115%; margin-left:35%}
+#admin .stats li {border-bottom:1px solid #ddd; padding-left:10px}
+#admin .settingsForm input.text, #admin .settingsForm select {font-size:140%;}
+#admin .logoForm label, #admin .settingsForm label {width:20em;}
+#admin input.checkbox {margin:3px 5px 5px 0}
+
 /* Plugins */
 #plugins .controls {float:right}
 #plugins .controls a, #plugins small {margin-left:10px}
@@ -306,8 +323,8 @@ blockquote p {margin-bottom:.75em}
 
 /* Inputs, buttons, and other form elements */
 form {margin:0}
-input.text, textarea {background:#fff; border:1px solid #bbb; padding:2px}
-input.text:focus, textarea:focus {border-color:#777}
+input.text, textarea {background:#fff; border:#bbb 1px solid; padding:2px}
+input.text:focus, textarea:focus {border-color:#777; outline:0}
 #cInfo .editable:focus {background:#fff}
 .placeholder {color:#aaa}
 input.checkbox, input.radio {padding:0; margin:0 2px 0 5px; vertical-align:-2px}

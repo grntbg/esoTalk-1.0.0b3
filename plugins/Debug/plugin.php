@@ -32,23 +32,11 @@ function Debug()
 	$this->start = $this->microtimeFloat();
 	if (empty($_SESSION["queries"]) or !is_array($_SESSION["queries"])) $_SESSION["queries"] = array();
 	
+	global $esoTalk;
+	$esoTalk->registerController("debug", "DebugController", "plugins/Debug/debug.controller.php");
+	
 	parent::Plugin();
 }
-
-function Database_query_before()
-{
-	//echo "query_before";
-}
-
-function Database_query_after()
-{
-	//echo "query_after";
-}
-
-//function Database_query_override($query)
-//{
-	//return mysql_query($query);
-//}
 
 function init()
 {
@@ -107,7 +95,7 @@ function saveSettings()
 }
 
 // Add the debug information to the JSON array which is returned from an AJAX request.
-function addInformationToAjaxResult($esoTalk, &$result)
+function Handler_esoTalkController_ajaxFinish($esoTalk, &$result)
 {
 	global $config, $language;
 	
@@ -128,7 +116,7 @@ function addInformationToAjaxResult($esoTalk, &$result)
 	$result["debugSession"] = sanitize(print_r($_SESSION, true));
 	$result["debugCookie"] = sanitize(print_r($_COOKIE, true));
 	$result["log"] = sanitize($this->log);
-	$result["hookedFunctions"] = $this->getHookedFunctions();
+	//$result["hookedFunctions"] = $this->getHookedFunctions();
 	$_SESSION["queries"] = array();
 }
 
@@ -139,13 +127,13 @@ function microtimeFloat()
 }
 
 // Start the query timer so we can work out how long it took when it finished.
-function startQueryTimer($esoTalk, $query)
+function Handler_Database_BeforeQuery($esoTalk, $query)
 {
 	$this->queryTimer = $this->microtimeFloat();
 }
 
 // Work out how long the query took to run and add it to the log.
-function addQuery($esoTalk, $query)
+function Handler_Database_AfterQuery($esoTalk, $query)
 {
 	$_SESSION["queries"][] = array($query, round($this->microtimeFloat() - $this->queryTimer, 4));
 }
@@ -162,7 +150,7 @@ function log()
 }
 
 // Render the debug box at the bottom of the page.
-function renderDebug($esoTalk)
+function Handler_esoTalkController_pageEnd($esoTalk)
 {
 	global $config, $language;
 	
@@ -207,9 +195,9 @@ function renderDebug($esoTalk)
 	echo "</p></div>";
 	
 	// Hooked functions.
-	echo "<h3><a href='#' onclick='toggle(getById(\"debugHooks\"), {animation:\"verticalSlide\"});return false'>{$language["Hooked functions"]}</a></h3>
-	<ul id='debugHooks' class='fixed'>" . $this->getHookedFunctions() . "</ul>
-	</div>";
+	// echo "<h3><a href='#' onclick='toggle(getById(\"debugHooks\"), {animation:\"verticalSlide\"});return false'>{$language["Hooked functions"]}</a></h3>
+	// 	<ul id='debugHooks' class='fixed'>" . $this->getHookedFunctions() . "</ul>
+	// 	</div>";
 	
 	// Hide all panels by default.
 	echo "<script type='text/javascript'>
@@ -219,20 +207,20 @@ function renderDebug($esoTalk)
 	</script>";
 }
 
-function getHookedFunctions()
-{
-	$html = "";
-	$classes = array(&$this->esoTalk, &$this->esoTalk->controller);
-	foreach ($this->esoTalk->plugins as $plugin) $classes[] =& $plugin;
-	foreach ($classes as $class) {
-		foreach ($class->hookedFunctions as $hook => $functions) {
-			$html .= "<li>" . get_class($class) . " class: <strong>$hook</strong><br/>";
-			foreach ($functions as $function) $html .= "  " . get_class($function[0]) . "->{$function[1]}";
-			$html .= "</li>";
-		}
-	}
-	return $html ? $html : "<li></li>";
-}
+// function getHookedFunctions()
+// {
+// 	$html = "";
+// 	$classes = array(&$this->esoTalk, &$this->esoTalk->controller);
+// 	foreach ($this->esoTalk->plugins as $plugin) $classes[] =& $plugin;
+// 	foreach ($classes as $class) {
+// 		foreach ($class->hookedFunctions as $hook => $functions) {
+// 			$html .= "<li>" . get_class($class) . " class: <strong>$hook</strong><br/>";
+// 			foreach ($functions as $function) $html .= "  " . get_class($function[0]) . "->{$function[1]}";
+// 			$html .= "</li>";
+// 		}
+// 	}
+// 	return $html ? $html : "<li></li>";
+// }
 
 }
 

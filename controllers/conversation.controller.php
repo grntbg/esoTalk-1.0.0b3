@@ -7,7 +7,7 @@
 
 if (!defined("IN_ESOTALK")) exit;
 
-class conversation extends Controller {
+class ConversationController extends Controller {
 
 var $view = "conversation.view.php";
 var $editingPost = false; // Are we editing a post (specified in $_GET["editPost"])?
@@ -254,7 +254,7 @@ function init()
 		// Update the user's last read.
 		$this->updateLastRead(min($this->startFrom + $config["postsPerPage"], $this->conversation["postCount"]));
 
-		$this->callHook("initExistingConversation");
+		$this->fireEvent("initExistingConversation");
 
 		// Get the posts in the conversation.
 		$this->conversation["posts"] = $this->getPosts(array("startFrom" => $this->startFrom, "limit" => $config["postsPerPage"]));
@@ -279,7 +279,7 @@ function init()
 			redirect("conversation", "new");
 		}
 		
-		$this->callHook("initNewConversation");
+		$this->fireEvent("initNewConversation");
 	}
 	
 	// The following actions can apply regardless of whether the conversation exists or not.
@@ -294,7 +294,7 @@ function init()
 	if (isset($_POST["addMember"]) and $this->esoTalk->validateToken(@$_POST["token"]))
 		$result = $this->addMember($_POST["member"]);
 	
-	$this->callHook("init");
+	$this->fireEvent("init");
 }
 
 // Run AJAX actions.
@@ -302,7 +302,7 @@ function ajax()
 {
 	global $language, $config;
 	
-	if ($return = $this->callHook("ajax", null, true)) return $return;
+	if ($return = $this->fireEvent("ajax", null, true)) return $return;
 
 	switch (@$_POST["action"]) {
 		
@@ -567,7 +567,7 @@ function getConversation($id = false)
 		// Put together the components array.
 		$components = array("select" => $select, "from" => $from, "where" => $where, "groupBy" => $groupBy, "limit" => $limit);
 		
-		$this->callHook("beforeGetConversation", array(&$components));
+		$this->fireEvent("beforeGetConversation", array(&$components));
 		
 		// Compile the components into a query.
 		$query = $this->esoTalk->db->constructSelectQuery($components);
@@ -588,7 +588,7 @@ function getConversation($id = false)
 			$i++;
 		}
 		
-		$this->callHook("afterGetConversation", array(&$conversation));
+		$this->fireEvent("afterGetConversation", array(&$conversation));
 
 		return $conversation;
 	}
@@ -616,7 +616,7 @@ function getConversation($id = false)
 		// Add the private label if necessary.
 		if (!empty($_SESSION["membersAllowed"])) $conversation["labels"][] = "private";
 		
-		$this->callHook("getNewConversation", array(&$conversation));
+		$this->fireEvent("getNewConversation", array(&$conversation));
 		
 		return $conversation;
 	}
@@ -640,7 +640,7 @@ function &getMembersAllowed()
 		while (list($memberId, $name) = $this->esoTalk->db->fetchRow($result)) $membersAllowed[$memberId] = $name;
 	}
 	
-	$this->callHook("getMembersAllowed", array(&$membersAllowed));
+	$this->fireEvent("getMembersAllowed", array(&$membersAllowed));
 	
 	return $membersAllowed;
 }
@@ -677,7 +677,7 @@ function getPosts($criteria = array(), $display = false)
 	// Compile the query components.
 	$components = array("select" => $select, "from" => $from, "where" => $where, "orderBy" => array("p.time ASC"), "limit" => $limit ? "$startFrom,$limit" : "");
 	
-	$this->callHook("beforeGetPosts", array(&$components));
+	$this->fireEvent("beforeGetPosts", array(&$components));
 		
 	// Run the query.
 	$query = $this->esoTalk->db->constructSelectQuery($components);
@@ -723,12 +723,12 @@ function getPosts($criteria = array(), $display = false)
 		// If this is a deleted post and we're showing it, include the post content in the array.
 		if ($post["deleteMember"] and $this->showingDeletedPost == $post["id"]) $posts[$k]["body"] = $post["content"];
 		
-		$this->callHook("getPost", array(&$posts[$k], $post));
+		$this->fireEvent("getPost", array(&$posts[$k], $post));
 		
 		$i++;
 	}
 
-	$this->callHook("afterGetPosts", array(&$posts));
+	$this->fireEvent("afterGetPosts", array(&$posts));
 
 	return $posts;
 }
@@ -756,7 +756,7 @@ function addReply($content, $newConversation = false)
 	global $config;
 
 	// Does the user have permission? Is the post content valid? Flood control?
-	$hookError = $this->callHook("validateAddReply", array(&$content), true);
+	$hookError = $this->fireEvent("validateAddReply", array(&$content), true);
 	if (($error = $this->canReply()) !== true or ($error = $this->validatePost($content))
 		or (!$newConversation and ($error = $this->esoTalk->db->result("SELECT 1 FROM {$config["tablePrefix"]}posts WHERE memberId={$this->esoTalk->user["memberId"]} AND time>" . (time() - $config["timeBetweenPosts"]), 0) ? "waitToReply" : false))
 		or ($error = $hookError)) {
@@ -775,7 +775,7 @@ function addReply($content, $newConversation = false)
 		"title" => "'{$this->conversation["title"]}'"
 	);
 	
-	$this->callHook("beforeAddReply", array(&$post));
+	$this->fireEvent("beforeAddReply", array(&$post));
 
 	// Construct the query and insert the post into the posts table.
 	$this->esoTalk->db->query($this->esoTalk->db->constructInsertQuery("posts", $post));
@@ -818,7 +818,7 @@ function addReply($content, $newConversation = false)
 	if ($this->conversation["postCount"] == 1 and !empty($this->conversation["membersAllowed"]))
 		$this->emailPrivateAdd(array_keys($this->conversation["membersAllowed"]), true);
 	
-	$this->callHook("afterAddReply", array($id));
+	$this->fireEvent("afterAddReply", array($id));
 	
 	return $id;
 }
@@ -834,7 +834,7 @@ function saveDraft($content)
 		return false;
 	}
 	
-	$this->callHook("saveDraft", array(&$content));
+	$this->fireEvent("saveDraft", array(&$content));
 	
 	// We need to use $this->esoTalk->db->escape here because the content is raw, ie. we don't want to sanitize() it.
 	$slashedContent = $this->esoTalk->db->escape($content);
@@ -860,7 +860,7 @@ function discardDraft()
 	unset($this->conversation["labels"][array_search("draft", $this->conversation["labels"])]);
 	$this->conversation["draft"] = null;
 	
-	$this->callHook("discardDraft");
+	$this->fireEvent("discardDraft");
 	
 	return true;
 }
@@ -878,7 +878,7 @@ function editPost($postId, $content)
 	}
 	
 	// Allow the "editPost" hook to halt the process.
-	if ($error = $this->callHook("editPost", array($postId, &$content, true))) {
+	if ($error = $this->fireEvent("editPost", array($postId, &$content, true))) {
 		$this->esoTalk->message($error);
 		return false;
 	}
@@ -911,7 +911,7 @@ function getEditControls($id)
 		900 => "<input type='checkbox' id='$id-previewCheckbox' class='checkbox' onclick='Conversation.togglePreview(\"$id\",this.checked)' accesskey='p'/> <label for='$id-previewCheckbox'>{$language["Preview"]}</label>",
 	);
 	
-	$this->callHook("getEditControls", array(&$controls));
+	$this->fireEvent("getEditControls", array(&$controls));
 	
 	return $controls;
 }
@@ -932,7 +932,7 @@ function getEditArea($postId, $content)
 </div>
 </form>";
 
-	$this->callHook("getEditArea", array(&$html));
+	$this->fireEvent("getEditArea", array(&$html));
 	
 	return $html;
 }
@@ -941,7 +941,7 @@ function getEditArea($postId, $content)
 function formatForEditing($content)
 {
 	$formatters = array();
-	$this->callHook("formatForEditing", array(&$content, &$formatters));
+	$this->fireEvent("formatForEditing", array(&$content, &$formatters));
 	return $this->esoTalk->formatter->revert($content, count($formatters) ? $formatters : false);
 }
 
@@ -949,7 +949,7 @@ function formatForEditing($content)
 function formatForDisplay($content)
 {
 	$formatters = array();
-	$this->callHook("formatForDisplay", array(&$content, &$formatters));
+	$this->fireEvent("formatForDisplay", array(&$content, &$formatters));
 	return $this->esoTalk->formatter->format($content, count($formatters) ? $formatters : false);
 }
 
@@ -963,7 +963,7 @@ function displayPost($content)
 	global $language;
 	$content = preg_replace("`(<a href='" . str_replace("?", "\?", makeLink("post", "(\d+)")) . "'[^>]*>)<\/a>`", "$1{$language["go to this post"]}</a>", $content);
 	
-	$this->callHook("displayPost", array(&$content));
+	$this->fireEvent("displayPost", array(&$content));
 	return $content;
 }
 
@@ -973,7 +973,7 @@ function validatePost($post)
 	global $config;
 	if (strlen($post) > $config["maxCharsPerPost"]) return "postTooLong";
 	if (!strlen($post)) return "emptyPost";
-	return $this->callHook("validatePost", array(&$post), true);
+	return $this->fireEvent("validatePost", array(&$post), true);
 }
 
 // Delete a post.
@@ -1005,7 +1005,7 @@ function deletePost($postId)
 		return false;
 	}
 	
-	$this->callHook("deletePost", array($postId));
+	$this->fireEvent("deletePost", array($postId));
 	
 	return true;
 }
@@ -1038,7 +1038,7 @@ function restorePost($postId)
 		return false;
 	}
 	
-	$this->callHook("restorePost", array($postId));
+	$this->fireEvent("restorePost", array($postId));
 	
 	return true;
 }
@@ -1061,7 +1061,7 @@ function startConversation($conversation)
 	if ($conversation["draft"] and !$conversation["title"]) $conversation["title"] = $language["Untitled conversation"];
 	
 	// Check for errors; validate the title and the post content.
-	$hookError = $this->callHook("validateStartConversation", array(&$conversation), true);
+	$hookError = $this->fireEvent("validateStartConversation", array(&$conversation), true);
 	if (($error = $this->validateTitle($conversation["title"])) or ($error = $this->validatePost($conversation["content"]))
 		or ($error = $hookError)) {
 		$this->esoTalk->message($error);
@@ -1083,7 +1083,7 @@ function startConversation($conversation)
 		"posts" => $conversation["draft"] ? "0" : "1"
 	);
 	
-	$this->callHook("beforeStartConversation", array(&$insert, $conversation));
+	$this->fireEvent("beforeStartConversation", array(&$insert, $conversation));
 	
 	// Insert the conversation into the database.	
 	$query = $this->esoTalk->db->constructInsertQuery("conversations", $insert);
@@ -1127,7 +1127,7 @@ function startConversation($conversation)
 	// Clear session data.
 	unset($_SESSION["starred"], $_SESSION["membersAllowed"]);
 
-	$this->callHook("afterStartConversation", array($conversationId));
+	$this->fireEvent("afterStartConversation", array($conversationId));
 
 	return $conversationId;
 }
@@ -1146,7 +1146,7 @@ function deleteConversation()
 		LEFT JOIN {$config["tablePrefix"]}tags t ON (t.conversationId=c.conversationId)
 		WHERE c.conversationId={$this->conversation["id"]}";
 		
-	$this->callHook("deleteConversation", array(&$query));
+	$this->fireEvent("deleteConversation", array(&$query));
 	
 	$this->esoTalk->db->query($query);
 	$this->conversation["lastActionTime"] = time();
@@ -1168,7 +1168,7 @@ function addMember($name)
 	global $language, $config;
 	
 	// Allow a hook to set $memberId and $name.
-	list($memberId, $memberName) = $this->callHook("findMemberAllowed", array($name), true);
+	list($memberId, $memberName) = $this->fireEvent("findMemberAllowed", array($name), true);
 
 	// If the hook didn't find anyone, then check if $name is actually a user group or a member name.
 	if (!$memberId) {
@@ -1228,7 +1228,7 @@ function addMember($name)
 	if (!in_array("private", $this->conversation["labels"])) $this->conversation["labels"][] = "private";
 	$this->conversation["private"] = true;
 	
-	$this->callHook("afterAddMemberAllowed", array($memberId, $memberName));
+	$this->fireEvent("afterAddMemberAllowed", array($memberId, $memberName));
 
 	return true;
 }
@@ -1266,7 +1266,7 @@ function removeMember($memberId)
 		}
 	}
 	
-	$this->callHook("afterRemoveMemberAllowed", array($memberId));
+	$this->fireEvent("afterRemoveMemberAllowed", array($memberId));
 
 	return true;
 }
@@ -1338,7 +1338,7 @@ function htmlMembersAllowedList($membersAllowed)
 	// Otherwise, return "Everyone".
 	} else $html = $language["Everyone"];
 	
-	$this->callHook("getMembersAllowedHTML", array(&$html, $membersAllowed));
+	$this->fireEvent("getMembersAllowedHTML", array(&$html, $membersAllowed));
 	
 	return $html;
 }
@@ -1354,7 +1354,7 @@ function saveTitle($title)
 	$slashedTitle = $this->esoTalk->db->escape($title);
 	$query = "UPDATE {$config["tablePrefix"]}conversations c SET title='$slashedTitle', slug='$slug', lastActionTime=" . time() . " WHERE c.conversationId={$this->conversation["id"]}";
 
-	$this->callHook("saveTitle", array(&$query, $title));
+	$this->fireEvent("saveTitle", array(&$query, $title));
 	
 	$this->esoTalk->db->query($query);
 	$this->conversation["title"] = $this->title = $title;
@@ -1399,7 +1399,7 @@ function saveTags($tags)
 	if ($this->conversation["lastActionTime"] != time()) $this->esoTalk->db->query("UPDATE {$config["tablePrefix"]}conversations SET lastActionTime=" . time() . " WHERE conversationId={$this->conversation["id"]}");
 	$this->conversation["tags"] = implode(", ", $newTags);
 	
-	$this->callHook("saveTags", array($newTags, $addTags, $delTags));
+	$this->fireEvent("saveTags", array($newTags, $addTags, $delTags));
 }
 
 // Convert a plain text tag string to have html links to respective tag searches.
@@ -1426,7 +1426,7 @@ function toggleSticky()
 	global $config;
 	$query = "UPDATE {$config["tablePrefix"]}conversations SET sticky=(!sticky), lastActionTime=" . time() . " WHERE conversationId={$this->conversation["id"]}";
 	
-	$this->callHook("toggleSticky", array(&$query));
+	$this->fireEvent("toggleSticky", array(&$query));
 	
 	$this->esoTalk->db->query($query);
 }
@@ -1439,7 +1439,7 @@ function toggleLock()
 	global $config;
 	$query = "UPDATE {$config["tablePrefix"]}conversations SET locked=(!locked), lastActionTime=" . time() . " WHERE conversationId={$this->conversation["id"]}";
 	
-	$this->callHook("toggleLock", array(&$query));
+	$this->fireEvent("toggleLock", array(&$query));
 	
 	$this->esoTalk->db->query($query);
 	$this->conversation["locked"] = !$this->conversation["locked"];
@@ -1450,7 +1450,7 @@ function validateTitle(&$title)
 {
 	$title = substr($title, 0, 63);
 	if (!strlen($title)) return "emptyTitle";
-	return $this->callHook("validateTitle", array(&$title), true);
+	return $this->fireEvent("validateTitle", array(&$title), true);
 }
 
 // Format a tag: convert to lowercase and strip unwanted characters.

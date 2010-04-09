@@ -1465,7 +1465,7 @@ saveDraft: function() {
 discardDraft: function() {
 	
 	// If there are no posts in the conversation (ie. it's a draft conversation), delete the conversation.
-	if (!this.postCount) {
+	if (this.postCount == 0) {
 		window.location = window.location.split("?")[0] + "?delete";
 		return;
 	}

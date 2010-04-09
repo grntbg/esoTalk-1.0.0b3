@@ -17,7 +17,7 @@ if (count($this->skins)): ?>
 <?php // Loop through each skin and output its preview/information.
 foreach ($this->skins as $k => $skin): ?>
 <li<?php if ($skin["selected"]): ?> class='enabled'<?php endif; ?>>
-<a href='<?php echo makeLink("skins", $k, "?token={$_SESSION["token"]}"); ?>'>
+<a href='<?php echo makeLink("admin", "skins", $k, "?token={$_SESSION["token"]}"); ?>'>
 <span class='preview'>
 <?php if ($skin["preview"]): ?><img src='skins/<?php echo $k; ?>/<?php echo $skin["preview"]; ?>' alt='<?php echo $skin["name"]; ?>'/>
 <?php else: ?><span><?php echo $language["No preview"]; ?></span>
@@ -40,7 +40,7 @@ else: ?>
 <fieldset id='addSkin'>
 <legend><?php echo $language["Add a new skin"]; ?></legend>
 <?php echo $this->esoTalk->htmlMessage("downloadSkins", "http://esotalk.com/skins"); ?>
-<form action='<?php echo makeLink("skins"); ?>' method='post' enctype='multipart/form-data'>
+<form action='<?php echo makeLink("admin", "skins"); ?>' method='post' enctype='multipart/form-data'>
 <input type='hidden' name='token' value='<?php echo $_SESSION["token"]; ?>'/>
 <ul class='form'>
 <li><label><?php echo $language["Upload a skin"]; ?></label> <input name='installSkin' type='file' class='text' size='20'/></li>

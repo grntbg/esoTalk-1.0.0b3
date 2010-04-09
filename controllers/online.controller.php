@@ -6,7 +6,7 @@
 
 if (!defined("IN_ESOTALK")) exit;
 
-class online extends Controller {
+class OnlineController extends Controller {
 	
 var $view = "online.view.php";
 

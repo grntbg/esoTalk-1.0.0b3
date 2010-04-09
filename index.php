@@ -22,16 +22,11 @@ if (is_numeric($q1)) {
 	$_GET["q2"] = @$_GET["q1"];
 	$_GET["q1"] = $q1 = "conversation";
 }
-// Does this controller exist?
-if (in_array($q1, $esoTalk->allowedActions) and file_exists("controllers/$q1.controller.php")) $esoTalk->action = $q1;
-
-// No? Just use the search action.
-else $esoTalk->action = "search";
+// Does this controller exist? If not, just use the search action.
+$esoTalk->action = in_array($q1, $esoTalk->allowedActions) ? $q1 : $esoTalk->action = "search";
 
 // Include and set up the controller corresponding to the chosen action.
-require "controllers/$esoTalk->action.controller.php";
-$className = str_replace("-", "", $esoTalk->action);
-$esoTalk->controller = new $className;
+$esoTalk->controller = $factory->make($esoTalk->action);
 $esoTalk->controller->esoTalk =& $esoTalk;
 
 // Include the custom.php file.

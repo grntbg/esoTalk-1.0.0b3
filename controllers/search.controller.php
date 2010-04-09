@@ -6,7 +6,7 @@
 
 if (!defined("IN_ESOTALK")) exit;
 
-class search extends Controller {
+class SearchController extends Controller {
 
 var $view = "search.view.php";
 var $tagCloud = array();
@@ -128,8 +128,9 @@ function init()
 	if (!defined("AJAX_REQUEST")) {
 	
 		// Assign the latest search to a session variable.
-		if (isset($_GET["q"])) $_GET["q2"] = $_GET["q"];
-		$this->searchString = $_SESSION["search"] = @$_GET["q2"];
+		if (isset($_GET["q"])) $this->searchString = $_GET["q"];
+		elseif (@$_GET["q1"] == "search") $this->searchString = $_GET["q2"];
+		$_SESSION["search"] = $this->searchString;
 		
 		// Add JavaScript language definitions and variables.
 		$this->esoTalk->addLanguageToJS("Starred", "Unstarred", array("gambits", "member"), array("gambits", "tag:"), array("gambits", "more results"));
@@ -165,7 +166,7 @@ function init()
 				
 	}
 	
-	$this->callHook("init");
+	$this->fireEvent("init");
 	
 	// Last, but definitely not least... perform the search!
 	if (!defined("AJAX_REQUEST")) $this->results = $this->doSearch($this->searchString);
@@ -343,7 +344,7 @@ function getConversationIDs($search = "")
 		"limit" => $this->limit
 	);
 	
-	$this->callHook("getConversationIds", array(&$components));
+	$this->fireEvent("getConversationIds", array(&$components));
 	
 	// ...and construct and execute the query!
 	$query = $this->esoTalk->db->constructSelectQuery($components);
@@ -414,7 +415,7 @@ function doSearch($search = "")
 		"orderBy" => "FIELD(c.conversationId,$conversationIds)"
 	);
 	
-	$this->callHook("beforeGetResults", array(&$components));
+	$this->fireEvent("beforeGetResults", array(&$components));
 	
 	// Put the query together and execute it.
 	$query = $this->esoTalk->db->constructSelectQuery($components);
@@ -428,7 +429,7 @@ function doSearch($search = "")
 			$results[] = $conversation;
 	}
 	
-	$this->callHook("afterGetResults", array(&$results));
+	$this->fireEvent("afterGetResults", array(&$results));
 	
 	return $results;
 }
@@ -438,7 +439,7 @@ function ajax()
 {
 	global $config, $language;
 	
-	if ($return = $this->callHook("ajax", null, true)) return $return;
+	if ($return = $this->fireEvent("ajax", null, true)) return $return;
 	
 	switch (@$_POST["action"]) {
 		

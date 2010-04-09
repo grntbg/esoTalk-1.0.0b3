@@ -11,42 +11,68 @@
 
 if (!defined("IN_ESOTALK")) exit;
 
-// Hookable - a class in which code can be hooked on to.
-// Extend this class and then use $this->callHook("uniqueMarker") in the class code to call any code which has been
-// hooked via $classInstance->addHook("uniqueMarker", "function").
-class Hookable extends Pluggable {
 
-var $hookedFunctions = array();
+class Factory {
+	
+var $classNames = array(
+	"Database" => array("Database", "lib/database.php"),
+	"Formatter" => array("Formatter", "lib/formatter.php"),
+	"conversation" => array("ConversationController", "controllers/conversation.controller.php"),
+	"esoTalk" => array("esoTalkController", "controllers/esoTalk.controller.php"),
+	"feed" => array("FeedController", "controllers/feed.controller.php"),
+	"forgot-password" => array("ForgotPasswordController", "controllers/forgot-password.controller.php"),
+	"join" => array("JoinController", "controllers/join.controller.php"),
+	"online" => array("OnlineController", "controllers/online.controller.php"),
+	"admin" => array("AdminController", "controllers/admin.controller.php"),
+	"post" => array("PostController", "controllers/post.controller.php"),
+	"profile" => array("ProfileController", "controllers/profile.controller.php"),
+	"search" => array("SearchController", "controllers/search.controller.php"),
+	"settings" => array("SettingsController", "controllers/settings.controller.php"),
+);
 
-// Run all collective hooked functions for the specified marker.
-function callHook($marker, $parameters = array(), $return = false)
+function &make($class)
 {
-	if (isset($this->hookedFunctions[$marker]) and count($this->hookedFunctions[$marker])) {
-		
-		// Add the instance of this class to the parameters.
-		// We can't use array_unshift here because call-time pass-by-reference has been deprecated.
-		$parameters = is_array($parameters) ? array_merge(array(&$this), $parameters) : array(&$this);
-		
-		// Loop through the functions which have been hooked on this hook and execute them.
-		// If this hook requires a return value and the function we're running returns something, return that.
-		foreach ($this->hookedFunctions[$marker] as $function) {
-			if (($returned = call_user_func_array($function, $parameters)) and $return) return $returned;
-		}
+	if (!class_exists($this->classNames[$class][0])) require $this->classNames[$class][1];
+	$object = new $this->classNames[$class][0];
+	$object->className = $this->classNames[$class][0];
+	return $object;
+}
+
+function register($class, $className, $file)
+{
+	$this->classNames[$class] = array($className, $file);
+}
+
+}
+
+// Hookable - a class in which code can be hooked on to.
+// Extend this class and then use $this->fireEvent("uniqueMarker") in the class code to call any code which has been
+// hooked via $classInstance->addHook("uniqueMarker", "function").
+class Pluggable {
+	
+var $className;
+
+function fireEvent($event, $parameters = array(), $return = false)
+{
+	global $esoTalk;
+	// Add the instance of this class to the parameters.
+	// We can't use array_unshift here because call-time pass-by-reference has been deprecated.
+	$parameters = is_array($parameters) ? array_merge(array(&$this), $parameters) : array(&$this);
+	foreach ($esoTalk->plugins as $plugin) {
+		if (method_exists($plugin, "Handler_{$this->className}_$event"))
+			// Loop through the functions which have been hooked on this hook and execute them.
+			// If this hook requires a return value and the function we're running returns something, return that.
+			if (($returned = call_user_func_array(array($plugin, "Handler_{$this->className}_$event"), $parameters)) and $return) return $returned;
 	}
 }
 
-// Hook a function.
-function addHook($hook, $function)
-{
-	$this->hookedFunctions[$hook][] = $function;
-}
 
 }
 
 
-// Controller (extends Hookable) - a class which defines a view and handles input.
+// Controller (extends Pluggable) - a class which defines a view and handles input.
 // Extend this class and then use $esoTalk->registerController() to register your new controller.
-class Controller extends Hookable {
+class Controller extends Pluggable {
 
 var $action;
 var $view;
@@ -66,9 +92,9 @@ function render()
 }
 
 
-// Plugin (extends Hookable) - a class which defines a plugin.
+// Plugin (extends Pluggable) - a class which defines a plugin.
 // Extend this class to make a plugin. See the plugin documentation for more information.
-class Plugin extends Hookable {
+class Plugin extends Pluggable {
 
 var $id;
 var $name;
@@ -137,6 +163,12 @@ function registerView($view, $file)
 function getView($view)
 {
 	return empty($this->views[$view]) ? "views/$view" : $this->views[$view];
+}
+
+function getForumLogo()
+{
+	global $config;
+	return !empty($config["forumLogo"]) ? $config["forumLogo"] : "skins/{$config["skin"]}/logo.gif";
 }
 
 }

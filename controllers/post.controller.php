@@ -6,7 +6,7 @@
 
 if (!defined("IN_ESOTALK")) exit;
 
-class post extends Controller {
+class PostController extends Controller {
 
 function init()
 {

@@ -6,7 +6,7 @@
 
 if (!defined("IN_ESOTALK")) exit;
 
-class feed extends Controller {
+class FeedController extends Controller {
 
 // Feed data variables, outputted in the view.
 var $items = array();
@@ -23,7 +23,7 @@ function init()
 	$this->esoTalk->view = "feed.view.php";
 	header("Content-type: text/xml; charset={$language["charset"]}");
 	
-	if ($return = $this->callHook("init")) return;
+	if ($return = $this->fireEvent("init")) return;
 	
 	// Work out what type of feed we're doing, based on the URL:
 	// conversation/[id] -> fetch the posts in conversation [id].
@@ -106,7 +106,7 @@ function format($post)
 {
 	global $config, $language;
 	
-	$this->callHook("formatPost", array(&$post));
+	$this->fireEvent("formatPost", array(&$post));
 	
 	// Replace empty post links with "go to this post" links.
 	$post = preg_replace("`(<a href='" . str_replace("?", "\?", makeLink("post", "(\d+)")) . "'[^>]*>)<\/a>`", "$1{$language["go to this post"]}</a>", $post);

@@ -7,7 +7,7 @@
 
 if (!defined("IN_ESOTALK")) exit;
 
-class join extends Controller {
+class JoinController extends Controller {
 
 var $view = "join.view.php";
 
@@ -83,7 +83,7 @@ function init()
 		
 	);
 	
-	$this->callHook("init");
+	$this->fireEvent("init");
 	
 	// Make an array of just fields (without the enclosing fieldsets) for easy access.
 	$this->fields = array();
@@ -105,7 +105,7 @@ function init()
 // Run AJAX actions.
 function ajax()
 {
-	if ($return = $this->callHook("ajax", null, true)) return $return;
+	if ($return = $this->fireEvent("ajax", null, true)) return $return;
 	
 	switch ($_POST["action"]) {
 		
@@ -141,7 +141,7 @@ function addMember()
 		} else $this->fields[$k]["success"] = true;
 	}
 	
-	$this->callHook("validateForm", array(&$validationError));
+	$this->fireEvent("validateForm", array(&$validationError));
 	
 	// If there was a validation error, don't continue.
 	if ($validationError) return false;
@@ -158,10 +158,9 @@ function addMember()
 	
 	// Add a few extra fields to the query.
 	$insertData["color"] = "FLOOR(1 + (RAND() * {$this->esoTalk->skin->numberOfColors}))";
-	$insertData["language"] = "'" . $this->esoTalk->db->escape($config["language"]) . "'";
 	$insertData["avatarAlignment"] = "'{$_SESSION["avatarAlignment"]}'";
 	
-	$this->callHook("beforeAddMember", array(&$insertData));
+	$this->fireEvent("beforeAddMember", array(&$insertData));
 	
 	// Construct the query and make it a REPLACE query rather than an INSERT one (so unvalidated members can be
 	// overwritten).
@@ -172,7 +171,7 @@ function addMember()
 	$this->esoTalk->db->query($insertQuery);
 	$memberId = $this->esoTalk->db->lastInsertId();
 	
-	$this->callHook("afterAddMember", array($memberId));
+	$this->fireEvent("afterAddMember", array($memberId));
 	
 	// Email the member with a verification link so that they can verify their account.
 	$this->sendVerificationEmail($_POST["join"]["email"], $_POST["join"]["name"], $memberId . md5($config["salt"] . $_POST["join"]["password"]));

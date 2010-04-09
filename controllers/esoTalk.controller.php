@@ -6,12 +6,12 @@
 
 if (!defined("IN_ESOTALK")) exit;
 
-class esoTalk extends Controller {
+class esoTalkController extends Controller {
 
 var $db;
 var $user;
 var $action;
-var $allowedActions = array("conversation", "feed", "forgot-password", "join", "online", "plugins", "post", "profile", "search", "settings", "skins");
+var $allowedActions = array("admin", "conversation", "feed", "forgot-password", "join", "online", "post", "profile", "search", "settings");
 var $controller;
 var $view = "wrapper.php";
 var $language;
@@ -32,28 +32,22 @@ var $memberGroups = array("Administrator", "Moderator", "Member", "Suspended");
 var $bar = array("left" => array(), "right" => array());
 var $plugins = array();
 
-// Class constructor: connect to the database and perform other initializations.
-function esoTalk()
-{	
-	global $config;
-
+// Initialize: set up the user and initialize the bar and other components of the page.
+function init()
+{
+	global $language, $config, $factory;
+	
 	// Connect to the database by setting up the database class.
-	$this->db = new Database();
+	$this->db = $factory->make("Database");
 	$this->db->esoTalk =& $this;
 	if (!$this->db->connect($config["mysqlHost"], $config["mysqlUser"], $config["mysqlPass"], $config["mysqlDB"]))
 		$this->fatalError($config["verboseFatalErrors"] ? $this->db->error() : "", "mysql");
-	
+		
 	// Clear messages in the SESSION messages variable.
 	if (!isset($_SESSION["messages"]) or !is_array($_SESSION["messages"])) $_SESSION["messages"] = array();
 	
 	// Create an instance of the Formatter class.
-	$this->formatter = new Formatter();
-}
-
-// Initialize: set up the user and initialize the bar and other components of the page.
-function init()
-{
-	global $language, $config;
+	$this->formatter = $factory->make("Formatter");
 
 	// Log out if necessary.
 	if (@$_GET["q1"] == "logout") $this->logout();
@@ -88,7 +82,9 @@ function init()
 		if ($this->user["memberId"] == $config["rootAdmin"]) {
 			// How long ago was the last update check? If it was any more than 1 day ago, check again now.
 			if (file_exists("config/lastUpdateCheck.php")) include "config/lastUpdateCheck.php";
-			if (!isset($lastUpdateCheck) or time() - $lastUpdateCheck >= 86400) $this->checkForUpdates();
+			if (!isset($lastUpdateCheck) or time() - $lastUpdateCheck >= 86400) {
+				if ($latestVersion = $this->checkForUpdates()) $this->message("updatesAvailable", false, $latestVersion);
+			}
 		}
 	
 		// If the user IS NOT logged in, add the login form and 'Join this forum' link to the bar.
@@ -114,10 +110,8 @@ makePlaceholder(getById('loginPassword'), '********');" .
 			$this->addToBar("left", "<a href='" . makeLink("conversation", "new") . "'>{$language["Start a conversation"]}</a>", 300);
 			$this->addToBar("left", "<a href='" . makeLink("settings") . "'>{$language["My settings"]}</a>", 400);
 			$this->addToBar("left", "<a href='" . makeLink("logout") . "'>{$language["Log out"]}</a>", 1000);
-			if ($this->user["admin"]) {
-				$this->addToBar("left", "<a href='" . makeLink("skins") . "'>{$language["Skins"]}</a>", 700);
-				$this->addToBar("left", "<a href='" . makeLink("plugins") . "'>{$language["Plugins"]}</a>", 800);
-			}
+			if ($this->user["admin"])
+				$this->addToBar("left", "<a href='" . makeLink("admin") . "'>{$language["Administration"]}</a>", 700);
 		}
 		
 		// Add the "Donate to esoTalk" link to the footer.
@@ -129,7 +123,7 @@ makePlaceholder(getById('loginPassword'), '********');" .
 				
 	}
 	
-	$this->callHook("init");
+	$this->fireEvent("init");
 }
 
 // Run AJAX actions.
@@ -137,7 +131,7 @@ function ajax()
 {
 	global $config;
 	
-	if ($return = $this->callHook("ajax", null, true)) return $return;
+	if ($return = $this->fireEvent("ajax", null, true)) return $return;
 	
 	switch (@$_POST["action"]) {
 		
@@ -183,13 +177,13 @@ function login($name = false, $password = false, $hash = false)
 		$ip = sprintf("%u", ip2long(substr($ip, 0, strrpos($ip, ".")) . ".0"));
 		if (isset($cookie)) $components["where"][] = "cookieIP=" . ($ip ? $ip : "0");
 		
-		$this->callHook("beforeLogin", array(&$components));
+		$this->fireEvent("beforeLogin", array(&$components));
 
 		// Run the query and get the data if there is a matching user.
 		$result = $this->db->query($this->db->constructSelectQuery($components));
 		if ($data = $this->db->fetchAssoc($result)) {
 			
-			$this->callHook("afterLogin", array(&$data));
+			$this->fireEvent("afterLogin", array(&$data));
 			
 			// If their account is unvalidated, show a message with a link to resend a verification email.
 			if ($data["account"] == "Unvalidated") {
@@ -237,7 +231,7 @@ function logout()
 	// Eat the cookie. OM NOM NOM
 	if (isset($_COOKIE[$config["cookieName"]])) setcookie($config["cookieName"], "", -1, "/");
 	
-	$this->callHook("logout");
+	$this->fireEvent("logout");
 
 	// Redirect to the home page.
 	redirect("");
@@ -265,9 +259,25 @@ function getStatistics()
 		"conversations" => number_format($conversations) . " {$language["conversations"]}",
 		"membersOnline" => number_format($membersOnline) . " " . $language[$membersOnline == 1 ? "member online" : "members online"]
 	);
-	$this->callHook("getStatistics", array(&$result));
+	$this->fireEvent("getStatistics", array(&$result));
 	
 	return $result;
+}
+
+// Get an array of language packs from the languages/ directory.
+function getLanguages()
+{
+	$languages = array();
+	if ($handle = opendir("languages")) {
+	    while (false !== ($v = readdir($handle))) {
+			if (!in_array($v, array(".", "..")) and substr($v, -4) == ".php" and $v[0] != ".") {
+				$v = substr($v, 0, strrpos($v, "."));
+				$languages[] = $v;
+			}
+		}
+	}
+	sort($languages);
+	return $languages;
 }
 
 // Check for updates to the esoTalk software.
@@ -284,25 +294,22 @@ function checkForUpdates()
 	fclose($handle);
 	
 	// Compare the installed version and the latest version. Show a message if there is a new version.
-	if (version_compare(ESOTALK_VERSION, $latestVersion) == -1) $this->message("updatesAvailable", false, $latestVersion);
+	if (version_compare(ESOTALK_VERSION, $latestVersion) == -1) $latestVersion;
 }
 
 // Check the first parameter of the URL against $name, and instigate the controller it refers to if they match.
-function registerController($name, $file)
+function registerController($identifier, $className, $file)
 {
-	if (@$_GET["q1"] == $name) {
-		require_once $file;
-		$this->action = $name;
-		$this->controller = new $name;
-		$this->controller->esoTalk =& $this;
-	}
+	global $factory;
+	$this->allowedActions[] = $identifier;
+	$factory->register($identifier, $className, $file);
 }
 
 // Halt page execution and show a fatal error message.
 function fatalError($message, $esoTalkSearch = "")
 {
 	global $language, $config;
-	$this->callHook("fatalError", array(&$message));
+	$this->fireEvent("fatalError", array(&$message));
 	if (defined("AJAX_REQUEST")) {
 		header("HTTP/1.0 500 Internal Server Error");
 		echo strip_tags("{$language["Fatal error"]} - $message");
@@ -325,7 +332,7 @@ function addMessage($key, $class, $message)
 // Display a message (referred to by $key) on the page. $arguments will be used to fill out placeholders in a message.
 function message($key, $disappear = true, $arguments = false)
 {
-	$this->callHook("message", array(&$key, &$disappear, &$arguments));
+	$this->fireEvent("message", array(&$key, &$disappear, &$arguments));
 	$_SESSION["messages"][] = array("message" => $key, "arguments" => $arguments, "disappear" => $disappear);
 }
 
@@ -449,7 +456,7 @@ var esoTalk=" . json($esoTalkJS) . ",isIE6,isIE7// ]]></script>\n";
 	// Finally, append the custom HTML string constructed via $this->addToHead().
 	$head .= $this->head;
 	
-	$this->callHook("head", array(&$head));
+	$this->fireEvent("head", array(&$head));
 
 	return $head;
 }
@@ -489,7 +496,7 @@ function star($conversationId)
 		$query = "INSERT INTO {$config["tablePrefix"]}status (conversationId, memberId, starred) VALUES ($conversationId, {$this->user["memberId"]}, 1) ON DUPLICATE KEY UPDATE starred=IF(starred=1,0,1)";
 		$this->db->query($query);
 		
-		$this->callHook("star", array($conversationId));
+		$this->fireEvent("star", array($conversationId));
 	}
 }
 
@@ -511,7 +518,7 @@ function htmlStar($conversationId, $starred)
 // Return the path to a user's avatar, depending on its format.
 function getAvatar($memberId, $avatarFormat, $type = false)
 {
-	if ($return = $this->callHook("getAvatar", array($memberId, $avatarFormat, $type))) return $return;
+	if ($return = $this->fireEvent("getAvatar", array($memberId, $avatarFormat, $type))) return $return;
 	
 	// If this is a full-sized gif avatar, we need to render it via g.php for security purposes.
 	if ($avatarFormat == "gif" and $type != "thumb" and file_exists("avatars/$memberId.gif")) {
@@ -540,7 +547,7 @@ function updateLastAction($action)
 {
 	if (!$this->user) return false;
 	
-	$this->callHook("updateLastAction", array(&$action));
+	$this->fireEvent("updateLastAction", array(&$action));
 	
 	global $config;
 	$action = $this->db->escape(substr($action, 0, 255));
@@ -562,7 +569,7 @@ function changeMemberGroup($memberId, $newGroup, $currentGroup = false)
 	// Determine which groups the member can be changed to.
 	if (!($possibleGroups = $this->canChangeGroup($memberId, $currentGroup)) or !in_array($newGroup, $possibleGroups)) return false;
 	
-	$this->callHook("changeMemberGroup", array(&$newGroup));
+	$this->fireEvent("changeMemberGroup", array(&$newGroup));
 	
 	// Change the group!
 	$this->db->query("UPDATE {$config["tablePrefix"]}members SET account='$newGroup' WHERE memberId=$memberId");

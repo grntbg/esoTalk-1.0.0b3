@@ -73,7 +73,7 @@ foreach ($this->esoTalk->labels as $k => $v) echo "<span class='label $k'" . (!i
 
 </div>
 
-<?php $this->callHook("afterRenderHeader"); ?>
+<?php $this->fireEvent("afterRenderHeader"); ?>
 
 <div id='cContent'>
 
@@ -129,7 +129,7 @@ $paginationHtml = "<ul id='pagination' class='pg'>
 </ul>";
 
 // Output the first pagination bar.
-$this->callHook("beforeRenderPagination", array(&$paginationHtml));
+$this->fireEvent("beforeRenderPagination", array(&$paginationHtml));
 echo $paginationHtml;
 ?>
 
@@ -284,7 +284,7 @@ echo $this->esoTalk->skin->button(array("id" => "saveDraft", "name" => "saveDraf
 	$this->esoTalk->skin->button(array("id" => "discardDraft", "name" => "discardDraft", "class" => "fl", "value" => $language["Discard draft"])), " ",
 	$this->esoTalk->skin->button(array("id" => "postReply", "name" => "postReply", "class" => "big submit fr", "value" => $language["Submit post"], "tabindex" => 40));
 ?></div>
-<?php $this->callHook("renderReplyArea"); ?>
+<?php $this->fireEvent("renderReplyArea"); ?>
 <?php if ($this->conversation["id"]): ?></div></form><?php endif; ?>
 </div>
 

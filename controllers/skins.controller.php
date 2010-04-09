@@ -6,7 +6,7 @@
 
 if (!defined("IN_ESOTALK")) exit;
 
-class skins extends Controller {
+class SkinsController extends Controller {
 
 var $view = "skins.view.php";
 var $skins = array();

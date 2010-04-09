@@ -18,11 +18,10 @@ if (isset($_GET["controller"])) {
 	$esoTalk->action = strtolower($_GET["controller"]);
 	
 	// Does this controller exist?
-	if (!in_array($esoTalk->action, $esoTalk->allowedActions) or !file_exists(dirname(__FILE__) . "/controllers/$esoTalk->action.controller.php")) exit;
+	if (!in_array($esoTalk->action, $esoTalk->allowedActions)) exit;
 	
 	// Require and set it up.
-	require_once "controllers/$esoTalk->action.controller.php";
-	$esoTalk->controller = new $esoTalk->action;
+	$esoTalk->controller = $factory->make($esoTalk->action);
 	$esoTalk->controller->esoTalk =& $esoTalk;
 }
 
@@ -65,7 +64,7 @@ $result = array("messages" => array(), "result" => $controllerResult);
 // If the token the user has is invalid, send them a new one.
 if (isset($_POST["token"]) and $_POST["token"] != $_SESSION["token"]) $result["token"] = $_SESSION["token"];
 
-$esoTalk->callHook("ajaxFinish", array(&$result));
+$esoTalk->fireEvent("ajaxFinish", array(&$result));
 
 // Format and collect all messages from the session into the $result["messages"] array.
 if (count($_SESSION["messages"])) {

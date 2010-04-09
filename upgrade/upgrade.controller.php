@@ -34,6 +34,14 @@ function init()
 		writeConfigFile("../config/versions.php", '$versions', $versions);
 	}
 	
+	// 1.0.0 beta 2 -> 1.0.0 beta 3
+	if ($versions["esoTalk"] == "1.0.0b2") {
+		$this->upgrade_100b3();
+		$versions["esoTalk"] = "1.0.0b3";
+		writeConfigFile("../config/versions.php", '$versions', $versions);
+	}
+	
+	
 	// Write the program version to the versions.php file.
 	if ($versions["esoTalk"] != ESOTALK_VERSION) {
 		$versions["esoTalk"] = ESOTALK_VERSION;
@@ -125,12 +133,12 @@ function warning($msg)
 	$_SESSION["warnings"][] = $msg;	
 }
 
-// 1.0.0 beta 2 -> 1.0.0 RC1
-function upgrade_100rc1()
+// 1.0.0 beta 2 -> 1.0.0 beta 3
+function upgrade_100b3()
 {
 	global $config;
 	
-	$this->query("ALTER TABLE {$config["tablePrefix"]}members MODIFY COLUMN emailOnPrivateAdd tinyint(1) NOT NULL default '1', MODIFY COLUMN emailOnStar tinyint(1) NOT NULL default '1'");
+	$this->query("ALTER TABLE {$config["tablePrefix"]}members MODIFY COLUMN emailOnPrivateAdd tinyint(1) NOT NULL default '1', MODIFY COLUMN emailOnStar tinyint(1) NOT NULL default '1', MODIFY COLUMN language varchar(31) default ''");
 }
 
 // 1.0.0 beta 1 -> 1.0.0 beta 2

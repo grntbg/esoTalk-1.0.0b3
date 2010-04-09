@@ -12,7 +12,7 @@ if (!defined("IN_ESOTALK")) exit;
 
 require_once "lexer.php";
 
-class Formatter extends Hookable {
+class Formatter extends Pluggable {
 
 var $output = "";
 var $modes = array();

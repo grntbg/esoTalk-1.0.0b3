@@ -17,7 +17,7 @@ Ajax.request = function(request) {
 		getById("debugFiles").innerHTML = this.json.debugFiles;
 		getById("debugSession").innerHTML = this.json.debugSession;
 		getById("debugCookie").innerHTML = this.json.debugCookie;
-		getById("debugHooks").innerHTML = this.json.hookedFunctions;
+		//getById("debugHooks").innerHTML = this.json.hookedFunctions;
 		if (this.json.log) Messages.showMessage("debugLog", "info", "<div style='overflow:auto;max-height:400px'>" + this.json.log + "</div>", false);
 	};
 	this.queue.push(request);

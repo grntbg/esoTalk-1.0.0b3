@@ -11,6 +11,7 @@ define("IN_ESOTALK", 1);
 
 // Require essential files.
 require "../lib/functions.php";
+require "../lib/classes.php";
 require "../lib/database.php";
 
 // Start a session if one does not already exist.

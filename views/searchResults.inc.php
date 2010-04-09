@@ -52,7 +52,7 @@ function columnConversation(&$search, $conversation)
 	// And tags!
 	$html .= "<br/><small class='tags'>{$conversation["tags"]}</small>";
 	
-	$search->callHook("getConversationColumn", array(&$html, $conversation));
+	$search->fireEvent("getConversationColumn", array(&$html, $conversation));
 	
 	return $html;
 }

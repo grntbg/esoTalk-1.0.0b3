@@ -15,7 +15,7 @@ if (!defined("IN_ESOTALK")) exit;
 </head>
 
 <body>
-<?php $this->callHook("pageStart"); ?>
+<?php $this->fireEvent("pageStart"); ?>
 
 <div id='loading' style='display:none'><?php echo $language["Loading"]; ?></div>
 
@@ -24,7 +24,7 @@ if (!defined("IN_ESOTALK")) exit;
 <div id='wrapper'<?php if ($this->action != "search"): ?> class='small'<?php endif; ?>>
 
 <div id='hdr'>
-<h1><a href='' title='<?php echo $config["forumTitle"]; ?>'><img src='<?php echo !empty($config["forumLogo"]) ? $config["forumLogo"] : "skins/{$config["skin"]}/logo.gif"; ?>' alt=''/> <span id='forumTitle'><?php echo $config["forumTitle"]; ?></span></a></h1>
+<h1><a href='' title='<?php echo $config["forumTitle"]; ?>'><img src='<?php echo $this->skin->getForumLogo(); ?>' alt=''/> <span id='forumTitle'><?php echo $config["forumTitle"]; ?></span></a></h1>
 <?php if ($this->action == "search"): ?>
 <p id='stats'>
 <?php foreach ($this->getStatistics() as $k => $v): ?>
@@ -43,7 +43,7 @@ if (!defined("IN_ESOTALK")) exit;
 <?php $this->controller->render(); ?>
 </div>
 
-<?php $this->callHook("footer"); ?>
+<?php $this->fireEvent("footer"); ?>
 <div id='ftr'>
 <?php if (count($this->footer)): ?><ul><?php
 ksort($this->footer);
@@ -58,6 +58,6 @@ Powered by <a href='http://esotalk.com/'>esoTalk</a>&trade; <?php if ($this->use
 
 </div>
 
-<?php $this->callHook("pageEnd"); ?>
+<?php $this->fireEvent("pageEnd"); ?>
 </body>
 </html>

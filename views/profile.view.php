@@ -46,7 +46,7 @@ else printf($language["posts per day"], $postsPerDay);
 <div><?php echo $this->member["conversationsParticipated"]; ?>
 <?php if ($this->member["conversationsParticipated"] > 0): ?> <small>(<a href='<?php echo makeLink("search", "?q2=contributor:" . urlencode(desanitize($this->member["name"]))); ?>'><?php echo $language["show conversations participated in"]; ?></a>)</small><?php endif; ?></div></li>
 	
-<?php $this->callHook("statistics"); ?>
+<?php $this->fireEvent("statistics"); ?>
 
 <?php if ($this->esoTalk->user and $this->member["memberId"] != $this->esoTalk->user["memberId"]): ?>
 <li><label><?php echo $this->member["name"]; ?> &amp; <?php echo $this->esoTalk->user["name"]; ?><br/><span class='label private'><?php echo $language["labels"]["private"]; ?></span></label> <div><a href='<?php echo makeLink("search", "?q2=private+%2B+contributor:" . urlencode(desanitize($this->member["name"]))); ?>'><?php printf($language["See the private conversations I've had"], $this->member["name"]); ?></a><br/>
