@@ -1,5 +1,5 @@
 <?php
-// Copyright 2009 Simon Zerner, Toby Zerner
+// Copyright 2010 Toby Zerner, Simon Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
 // Casual English language pack
@@ -9,6 +9,7 @@ $language = array(
 "charset" => "utf-8",
 
 "*" => "*",
+"Dashboard" => "Dashboard",
 "dateFormat" => "j F Y, g:i a T", // see http://au.php.net/manual/en/function.date.php for details
 "day ago" => "Yesterday",
 "days ago" => "%d days ago",
@@ -353,7 +354,7 @@ $messages = array(
 "pluginCannotBeEnabled" => array("class" => "warning", "message" => "The plugin <em>%s</em> cannot be enabled: %s"),
 "postTooLong" => array("class" => "warning", "message" => "Your post is really, really long! Too long! The maximum number of characters allowed is " . number_format($config["maxCharsPerPost"]) . ". That's really long!"),
 "reenterInformation" => array("class" => "info", "message" => "Please reenter this information."),
-"removeFileWarning" => array("class" => "warning", "message" => "Hey! Looks like you haven't deleted the <code>%s</code> directory like we told you to... you probably should, as it'll make your forum a bit more secure. "),
+"removeDirectoryWarning" => array("class" => "warning", "message" => "Hey! Looks like you haven't deleted the <code>%s</code> directory like we told you to! You probably should, just to make sure those hackers can't do anything naughty."),
 "setNewPassword" => array("class" => "info", "message" => "Alright! Now, what do you want your new password to be?"),
 "skinAdded" => array("class" => "success", "message" => "The skin was successfully added!"),
 "suspended" => array("class" => "warning", "message" => "Ouch! A forum moderator has <strong>suspended</strong> your account. It sucks, but until the suspension is lifted you won't be able to do much around here. Hey, screw them!"),

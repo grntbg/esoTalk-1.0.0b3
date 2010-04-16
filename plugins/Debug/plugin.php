@@ -1,5 +1,5 @@
 <?php
-// Copyright 2009 Simon Zerner, Toby Zerner
+// Copyright 2010 Toby Zerner, Simon Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
 // Debug plugin: Shows programming debug information for administrators.
@@ -31,9 +31,6 @@ function Debug()
 	// Start the page load timer.
 	$this->start = $this->microtimeFloat();
 	if (empty($_SESSION["queries"]) or !is_array($_SESSION["queries"])) $_SESSION["queries"] = array();
-	
-	global $esoTalk;
-	$esoTalk->registerController("debug", "DebugController", "plugins/Debug/debug.controller.php");
 	
 	parent::Plugin();
 }

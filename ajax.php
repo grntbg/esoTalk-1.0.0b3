@@ -1,5 +1,5 @@
 <?php
-// Copyright 2009 Simon Zerner, Toby Zerner
+// Copyright 2010 Toby Zerner, Simon Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
 // Ajax page: Fires events required for an ajax page to load and display.

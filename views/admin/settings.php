@@ -1,5 +1,5 @@
 <?php
-// Copyright 2009 Simon Zerner, Toby Zerner
+// Copyright 2010 Toby Zerner, Simon Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
 // Plugins view: displays a list of plugins and their settings.
@@ -33,14 +33,14 @@ foreach ($this->languages as $v)
 	
 	</ul>
 	
+	</form>
+	
 </fieldset>
 
 <fieldset>
 	<legend>Forum logo</legend>
 	
-	
-	<p class='msg info'>Your forum logo appears in the header of your forum, to the left of the title. Careful not to upload a logo too big, or the header will be stretched!</p>
-	
+	<div class='msg info'>On most skins, your forum logo appears near the title in the header of your forum. Your logo will be automatically resized to be 32 pixels high.</div>
 	<form action='<?php echo makeLink("admin", "settings"); ?>' id='settingsLogo' method='post' enctype='multipart/form-data'>
 	<input type='hidden' name='token' value='<?php echo $_SESSION["token"]; ?>'/>
 	
@@ -72,7 +72,6 @@ foreach ($this->languages as $v)
 		Use default logo</label>
 		</li>
 
-		<li><label></label> <div><input type='checkbox' class='checkbox' name='resizeLogo' value='1'/> Automatically resize my logo</div></li>
 		<li><label></label> <span class='button'><input type='submit' name='changeLogo' value='Change logo'/></span></li>
 
 

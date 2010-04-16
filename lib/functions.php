@@ -1,5 +1,5 @@
 <?php
-// Copyright 2009 Simon Zerner, Toby Zerner
+// Copyright 2010 Toby Zerner, Simon Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
 // Functions: Contains functions which are used all over the application.
@@ -51,7 +51,18 @@ function escapeDoubleQuotes($value)
 // Create a conversation title slug from a given string. Any non-alphanumeric characters will be converted to "-".
 function slug($string)
 {
-	if (!($slug = trim(preg_replace(array("/'/", "/[^a-z0-9]+/"), array("", "-"), strtolower(desanitize($string))), "-"))) $slug = "-";
+	// Convert special latin letters and other characters to HTML entities.
+	$slug = htmlentities(desanitize($string), ENT_QUOTES, "UTF-8");
+	
+	// With those HTML entities, either convert them back to a normal letter, or remove them.
+	$slug = preg_replace(array("/&([a-z]{1,2})(acute|cedil|circ|grave|lig|orn|ring|slash|th|tilde|uml);/i", "/&[^;]{2,6};/"), array("$1", " "), $slug);
+	
+	global $esoTalk;
+	if (!empty($esoTalk)) $esoTalk->fireEvent("GenerateSlug", array(&$slug));
+	
+	// Now replace non-alphanumeric characters with a hyphen, and remove multiple hyphens.
+	$slug = strtolower(trim(preg_replace(array("/[^0-9a-z]/i", "/-+/"), "-", $slug), "-"));
+
 	return substr($slug, 0, 63);
 }
 
@@ -142,6 +153,13 @@ function json($array)
 	}
 	// Return a JavaScript array string or a JSON string (depending if we're using keys or not.)
 	return $noKeys ? "[" . implode($json, ",") . "]" : "{" . implode($json, ",") . "}";
+}
+
+// Function to quickly translate a string by using the $language variable.
+function translate($string)
+{
+	global $language;
+	return array_key_exists($string, $language) ? $language[$string] : $string;
 }
 
 // Generate a relative URL based on a variable number of arguments passed to the function.
@@ -382,7 +400,7 @@ function addToArrayString(&$array, $key, $value, $position = false)
 {
 	// If we're intending to add it to the end of the array, that's easy.
 	$count = count($array) + 1;
-	if ($position >= $count) {
+	if ($position >= $count or $position === false) {
 		$array[$key] = $value;
 		return;
 	}
@@ -456,14 +474,6 @@ function writeFile($file, $contents)
 function regenerateToken()
 {
 	$_SESSION["token"] = md5(uniqid(rand()));
-}
-
-// htmlspecialchars_decode for PHP 4.
-if (!function_exists("htmlspecialchars_decode")) {
-	function htmlspecialchars_decode($text)
-	{
-		return strtr($text, array_flip(get_html_translation_table(HTML_SPECIALCHARS)));
-	}
 }
 
 ?>

@@ -1,5 +1,5 @@
 <?php
-// Copyright 2009 Simon Zerner, Toby Zerner
+// Copyright 2010 Toby Zerner, Simon Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
 // Search controller: Performs a search with gambits, and gets the tag cloud.
@@ -626,7 +626,7 @@ function gambitDraft(&$search, $term, $negate)
 // Posts gambit: get conversations with a particular number of posts.
 function gambitHasNPosts(&$search, $term, $negate)
 {
-	$search->matches["a"] = (!$search->matches["a"]) ? "=" : htmlspecialchars_decode($this->matches["a"]);
+	$search->matches["a"] = (!$search->matches["a"]) ? "=" : desanitize($this->matches["a"]);
 	if ($negate) {
 		switch ($search->matches["a"]) {
 			case "<": $search->matches["a"] = ">="; break;

@@ -1,5 +1,5 @@
 <?php
-// Copyright 2009 Simon Zerner, Toby Zerner
+// Copyright 2010 Toby Zerner, Simon Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
 // esoTalk controller: Handles global actions such as logging in/out, preparing the bar, and collecting messages.
@@ -61,9 +61,6 @@ function init()
 			"suspended" => $_SESSION["user"]["account"] == "Suspended" ? true : null
 		);
 		$this->user["color"] = min($this->user["color"], $this->skin->numberOfColors);
-		// Fix for 1.0.0a5 -> 1.0.0b1 upgrade. Remove in next version.
-		if (!isset($this->user["avatarFormat"]) and isset($this->user["avatarExtension"]))
-			$this->user["avatarFormat"] = $this->user["avatarExtension"];
 	}
 	
 	// Set the default avatarAlignment for logged out users.
@@ -77,15 +74,6 @@ function init()
 
 	// Only do the following for non-ajax requests.
 	if (!defined("AJAX_REQUEST")) {
-		
-		// Check for updates, but only for the root admin.
-		if ($this->user["memberId"] == $config["rootAdmin"]) {
-			// How long ago was the last update check? If it was any more than 1 day ago, check again now.
-			if (file_exists("config/lastUpdateCheck.php")) include "config/lastUpdateCheck.php";
-			if (!isset($lastUpdateCheck) or time() - $lastUpdateCheck >= 86400) {
-				if ($latestVersion = $this->checkForUpdates()) $this->message("updatesAvailable", false, $latestVersion);
-			}
-		}
 	
 		// If the user IS NOT logged in, add the login form and 'Join this forum' link to the bar.
 		if (!$this->user) {
@@ -432,7 +420,14 @@ function head()
 		else $head .= "<link rel='stylesheet' href='{$styleSheet["href"]}' type='text/css'" . (!empty($styleSheet["media"]) ? " media='{$styleSheet["media"]}'" : "") . "/>\n";
 	}
 
-	// JavaScript: output all necessary config variables and language definitions, as well as other variables.
+	// JavaScript: add the scripts collected in the $this->scripts array (via $this->addScript()).
+	ksort($this->scripts);
+	foreach ($this->scripts as $script) $head .= "<script type='text/javascript' src='$script'></script>\n";
+	
+	// Conditional browser comments to detect IE.
+	$head .= "<!--[if lte IE 6]><script type='text/javascript' src='js/ie6TransparentPNG.js'></script><script type='text/javascript'>var isIE6=true</script><![endif]-->\n<!--[if IE 7]><script type='text/javascript'>var isIE7=true</script><![endif]-->";
+
+	// Output all necessary config variables and language definitions, as well as other variables.
 	$esoTalkJS = array(
 		"baseURL" => $config["baseURL"],
 		"user" => $this->user ? $this->user["name"] : false,
@@ -445,13 +440,6 @@ function head()
 	) + $this->jsVars;
 	$head .= "<script type='text/javascript'>// <![CDATA[
 var esoTalk=" . json($esoTalkJS) . ",isIE6,isIE7// ]]></script>\n";
-	
-	// Add the scripts collected in the $this->scripts array (via $this->addScript()).
-	ksort($this->scripts);
-	foreach ($this->scripts as $script) $head .= "<script type='text/javascript' src='$script'></script>\n";
-	
-	// Conditional browser comments to detect IE.
-	$head .= "<!--[if lte IE 6]><script type='text/javascript' src='js/ie6TransparentPNG.js'></script><script type='text/javascript'>var isIE6=true</script><![endif]-->\n<!--[if IE 7]><script type='text/javascript'>var isIE7=true</script><![endif]-->";
 	
 	// Finally, append the custom HTML string constructed via $this->addToHead().
 	$head .= $this->head;

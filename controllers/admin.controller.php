@@ -1,5 +1,5 @@
 <?php
-// Copyright 2009 Simon Zerner, Toby Zerner
+// Copyright 2010 Toby Zerner, Simon Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
 // Plugins controller: controls the toggling of plugins and plugin installation.
@@ -10,56 +10,69 @@ class AdminController extends Controller {
 	
 var $view = "admin/admin.view.php";
 var $subView = "";
-var $plugins = array();
-
 var $sections = array();
 
 function init()
 {
 	// Non-admins aren't allowed here!
 	if (!$this->esoTalk->user["admin"]) redirect("");
-
-	$this->addSection("dashboard", "Dashboard", array($this, "dashboardInit"), 100);
-	$this->addSection("settings", "Forum settings", array($this, "settingsInit"), 200);
-	$this->addSection("plugins", "Plugins", array($this, "pluginsInit"), 300);
-	$this->addSection("skins", "Skins", array($this, "skinsInit"), 400);
+	
+	// Add the default sections to the menu.
+	$this->defaultSections = array("dashboard", "settings", "plugins", "skins");
+	$this->addSection("dashboard", "Dashboard", array($this, "dashboardInit"), array($this, "dashboardAjax"));
+	$this->addSection("settings", "Forum settings", array($this, "settingsInit"));
+	$this->addSection("plugins", "Plugins", array($this, "pluginsInit"));
+	$this->addSection("skins", "Skins", array($this, "skinsInit"));
 	
 	$this->fireEvent("init");
 	
-	// Work out the current section.
-	$this->section = @$_GET["q2"];
+	// Work out the current section. Use the first section (Dashboard) by default.
+	$this->section = defined("AJAX_REQUEST") ? @$_GET["section"] : @$_GET["q2"];
 	reset($this->sections);
 	if (!array_key_exists($this->section, $this->sections)) $this->section = key($this->sections);
 	
 	// Call the current section's initilization function.
-	call_user_func_array($this->sections[$this->section]["initFunction"], array(&$this));
+	return call_user_func_array($this->sections[$this->section]["initFunction"], array(&$this));
+}
+
+function ajax()
+{
+	if (empty($this->sections[$this->section]["ajaxFunction"])) return;
+	return call_user_func_array($this->sections[$this->section]["ajaxFunction"], array(&$this));
 }
 
 function dashboardInit(&$adminController)
 {
-	global $language, $config;
-	//$this->title = $language["Dashboard"];
+	global $config;
+	$this->title = translate("Dashboard");
 	$this->subView = "admin/dashboard.php";
 	
-	// Get stats
+	// Get forum statistics to be outputted in the view.
 	$this->stats = array(
-		"members" => $this->esoTalk->db->result("SELECT COUNT(*) FROM {$config["tablePrefix"]}members", 0),
-		"conversations" => $this->esoTalk->db->result("SELECT COUNT(*) FROM {$config["tablePrefix"]}conversations", 0),
-		"posts" => $this->esoTalk->db->result("SELECT COUNT(*) FROM {$config["tablePrefix"]}posts", 0),
-		"newMembers" => "TODO: add join date column to members table",//$this->esoTalk->db->result("SELECT COUNT(*) FROM {$config["tablePrefix"]}members WHERE ", 0),
-		"newConversations" => $this->esoTalk->db->result("SELECT COUNT(*) FROM {$config["tablePrefix"]}conversations WHERE UNIX_TIMESTAMP()-60*60*24*7<startTime", 0),
-		"newPosts" => $this->esoTalk->db->result("SELECT COUNT(*) FROM {$config["tablePrefix"]}posts WHERE UNIX_TIMESTAMP()-60*60*24*7<time", 0),
-		"activeMembers" => $this->esoTalk->db->result("SELECT COUNT(*) FROM {$config["tablePrefix"]}members m WHERE (SELECT COUNT(*) FROM {$config["tablePrefix"]}posts p WHERE UNIX_TIMESTAMP()-60*60*24*30<time AND p.memberId=m.memberId)>10", 0),
-		
-		
+		"Members" => $this->esoTalk->db->result("SELECT COUNT(*) FROM {$config["tablePrefix"]}members", 0),
+		"Conversations" => $this->esoTalk->db->result("SELECT COUNT(*) FROM {$config["tablePrefix"]}conversations", 0),
+		"Posts" => $this->esoTalk->db->result("SELECT COUNT(*) FROM {$config["tablePrefix"]}posts", 0),
+		"New members in the past week" => $this->esoTalk->db->result("SELECT COUNT(*) FROM {$config["tablePrefix"]}members WHERE UNIX_TIMESTAMP()-60*60*24*7<joinTime", 0),
+		"New conversations in the past week" => $this->esoTalk->db->result("SELECT COUNT(*) FROM {$config["tablePrefix"]}conversations WHERE UNIX_TIMESTAMP()-60*60*24*7<startTime", 0),
+		"New posts in the past week" => $this->esoTalk->db->result("SELECT COUNT(*) FROM {$config["tablePrefix"]}posts WHERE UNIX_TIMESTAMP()-60*60*24*7<time", 0)
 	);
 	
-	$this->server = array(
-		"phpVersion" => phpversion(),
-		"mysqlVersion" => $this->esoTalk->db->result("SELECT VERSION()", 0),
-		"esoTalkVersion" => ESOTALK_VERSION
+	$this->serverInfo = array(
+		"esoTalk version" => ESOTALK_VERSION,
+		"PHP version" => phpversion(),
+		"MySQL version" => $this->esoTalk->db->result("SELECT VERSION()", 0)
 	);
 	
+	$this->fireEvent("dashboardInit");
+}
+
+function dashboardAjax(&$adminController)
+{
+	switch (@$_POST["action"]) {
+		case "checkForUpdates":
+			if ($latestVersion = $this->esoTalk->checkForUpdates())
+				return $this->esoTalk->htmlMessage("updatesAvailable", $latestVersion);
+	}
 }
 
 function settingsInit(&$adminController)
@@ -193,18 +206,17 @@ function changeLogo()
 	// ...and get its dimensions.
 	list($curWidth, $curHeight) = getimagesize($file);
 	
-	if (!empty($_POST["resizeLogo"])) {
+	//if (!empty($_POST["resizeLogo"])) {
 		//$newWidth = 30;
 		$newHeight = 32;
-	}
+//	}
 	
 
 		
 		// Set the destination.
 		$destination = $logoFile;
 		
-		$file = $config["forumLogo"];
-		if (file_exists($file)) @unlink($file);
+		if (file_exists($config["forumLogo"])) @unlink($config["forumLogo"]);
 
 		// If the new max dimensions exist and are smaller than the current dimensions, we're gonna want to resize.
 		if (($newWidth or $newHeight) and ($newWidth < $curWidth or $newHeight < $curHeight)) {
@@ -320,9 +332,9 @@ function writeSettingsConfig($newConfigElements)
 	$config = array_merge($config, $newConfigElements);
 }
 
-function addSection($id, $title, $initFunction, $position = false)
+function addSection($id, $title, $initFunction, $ajaxFunction = false, $position = false)
 {
-	addToArrayString($this->sections, $id, array("title" => $title, "initFunction" => $initFunction), $position);
+	addToArrayString($this->sections, $id, array("title" => $title, "initFunction" => $initFunction, "ajaxFunction" => $ajaxFunction), $position);
 }
 
 // Get all the plugins into an array and perform any plugin-related actions.
@@ -379,10 +391,8 @@ function pluginsInit(&$adminController)
 	}
 	
 	// Toggle a plugin if necessary.
-	if (!empty($_GET["toggle"]) and $this->esoTalk->validateToken(@$_GET["token"]) and $this->togglePlugin($_POST["id"]))
-		redirect("plugins");
-		
-	
+	if (!empty($_GET["toggle"]) and $this->esoTalk->validateToken(@$_GET["token"]) and $this->togglePlugin($_GET["toggle"]))
+		redirect("admin", "plugins");
 }
 
 

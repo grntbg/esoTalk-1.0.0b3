@@ -1,4 +1,4 @@
-// Copyright 2009 Simon Zerner, Toby Zerner
+// Copyright 2010 Toby Zerner, Simon Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
 // esoTalk JavaScript: contains global functions, Animation class, Messages system, Ajax system, Conversation 

@@ -1,5 +1,5 @@
 <?php
-// Copyright 2009 Simon Zerner, Toby Zerner
+// Copyright 2010 Toby Zerner, Simon Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
 // Database class: Handles database actions such as connecting, and running queries.
@@ -13,10 +13,10 @@ var $esoTalk;
 var $link;
 
 // Connect to a MySQL server and database.
-function connect($host, $user, $password, $db)
+function connect($host, $user, $password, $db, $encoding = "utf8")
 {
-	global $language, $config;
 	if (!($this->link = @mysql_connect($host, $user, $password)) or !@mysql_select_db($db, $this->link)) return false;
+	$this->query("SET NAMES '$encoding'");
 	return true;
 }
 

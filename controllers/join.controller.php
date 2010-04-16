@@ -1,5 +1,5 @@
 <?php
-// Copyright 2009 Simon Zerner, Toby Zerner
+// Copyright 2010 Toby Zerner, Simon Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
 // Join controller: handles the 'Join this forum' page. Defines form data, validates it, adds the member to the
@@ -159,6 +159,7 @@ function addMember()
 	// Add a few extra fields to the query.
 	$insertData["color"] = "FLOOR(1 + (RAND() * {$this->esoTalk->skin->numberOfColors}))";
 	$insertData["avatarAlignment"] = "'{$_SESSION["avatarAlignment"]}'";
+	$insertData["joinTime"] = time();
 	
 	$this->fireEvent("beforeAddMember", array(&$insertData));
 	

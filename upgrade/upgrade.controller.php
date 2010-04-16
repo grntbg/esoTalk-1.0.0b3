@@ -1,5 +1,5 @@
 <?php
-// Copyright 2009 Simon Zerner, Toby Zerner
+// Copyright 2010 Toby Zerner, Simon Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
 // Upgrade controller: performs necessary upgrade(s) and displays the upgrade interface.
@@ -138,7 +138,22 @@ function upgrade_100b3()
 {
 	global $config;
 	
-	$this->query("ALTER TABLE {$config["tablePrefix"]}members MODIFY COLUMN emailOnPrivateAdd tinyint(1) NOT NULL default '1', MODIFY COLUMN emailOnStar tinyint(1) NOT NULL default '1', MODIFY COLUMN language varchar(31) default ''");
+	// Change the default values of a few columns in the members table.
+	$this->query("ALTER TABLE {$config["tablePrefix"]}members
+		MODIFY COLUMN emailOnPrivateAdd tinyint(1) NOT NULL default '1',
+		MODIFY COLUMN emailOnStar tinyint(1) NOT NULL default '1',
+		MODIFY COLUMN language varchar(31) default ''");
+	
+	// Add the joinTime column to the members table.
+	if (!$this->numRows("SHOW COLUMNS FROM {$config["tablePrefix"]}members LIKE 'joinTime'"))
+		$this->query("ALTER TABLE {$config["tablePrefix"]}members ADD COLUMN joinTime int unsigned NOT NULL AFTER account");
+	
+	// Make the slug column in the conversations table default to NULL, and get rid of blank hyphen slugs.
+	$this->query("ALTER TABLE {$config["tablePrefix"]}conversations MODIFY COLUMN slug varchar(63) default NULL");
+	$this->query("UPDATE {$config["tablePrefix"]}conversations SET slug=NULL WHERE slug='-'");
+		
+	$file = "config/lastUpdateCheck.php";
+	if (file_exists("../$file")) @unlink("../$file") or $this->warning("esoTalk could not delete <code>/$file</code>. Please delete it manually.");
 }
 
 // 1.0.0 beta 1 -> 1.0.0 beta 2

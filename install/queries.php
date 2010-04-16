@@ -1,5 +1,5 @@
 <?php
-// Copyright 2009 Simon Zerner, Toby Zerner
+// Copyright 2010 Toby Zerner, Simon Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
 // Installer queries: contains all the queries to create the esoTalk tables and insert default data.
@@ -13,7 +13,7 @@ $queries[] = "DROP TABLE IF EXISTS {$config["tablePrefix"]}conversations";
 $queries[] = "CREATE TABLE {$config["tablePrefix"]}conversations (
 	conversationId int unsigned NOT NULL auto_increment,
 	title varchar(63) NOT NULL,
-	slug varchar(63) NOT NULL default '-',
+	slug varchar(63) default NULL,
 	sticky tinyint(1) NOT NULL default '0',
 	locked tinyint(1) NOT NULL default '0',
 	private tinyint(1) NOT NULL default '0',
@@ -71,6 +71,7 @@ $queries[] = "CREATE TABLE {$config["tablePrefix"]}members (
 	password char(32) NOT NULL,
 	color tinyint unsigned NOT NULL default '1',
 	account enum('Administrator','Moderator','Member','Suspended','Unvalidated') NOT NULL default 'Unvalidated',
+	joinTime int unsigned NOT NULL,
 	language varchar(31) default '',
 	avatarAlignment enum('alternate','right','left') NOT NULL default 'alternate',
 	avatarFormat enum('jpg','png','gif') default NULL,

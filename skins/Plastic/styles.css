@@ -269,6 +269,7 @@ blockquote p {margin-bottom:.75em}
 #admin .menu li {list-style-type:none; margin:0; padding:0; display:block}
 #admin .menu li a {display:block; margin-left:15px; padding:10px 15px; font-size:120%;}
 #admin .menu li.active a {background:#fff; border:solid #ccc; border-width:1px 0 1px 1px; margin-right:-1px; color:#000; font-weight:bold;}
+#admin .menu li.separator {border-bottom:1px solid #ccc; margin:10px 5px;}
 #admin .inner {padding:15px 25px; border-left:1px solid #ccc;}
 #admin .stats label {font-weight:normal; text-align:left; width:30%}
 #admin .stats div {float:none; font-size:115%; margin-left:35%}
@@ -279,16 +280,18 @@ blockquote p {margin-bottom:.75em}
 
 /* Plugins */
 #plugins .controls {float:right}
-#plugins .controls a, #plugins small {margin-left:10px}
+#plugins .controls a, #plugins small, #plugins strong {margin-left:10px}
 #plugins ul {list-style:none; margin:0; padding:0}
 #plugins li {border-bottom:1px solid #ddd; display:block; padding:5px 7px}
 #plugins li strong {font-weight:normal; font-size:120%}
 #plugins li.enabled strong {font-weight:bold}
-#plugins li form {margin:15px 5px}
+#plugins li form {margin:5px}
 #plugins li .settings {background:#fff; padding:5px 20px; margin-top:5px}
-#plugins li form label {margin-bottom:10px; width:25em}
+#plugins li form label {width:25em}
 #plugins li input.checkbox {margin:2px 7px 2px 0}
 #plugins li li {border:0; padding:0}
+#plugins .toggle {font-size:90%; background:#cdffba; width:5em; text-align:center; display:block; float:left; color:#258500; padding:2px 0}
+#plugins .enabled .toggle {color:#888; background:#e4e4e4}
 
 /* Skins */
 #skins ul {list-style:none; margin:0; padding:0}
@@ -329,7 +332,7 @@ input.text:focus, textarea:focus {border-color:#777; outline:0}
 .placeholder {color:#aaa}
 input.checkbox, input.radio {padding:0; margin:0 2px 0 5px; vertical-align:-2px}
 label.checkbox, label.radio {cursor:pointer}
-fieldset {border:1px solid #ccc; margin:5px 0 10px 0; padding:0 15px 15px}
+fieldset {border:1px solid #ccc; margin:0 0 15px 0; padding:0 15px 15px}
 legend {color:#000; font-size:140%; font-weight:bold; padding:5px 10px 10px}
 fieldset legend a {color:#000}
 fieldset.hidden {border-width:1px 0 0; padding:0 16px 0}

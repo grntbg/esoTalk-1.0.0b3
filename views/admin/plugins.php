@@ -1,11 +1,24 @@
 <?php
-// Copyright 2009 Simon Zerner, Toby Zerner
+// Copyright 2010 Toby Zerner, Simon Zerner
 // This file is part of esoTalk. Please see the included license file for usage information.
 
 // Plugins view: displays a list of plugins and their settings.
 
 if (!defined("IN_ESOTALK")) exit;
 ?>
+
+<?php // Add a new plugin form. ?>
+<fieldset id='addPlugin'>
+<legend><?php echo $language["Add a new plugin"]; ?></legend>
+<?php echo $this->esoTalk->htmlMessage("downloadPlugins", "http://esotalk.com/plugins"); ?>
+<form action='<?php echo makeLink("admin", "plugins"); ?>' method='post' enctype='multipart/form-data'>
+<input type='hidden' name='token' value='<?php echo $_SESSION["token"]; ?>'/>
+<ul class='form'>
+<li><label><?php echo $language["Upload a plugin"]; ?></label> <input name='installPlugin' type='file' class='text' size='20'/></li>
+<li><label></label> <?php echo $this->esoTalk->skin->button(array("value" => $language["Add plugin"])); ?></li>
+</ul>
+</form>
+</fieldset>
 
 <?php // If there are installed plugins to display...
 if (count($this->plugins)): ?>
@@ -23,6 +36,7 @@ function toggleEnabled(id, enabled) {
 		"success": function() {
 			if (this.messages) getById("plugin-" + id + "-checkbox").checked = !enabled;
 			else getById("plugin-" + id).className = "plugin" + (enabled ? " enabled" : "");
+			//window.location = window.location;
 		}
 	});
 }
@@ -46,9 +60,8 @@ foreach ($this->plugins as $k => $plugin): ?>
 <div class='controls'>
 <?php if (!empty($plugin["settings"])): ?><a href='javascript:toggleSettings("<?php echo $k; ?>");void(0)'><?php echo $language["settings"]; ?></a><?php endif; ?>
 </div>
-<input type='checkbox' class='checkbox'<?php if ($plugin["loaded"]): ?> checked='checked'<?php endif; ?> id='plugin-<?php echo $k; ?>-checkbox' name='plugins[<?php echo $k; ?>]' value='1' onclick='toggleEnabled("<?php echo $k; ?>", this.checked);'/>
-<noscript><div style='display:inline'><a href='<?php echo makeLink("admin", "plugins", "?toggle=$k", "&token={$_SESSION["token"]}"); ?>'><?php echo $plugin["loaded"] ? "Deactivate" : "Activate"; ?></a></div></noscript>	
-<label for='plugin-<?php echo $k; ?>-checkbox' class='checkbox'><strong><?php echo $plugin["name"]; ?></strong></label>
+<a href='<?php echo makeLink("admin", "plugins", "?toggle=$k", "&token={$_SESSION["token"]}"); ?>' class='toggle'><?php echo $plugin["loaded"] ? translate("Disable") : translate("Enable"); ?></a>	
+<strong><?php echo $plugin["name"]; ?></strong>
 <small><?php printf($language["version"], $plugin["version"]); ?> <?php printf($language["author"], $plugin["author"]); ?></small> <small><?php echo $plugin["description"]; ?></small>
 
 <?php // Output plugin settings.
@@ -78,16 +91,3 @@ endif; ?>
 else: ?>
 <?php echo $this->esoTalk->htmlMessage("noPluginsInstalled"); ?>
 <?php endif; ?>
-
-<?php // Add a new plugin form. ?>
-<fieldset id='addPlugin'>
-<legend><?php echo $language["Add a new plugin"]; ?></legend>
-<?php echo $this->esoTalk->htmlMessage("downloadPlugins", "http://esotalk.com/plugins"); ?>
-<form action='<?php echo makeLink("admin", "plugins"); ?>' method='post' enctype='multipart/form-data'>
-<input type='hidden' name='token' value='<?php echo $_SESSION["token"]; ?>'/>
-<ul class='form'>
-<li><label><?php echo $language["Upload a plugin"]; ?></label> <input name='installPlugin' type='file' class='text' size='20'/></li>
-<li><label></label> <?php echo $this->esoTalk->skin->button(array("value" => $language["Add plugin"])); ?></li>
-</ul>
-</form>
-</fieldset>
